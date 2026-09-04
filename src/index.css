@@ -82,3 +82,94 @@ input, textarea, select, button {
   .no-print { display: none !important; }
   .print-document .hidden { display: none !important; }
 }
+
+.landing-bg {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(238, 235, 245, 0.95) 0%, transparent 68%),
+    radial-gradient(ellipse 55% 45% at 100% 88%, rgba(250, 238, 238, 0.55) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 40% at 0% 72%, rgba(234, 243, 237, 0.45) 0%, transparent 58%),
+    linear-gradient(180deg, #FBF9F6 0%, #F7F2ED 48%, #FAF6F2 100%);
+}
+
+.landing-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 18%, rgba(184, 132, 126, 0.08) 0 1px, transparent 1px),
+    radial-gradient(circle at 78% 28%, rgba(123, 111, 168, 0.07) 0 1px, transparent 1px),
+    radial-gradient(circle at 62% 74%, rgba(184, 132, 126, 0.06) 0 1px, transparent 1px),
+    radial-gradient(circle at 32% 82%, rgba(123, 111, 168, 0.05) 0 1px, transparent 1px);
+  background-size: 100% 100%;
+  pointer-events: none;
+}
+
+.landing-rings {
+  position: absolute;
+  top: 6.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5.5rem;
+  height: 2.75rem;
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.landing-rings span {
+  position: absolute;
+  top: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1.5px solid var(--color-rose);
+  border-radius: 50%;
+}
+
+.landing-rings span:first-child {
+  left: 0;
+}
+
+.landing-rings span:last-child {
+  right: 0;
+}
+
+.landing-flourish {
+  position: absolute;
+  bottom: 7.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(184, 132, 126, 0.22) 18%,
+    rgba(123, 111, 168, 0.28) 50%,
+    rgba(184, 132, 126, 0.22) 82%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.landing-flourish::before,
+.landing-flourish::after {
+  content: '✦';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.55rem;
+  color: rgba(184, 132, 126, 0.35);
+}
+
+.landing-flourish::before {
+  left: 0.15rem;
+}
+
+.landing-flourish::after {
+  right: 0.15rem;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 1;
+}
