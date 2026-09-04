@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { loadEnv } from 'vite'
-import { generateScriptText, type GenerateScriptInput } from './groqGenerate'
+import { generateScriptText, type GenerateScriptInput } from '../api/groqGenerate'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
