@@ -23,7 +23,11 @@ export default async function handler(request: Request): Promise<Response> {
   try {
     const payload = (await request.json()) as SendCueSheetPayload
     if (!payload.mcEmail?.trim()) {
-      return Response.json({ error: '사회자 이메일을 입력해 주세요.' }, { status: 400 })
+      return Response.json({ error: '사회자 이메일이 설정되지 않았습니다.' }, { status: 400 })
+    }
+
+    if (!payload.cueSheetHtml?.trim()) {
+      return Response.json({ error: '큐시트 HTML이 비어 있습니다.' }, { status: 400 })
     }
 
     const emailConfig = getEmailConfig(process.env as Record<string, string | undefined>)

@@ -7,12 +7,15 @@ type EmailConfig = {
 
 export type SendCueSheetPayload = {
   mcEmail: string
+  subject: string
   groomName: string
   brideName: string
   ceremonyDate: string
   ceremonyTime: string
   venue: string
+  moodLabel: string
   cueSheet: string
+  cueSheetHtml: string
   groomAudio: string
   brideAudio: string
   groomTiming: string
@@ -58,17 +61,24 @@ export async function sendCueSheetEmail(
       template_params: {
         to_email: payload.mcEmail,
         mc_email: payload.mcEmail,
+        subject: payload.subject,
         groom_name: payload.groomName,
         bride_name: payload.brideName,
         ceremony_date: payload.ceremonyDate,
         ceremony_time: payload.ceremonyTime,
         venue: payload.venue,
+        mood_label: payload.moodLabel,
         mc_cue_sheet: payload.cueSheet,
+        cue_sheet_html: payload.cueSheetHtml,
+        html_content: payload.cueSheetHtml,
         groom_audio: payload.groomAudio,
         bride_audio: payload.brideAudio,
         groom_timing: payload.groomTiming,
         bride_timing: payload.brideTiming,
         message: payload.cueSheet,
+        html_message: payload.cueSheetHtml,
+        from_name: '웨딩 큐시트',
+        reply_to: payload.mcEmail,
       },
     }),
   })

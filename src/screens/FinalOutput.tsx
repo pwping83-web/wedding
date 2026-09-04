@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
-import Field from '../components/mobile/Field'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, SetData } from '../data'
 import CueSheetDocument from '../components/CueSheetDocument'
@@ -17,7 +16,6 @@ interface Props {
 }
 
 export default function FinalOutput({ data, setData, onBack }: Props) {
-  const [mcEmail, setMcEmail] = useState(data.email || '')
   const [delivered, setDelivered] = useState(false)
   const [delivering, setDelivering] = useState(false)
   const [deliverError, setDeliverError] = useState('')
@@ -50,15 +48,10 @@ export default function FinalOutput({ data, setData, onBack }: Props) {
   }
 
   const handleDeliver = async () => {
-    if (!mcEmail.trim()) return
     setDelivering(true)
     setDeliverError('')
-    setData((prev) => ({ ...prev, email: mcEmail.trim() }))
     try {
-      await deliverCueSheetToMc({
-        mcEmail: mcEmail.trim(),
-        data: { ...data, email: mcEmail.trim() },
-      })
+      await deliverCueSheetToMc({ data })
       setDelivered(true)
       setTimeout(() => setDelivered(false), 4000)
     } catch (error) {
@@ -77,17 +70,14 @@ export default function FinalOutput({ data, setData, onBack }: Props) {
       footer={
         <div className="space-y-2">
           <Btn onClick={() => window.print()}>인쇄</Btn>
-          <Btn
-            variant="secondary"
-            onClick={handleDeliver}
-            disabled={!mcEmail.trim() || delivering || delivered}
-          >
+          <Btn variant="secondary" onClick={handleDeliver} disabled={delivering || delivered}>
             {delivered ? '전송 완료' : delivering ? '전송 중…' : '사회자에게 전송'}
           </Btn>
+          {deliverError && <p className="text-[12px] text-danger text-center">{deliverError}</p>}
         </div>
       }
     >
-      <Card className="p-4 mb-4 no-print">
+      <Card className="p-4 mb-5 no-print">
         <p className="text-[14px] font-semibold mb-3">입장 음원</p>
         <div className="space-y-3">
           {(['groom', 'bride'] as const).map((type) => {
@@ -129,17 +119,6 @@ export default function FinalOutput({ data, setData, onBack }: Props) {
             )
           })}
         </div>
-      </Card>
-
-      <Card className="p-4 mb-5 no-print">
-        <Field
-          label="사회자 이메일"
-          type="email"
-          placeholder="mc@example.com"
-          value={mcEmail}
-          onChange={(e) => setMcEmail(e.target.value)}
-        />
-        {deliverError && <p className="text-[12px] text-danger mt-2">{deliverError}</p>}
       </Card>
 
       <div className="print-document">
