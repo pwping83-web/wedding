@@ -51,6 +51,7 @@ export interface AppData {
   persons: Person[]
   mood: Mood
   email: string
+  coupleEmail: string
 }
 
 export type SetData = Dispatch<SetStateAction<AppData>>
@@ -250,4 +251,5 @@ export const initialData: AppData = {
   persons: [],
   mood: 'warm',
   email: '',
+  coupleEmail: '',
 }

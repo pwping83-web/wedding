@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import StepIndicator from '../components/StepIndicator'
 import type { AppData, SetData } from '../data'
-import { getOrderItemScript, roleLabels } from '../data'
+import { roleLabels } from '../data'
+import { getEntranceCueMeta, entranceTypeForTitle, getItemScriptForCueSheet } from '../lib/cueSheetUtils'
 
 interface Props {
   data: AppData
@@ -94,7 +95,9 @@ export default function Preview({ data, onBack, onGoOutput }: Props) {
         {tab === 'card' && (
           <div className="space-y-3">
             {items.map((item, index) => {
-              const script = getOrderItemScript(item, data.mood, data)
+              const script = getItemScriptForCueSheet(item, data)
+              const entranceType = entranceTypeForTitle(item.title)
+              const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
               const person = data.persons.find((p) => {
                 if (item.title === '축가') return p.role === 'vocalist'
                 if (item.title === '축사') return p.role === 'speaker'
@@ -127,6 +130,18 @@ export default function Preview({ data, onBack, onGoOutput }: Props) {
                           {person.name}{' '}
                           <span className="text-sage/70 font-normal">({person.relationship})</span>
                         </p>
+                      )}
+                      {entranceMeta && (
+                        <div className="flex flex-wrap gap-1.5 mb-1.5">
+                          {entranceMeta.audioTitle && (
+                            <span className="text-[10px] font-medium bg-lavender-pale text-lavender px-2 py-0.5 rounded-full">
+                              🎵 {entranceMeta.audioTitle}
+                            </span>
+                          )}
+                          <span className="text-[10px] font-bold bg-sage-pale text-sage px-2 py-0.5 rounded-full">
+                            ⏱ {entranceMeta.timingLabel}
+                          </span>
+                        </div>
                       )}
                       <p className="text-muted-text text-sm leading-relaxed">{script}</p>
                     </div>
@@ -161,8 +176,20 @@ export default function Preview({ data, onBack, onGoOutput }: Props) {
                         <span className="font-semibold text-charcoal text-sm">{item.title}</span>
                         <span className="text-muted-text text-xs tabular-nums">{item.duration}분</span>
                       </div>
+                      {entranceMeta && (
+                        <div className="flex flex-wrap gap-1 mb-1">
+                          {entranceMeta.audioTitle && (
+                            <span className="text-[9px] bg-lavender-pale text-lavender px-1.5 py-0.5 rounded">
+                              🎵 {entranceMeta.audioTitle}
+                            </span>
+                          )}
+                          <span className="text-[9px] bg-sage-pale text-sage px-1.5 py-0.5 rounded font-bold">
+                            {entranceMeta.timingLabel}
+                          </span>
+                        </div>
+                      )}
                       <p className="text-muted-text text-xs leading-relaxed mt-1">
-                        {getOrderItemScript(item, data.mood, data)}
+                        {getItemScriptForCueSheet(item, data)}
                       </p>
                     </div>
                   </div>

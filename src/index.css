@@ -46,5 +46,6 @@ input, textarea, select, button {
 
 @media print {
   .no-print { display: none !important; }
-  body { background: white; }
+  body { background: white !important; }
+  .print-document .hidden { display: none !important; }
 }
