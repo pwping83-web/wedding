@@ -1,3 +1,4 @@
+import MobileShell from './components/mobile/MobileShell'
 import { useState } from 'react'
 import { initialData } from './data'
 import type { AppData } from './data'
@@ -31,19 +32,15 @@ export default function App() {
   const props = { data, setData, onNext: goNext, onBack: goBack }
 
   return (
-    <div className="min-h-screen bg-bg font-sans">
-      {screen === 'landing' && (
-        <Landing {...props} onStart={() => setScreen('basic')} />
-      )}
+    <MobileShell>
+      {screen === 'landing' && <Landing {...props} onStart={() => setScreen('basic')} />}
       {screen === 'basic' && <BasicInfo {...props} />}
       {screen === 'entrance' && <EntranceSetup {...props} />}
       {screen === 'order' && <OrderEditor {...props} />}
       {screen === 'persons' && <PersonReg {...props} />}
       {screen === 'atmosphere' && <AtmosphereSelect {...props} />}
-      {screen === 'preview' && (
-        <Preview {...props} onGoOutput={() => setScreen('output')} />
-      )}
+      {screen === 'preview' && <Preview {...props} onGoOutput={() => setScreen('output')} />}
       {screen === 'output' && <FinalOutput {...props} />}
-    </div>
+    </MobileShell>
   )
 }

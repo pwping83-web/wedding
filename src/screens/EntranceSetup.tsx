@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
-import StepIndicator from '../components/StepIndicator'
+import ScreenLayout from '../components/mobile/ScreenLayout'
+import Btn from '../components/mobile/Btn'
+import { Card } from '../components/mobile/PageHeader'
 import type { AppData, Marker, SetData, Style } from '../data'
 import { WAVEFORM_HEIGHTS, getMarkerEntranceScript } from '../data'
 import { buildEntranceGeneratePayload, requestGeneratedScript } from '../lib/generateScript'
@@ -117,28 +119,17 @@ function Timeline({
   const tickMarks = [0, 0.25, 0.5, 0.75, 1]
 
   return (
-    <div className="bg-surface rounded-[13px] border border-border p-5">
-      <div className="flex items-center justify-between mb-4 gap-3">
-        <span className="font-semibold text-charcoal text-sm">{label}</span>
-        <div className="flex items-center gap-2">
-          {audio && (
-            <button
-              type="button"
-              onClick={onRemoveAudio}
-              className="px-2.5 py-1.5 rounded-[8px] text-xs text-muted-text hover:text-rose hover:bg-rose-pale transition-colors"
-            >
-              음원 제거
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="px-3 py-1.5 bg-muted-bg rounded-[8px] text-xs text-muted-text font-medium flex items-center gap-1.5 hover:bg-lavender-pale hover:text-lavender transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <span>🎵</span>
-            <span>{uploading ? '업로드 중...' : audio ? '음원 변경' : '음원 업로드'}</span>
-          </button>
+    <div className="bg-surface rounded-2xl border border-border p-4">
+      <div className="flex items-center justify-between mb-3 gap-2">
+        <span className="font-semibold text-charcoal text-[15px]">{label}</span>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="text-[13px] font-medium text-accent disabled:opacity-50"
+        >
+          {uploading ? '업로드…' : audio ? '변경' : '음원 업로드'}
+        </button>
           <input
             ref={fileInputRef}
             type="file"
@@ -146,24 +137,26 @@ function Timeline({
             className="hidden"
             onChange={handleFileChange}
           />
-        </div>
       </div>
 
       {audio && (
-        <div className="mb-3 px-3 py-2 bg-lavender-pale/60 rounded-[8px] border border-lavender/15">
-          <p className="text-xs text-lavender font-medium truncate mb-2">📁 {audio.fileName}</p>
-          <audio controls src={audio.url} className="w-full h-9" preload="metadata" />
+        <div className="mb-3">
+          <p className="text-[12px] text-muted-text truncate mb-2">{audio.fileName}</p>
+          <audio controls src={audio.url} className="w-full h-10" preload="metadata" />
+          <button type="button" onClick={onRemoveAudio} className="text-[12px] text-muted-text mt-2">
+            음원 제거
+          </button>
         </div>
       )}
 
-      {uploadError && <p className="text-xs text-rose mb-3">{uploadError}</p>}
+      {uploadError && <p className="text-[12px] text-danger mb-2">{uploadError}</p>}
 
-      <div className="h-12 bg-muted-bg rounded-[8px] mb-4 overflow-hidden flex items-end gap-px px-1">
-        {waveform.map((h, i) => (
+      <div className="h-10 bg-muted-bg rounded-lg mb-3 overflow-hidden flex items-end gap-px px-0.5">
+        {waveform.slice(0, 40).map((h, i) => (
           <div
             key={i}
-            className={`flex-1 rounded-t-sm ${audio ? 'bg-lavender/60' : 'bg-lavender/30'}`}
-            style={{ height: `${h}px` }}
+            className={`flex-1 rounded-t-sm ${audio ? 'bg-accent/50' : 'bg-accent/20'}`}
+            style={{ height: `${Math.min(h, 36)}px` }}
           />
         ))}
       </div>
@@ -177,7 +170,7 @@ function Timeline({
         <div
           ref={barRef}
           onClick={handleBarClick}
-          className="relative h-8 bg-lavender-pale rounded-full cursor-crosshair select-none border border-lavender/20"
+          className="relative h-10 bg-accent-soft rounded-full cursor-pointer select-none border border-border"
         >
           {[0.25, 0.5, 0.75].map((pct) => (
             <div
@@ -193,72 +186,37 @@ function Timeline({
               onMouseDown={handleMarkerDrag}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-5 h-5 bg-lavender rounded-full border-2 border-white shadow-md cursor-grab active:cursor-grabbing group-hover:scale-125 transition-transform" />
+              <div className="w-5 h-5 bg-accent rounded-full border-2 border-white shadow-sm" />
               <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-charcoal text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none tabular-nums">
                 {fmt(marker.time)}
               </div>
             </div>
           )}
         </div>
-        <p className="text-[10px] text-muted-text mt-1.5">
-          {marker
-            ? '타임라인을 클릭하거나 마커를 드래그해 입장 타이밍을 조정하세요'
-            : audio
-              ? '타임라인을 클릭해 입장 타이밍을 선택하세요 (1회만 설정)'
-              : '음원을 업로드한 뒤 입장 타이밍을 선택하세요'}
+        <p className="text-[11px] text-muted-text mt-1.5">
+          {marker ? `${marker.time}초 후 입장 · 탭/드래그로 조정` : '타임라인을 탭해 입장 시점 선택'}
         </p>
       </div>
 
       {marker && (
-        <div className="mt-4 p-4 bg-muted-bg rounded-[10px]">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-lavender font-bold text-xs tabular-nums">{fmt(marker.time)}</span>
-              <span className="text-xs text-muted-text">이 시점의 멘트 선택하기</span>
-            </div>
-            <button
-              onClick={onClear}
-              className="text-muted-text/50 hover:text-rose text-xs transition-colors"
-            >
-              타이밍 초기화
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[13px] font-semibold text-accent">{marker.time}초 후 입장</span>
+            <button type="button" onClick={onClear} className="text-[12px] text-muted-text">
+              초기화
             </button>
           </div>
-
-          <div className="bg-surface rounded-[10px] border border-border p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-semibold text-lavender uppercase tracking-wide">
-                사회자 멘트
-              </span>
-              <button
-                onClick={handleGenerate}
-                disabled={regenerating}
-                className="flex items-center gap-1 text-xs text-muted-text hover:text-lavender transition-colors disabled:opacity-50 px-2 py-1 rounded-[6px] hover:bg-lavender-pale group"
-              >
-                <span
-                  className={`text-sm transition-transform duration-400 ${
-                    regenerating ? 'animate-spin' : 'group-hover:rotate-180'
-                  }`}
-                >
-                  ↻
-                </span>
-                <span>{regenerating ? 'AI 생성 중' : 'AI 멘트'}</span>
-              </button>
-            </div>
-            <p
-              className={`text-sm leading-relaxed transition-opacity duration-300 ${
-                regenerating ? 'text-muted-text/40' : 'text-charcoal'
-              }`}
-            >
-              {scriptDisplay}
-            </p>
-          </div>
-
-          <p className="text-[10px] text-muted-text mt-2.5 flex items-center gap-1">
-            <span>→</span>
-            <span>
-              {fmt(marker.time)}에 위 멘트 후 {entranceType === 'groom' ? '신랑' : '신부'} 입장
-            </span>
+          <p className={`text-[14px] leading-relaxed mb-3 ${regenerating ? 'opacity-40' : ''}`}>
+            {scriptDisplay}
           </p>
+          <button
+            type="button"
+            onClick={handleGenerate}
+            disabled={regenerating}
+            className="text-[13px] font-medium text-accent"
+          >
+            {regenerating ? 'AI 생성 중…' : 'AI 멘트'}
+          </button>
         </div>
       )}
     </div>
@@ -351,18 +309,22 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
   }
 
   return (
-    <div className="min-h-screen bg-bg">
-      <StepIndicator currentStep={2} onBack={onBack} />
-
-      <div className="max-w-lg mx-auto px-4 py-8 pb-20">
-        <div className="mb-8">
-          <h1 className="font-display text-2xl font-bold text-charcoal mb-1">입장 연출 설정</h1>
-          <p className="text-muted-text text-sm">
-            입장 음원을 업로드하고, 타이밍과 멘트를 선택하세요
-          </p>
+    <ScreenLayout
+      step={2}
+      stepLabel="입장"
+      title="입장 연출"
+      subtitle="음원 업로드 후 입장 타이밍 선택"
+      onBack={onBack}
+      footer={
+        <div className="space-y-2">
+          <Btn onClick={onNext}>다음</Btn>
+          <Btn variant="ghost" onClick={onNext}>
+            건너뛰기
+          </Btn>
         </div>
-
-        <div className="space-y-5">
+      }
+    >
+      <div className="space-y-4">
           <Timeline
             label="💒 신랑 입장"
             entranceType="groom"
@@ -399,23 +361,7 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
             onGenerateScript={() => generateEntranceScript('bride')}
             onClear={() => clearEntrance('bride')}
           />
-        </div>
-
-        <div className="mt-8 space-y-3">
-          <button
-            onClick={onNext}
-            className="w-full py-4 bg-lavender text-white rounded-[13px] font-bold text-base hover:bg-lavender-light transition-all hover:shadow-md"
-          >
-            다음 단계 →
-          </button>
-          <button
-            onClick={onNext}
-            className="w-full py-2.5 text-muted-text text-sm hover:text-charcoal transition-colors"
-          >
-            이 단계 건너뛰기
-          </button>
-        </div>
       </div>
-    </div>
+    </ScreenLayout>
   )
 }
