@@ -3,7 +3,8 @@ import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, Marker, SetData, Style } from '../data'
-import { WAVEFORM_HEIGHTS, getMarkerEntranceScript } from '../data'
+import { WAVEFORM_HEIGHTS } from '../data'
+import { getEntranceDisplayScript } from '../lib/cueSheetUtils'
 import { buildEntranceGeneratePayload, requestGeneratedScript } from '../lib/generateScript'
 import { analyzeAudioFile } from '../lib/audioAnalysis'
 
@@ -278,17 +279,20 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
     const marker = data[key][0]
     if (!marker) return
 
-    const personName = type === 'groom' ? data.groomName : data.brideName
-    const currentScript = getMarkerEntranceScript(type, data.style, marker, personName)
+    const currentScript = getEntranceDisplayScript(type, data)
 
     try {
       const script = await requestGeneratedScript(
         buildEntranceGeneratePayload(data, type, currentScript),
       )
+      const orderTitle = type === 'groom' ? '신랑 입장' : '신부 입장'
       setData((prev) => ({
         ...prev,
         [key]: prev[key].map((m) =>
           m.id === marker.id ? { ...m, customScript: script } : m,
+        ),
+        orderItems: prev.orderItems.map((item) =>
+          item.title === orderTitle ? { ...item, customScript: script } : item,
         ),
       }))
     } catch {
@@ -332,11 +336,7 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
             style={data.style}
             audio={data.groomAudio}
             marker={groomMarker}
-            script={
-              groomMarker
-                ? getMarkerEntranceScript('groom', data.style, groomMarker, data.groomName)
-                : ''
-            }
+            script={groomMarker ? getEntranceDisplayScript('groom', data) : ''}
             onUpload={(file) => uploadAudio('groom', file)}
             onRemoveAudio={() => removeAudio('groom')}
             onSetTime={(t) => setEntranceTime('groom', t)}
@@ -350,11 +350,7 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
             style={data.style}
             audio={data.brideAudio}
             marker={brideMarker}
-            script={
-              brideMarker
-                ? getMarkerEntranceScript('bride', data.style, brideMarker, data.brideName)
-                : ''
-            }
+            script={brideMarker ? getEntranceDisplayScript('bride', data) : ''}
             onUpload={(file) => uploadAudio('bride', file)}
             onRemoveAudio={() => removeAudio('bride')}
             onSetTime={(t) => setEntranceTime('bride', t)}

@@ -1,11 +1,13 @@
 import type { AppData, OrderItem } from '../data'
 import {
-  getMarkerEntranceScript,
+  applyScriptVars,
+  buildScriptContext,
   getOrderItemScript,
   getPersonIntroScript,
   moodLabels,
   roleLabels,
 } from '../data'
+import { getTimedEntranceScript } from './timedEntranceScript'
 
 export type CueSheetVariant = 'mc' | 'couple'
 
@@ -27,13 +29,12 @@ export function getEntranceCueMeta(
 ): EntranceCueMeta | null {
   const audio = type === 'groom' ? data.groomAudio : data.brideAudio
   const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
-  const name = type === 'groom' ? data.groomName : data.brideName
   if (!marker) return null
 
   return {
     audioTitle: audio?.fileName ?? null,
     timingLabel: formatEntranceTiming(type, marker.time),
-    script: getMarkerEntranceScript(type, data.style, marker, name),
+    script: getEntranceDisplayScript(type, data),
     audioUrl: audio?.url ?? null,
   }
 }
@@ -44,14 +45,29 @@ export function entranceTypeForTitle(title: string): 'groom' | 'bride' | null {
   return null
 }
 
+export function getEntranceDisplayScript(
+  type: 'groom' | 'bride',
+  data: AppData,
+): string {
+  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
+  const title = type === 'groom' ? '신랑 입장' : '신부 입장'
+  const item = data.orderItems.find((orderItem) => orderItem.title === title)
+  const ctx = buildScriptContext(data)
+
+  if (marker?.customScript?.trim()) return applyScriptVars(marker.customScript, ctx)
+  if (item?.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
+  if (marker) return getTimedEntranceScript(type, data, marker.time)
+  return ''
+}
+
 export function getItemScriptForCueSheet(
   item: OrderItem,
   data: AppData,
 ): string {
   const entranceType = entranceTypeForTitle(item.title)
   if (entranceType) {
-    const meta = getEntranceCueMeta(data, entranceType)
-    if (meta) return meta.script
+    const script = getEntranceDisplayScript(entranceType, data)
+    if (script) return script
   }
   return getOrderItemScript(item, data.mood, data)
 }

@@ -29,6 +29,19 @@ export interface Person {
   customIntro?: string
 }
 
+export const FIXED_MC: Person = {
+  id: 'fixed-mc',
+  name: '박건',
+  role: 'mc',
+  relationship: '외부',
+  introVariant: 0,
+}
+
+export function withFixedMc(persons: Person[]): Person[] {
+  const others = persons.filter((person) => person.role !== 'mc')
+  return [FIXED_MC, ...others]
+}
+
 export interface EntranceAudio {
   fileName: string
   url: string
@@ -114,7 +127,8 @@ export function getOrderItemScript(
   mood: Mood,
   data: AppData,
 ): string {
-  if (item.customScript?.trim()) return item.customScript
+  const ctx = buildScriptContext(data)
+  if (item.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
   return getItemScript(item.title, mood, item.scriptVariant, data)
 }
 
@@ -128,8 +142,20 @@ export function getMarkerEntranceScript(
   style: Style,
   marker: Marker,
   name: string,
+  data?: AppData,
 ): string {
-  if (marker.customScript?.trim()) return marker.customScript
+  const ctx = data
+    ? buildScriptContext(data)
+    : {
+        groomName: type === 'groom' ? name : '신랑',
+        brideName: type === 'bride' ? name : '신부',
+        mcName: '사회자',
+        vocalistName: '축가자',
+        speakerName: '축사자',
+        ceremonyTime: '예식 시간',
+        venue: '예식장',
+      }
+  if (marker.customScript?.trim()) return applyScriptVars(marker.customScript, ctx)
   return getEntranceScript(type, style, marker.scriptVariant, name)
 }
 
@@ -248,7 +274,7 @@ export const initialData: AppData = {
   groomAudio: null,
   brideAudio: null,
   orderItems: defaultOrderItems,
-  persons: [],
+  persons: withFixedMc([]),
   mood: 'warm',
   email: '',
   coupleEmail: '',

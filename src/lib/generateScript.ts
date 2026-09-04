@@ -10,6 +10,7 @@ type GeneratePayload = {
   title?: string
   relationship?: string
   entranceType?: 'groom' | 'bride'
+  entranceDelaySeconds?: number
   groomName: string
   brideName: string
   mcName?: string
@@ -92,11 +93,16 @@ export function buildEntranceGeneratePayload(
   currentScript?: string,
 ): GeneratePayload {
   const ctx = buildScriptContext(data)
+  const marker =
+    entranceType === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
+  const entranceDelaySeconds = Math.max(5, Math.round(marker?.time ?? 15))
+
   return {
     kind: 'entrance',
     mood: data.mood,
     moodLabel: moodLabels[data.mood],
     entranceType,
+    entranceDelaySeconds,
     groomName: ctx.groomName,
     brideName: ctx.brideName,
     mcName: ctx.mcName,

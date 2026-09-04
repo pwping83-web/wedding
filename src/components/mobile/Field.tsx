@@ -6,7 +6,22 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   required?: boolean
 }
 
-export default function Field({ label, error, required, className = '', ...props }: Props) {
+function closeNativePicker(input: HTMLInputElement) {
+  requestAnimationFrame(() => input.blur())
+}
+
+export default function Field({
+  label,
+  error,
+  required,
+  className = '',
+  type,
+  onChange,
+  onInput,
+  ...props
+}: Props) {
+  const autoClose = type === 'time' || type === 'date'
+
   return (
     <div className="space-y-1.5">
       {label && (
@@ -16,7 +31,16 @@ export default function Field({ label, error, required, className = '', ...props
         </label>
       )}
       <input
+        type={type}
         className={`w-full h-12 px-4 bg-surface border rounded-xl text-[15px] text-charcoal outline-none placeholder:text-muted-text/50 focus:border-accent focus:ring-2 focus:ring-accent/15 ${error ? 'border-danger' : 'border-border'} ${className}`}
+        onChange={(e) => {
+          onChange?.(e)
+          if (autoClose) closeNativePicker(e.currentTarget)
+        }}
+        onInput={(e) => {
+          onInput?.(e)
+          if (autoClose) closeNativePicker(e.currentTarget)
+        }}
         {...props}
       />
       {error && <p className="text-[12px] text-danger">{error}</p>}

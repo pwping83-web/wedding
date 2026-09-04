@@ -57,6 +57,9 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
         setData((prev) => ({
           ...prev,
           [key]: prev[key].map((m) => ({ ...m, customScript: script })),
+          orderItems: prev.orderItems.map((i) =>
+            i.id === item.id ? { ...i, customScript: script } : i,
+          ),
         }))
       } else {
         const script = await requestGeneratedScript(
@@ -107,7 +110,12 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
       title="식순 미리보기"
       subtitle={`${data.orderItems.length}단계 · ${total}분`}
       onBack={onBack}
-      footer={<Btn onClick={onGoOutput}>최종 큐시트</Btn>}
+      footer={
+        <div className="space-y-2">
+          <p className="text-center text-[13px] font-semibold text-charcoal">최종 큐시트 완성</p>
+          <Btn onClick={onGoOutput}>최종 큐시트 완성</Btn>
+        </div>
+      }
     >
       {generateError && (
         <p className="text-[12px] text-danger bg-danger-soft px-3 py-2 rounded-xl mb-3">
