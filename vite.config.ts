@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 import siteConfiguration from './.figma/make/site.json'
+import { emailDevApiPlugin } from './server/emailDevApiPlugin'
 import { groqDevApiPlugin } from './server/groqDevApiPlugin'
 
 // Vite config — https://vitejs.dev/config/
@@ -30,6 +31,7 @@ export default defineConfig(({ mode }) => {
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
       groqDevApiPlugin(),
+      emailDevApiPlugin(),
     ],
     resolve: {
       alias: {
