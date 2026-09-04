@@ -1,5 +1,9 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { getItemScript } from './cueScripts'
+import {
+  applyScriptVars,
+  buildScriptContext,
+  getItemScript,
+} from './cueScripts'
 
 export type Style = 'classic' | 'casual' | 'modern' | 'fun'
 export type Mood = 'bright' | 'solemn' | 'formal' | 'warm'

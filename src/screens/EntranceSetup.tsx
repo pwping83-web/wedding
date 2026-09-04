@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
-import type { AppData, Marker, SetData, Style } from '../data'
+import type { AppData, EntranceAudio, Marker, SetData, Style } from '../data'
 import { WAVEFORM_HEIGHTS } from '../data'
 import { getEntranceDisplayScript } from '../lib/cueSheetUtils'
 import { buildEntranceGeneratePayload, requestGeneratedScript } from '../lib/generateScript'
@@ -57,32 +57,61 @@ function Timeline({
   const [regenerating, setRegenerating] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [dragging, setDragging] = useState(false)
 
   const duration = audio?.duration ?? DEFAULT_DURATION
   const waveform = audio?.waveform ?? WAVEFORM_HEIGHTS
+  const markerPct = marker ? (marker.time / duration) * 100 : 0
 
-  const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = barRef.current!.getBoundingClientRect()
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+  const setTimeFromClientX = (clientX: number) => {
+    if (!barRef.current) return
+    const rect = barRef.current.getBoundingClientRect()
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
     onSetTime(Math.round(pct * duration))
   }
 
+  const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    setTimeFromClientX(e.clientX)
+  }
+
+  const startDrag = (clientX: number) => {
+    if (!marker) {
+      setTimeFromClientX(clientX)
+    }
+    setDragging(true)
+
+    const moveHandler = (x: number) => setTimeFromClientX(x)
+    const mouseMove = (me: MouseEvent) => moveHandler(me.clientX)
+    const touchMove = (te: TouchEvent) => {
+      if (te.touches[0]) moveHandler(te.touches[0].clientX)
+    }
+    const endHandler = () => {
+      setDragging(false)
+      window.removeEventListener('mousemove', mouseMove)
+      window.removeEventListener('mouseup', endHandler)
+      window.removeEventListener('touchmove', touchMove)
+      window.removeEventListener('touchend', endHandler)
+    }
+
+    window.addEventListener('mousemove', mouseMove)
+    window.addEventListener('mouseup', endHandler)
+    window.addEventListener('touchmove', touchMove, { passive: true })
+    window.addEventListener('touchend', endHandler)
+  }
+
   const handleMarkerDrag = (e: React.MouseEvent) => {
-    if (!marker) return
     e.stopPropagation()
     e.preventDefault()
-    const moveHandler = (me: MouseEvent) => {
-      if (!barRef.current) return
-      const rect = barRef.current.getBoundingClientRect()
-      const pct = Math.max(0, Math.min(1, (me.clientX - rect.left) / rect.width))
-      onSetTime(Math.round(pct * duration))
-    }
-    const upHandler = () => {
-      window.removeEventListener('mousemove', moveHandler)
-      window.removeEventListener('mouseup', upHandler)
-    }
-    window.addEventListener('mousemove', moveHandler)
-    window.addEventListener('mouseup', upHandler)
+    startDrag(e.clientX)
+  }
+
+  const handleMarkerTouch = (e: React.TouchEvent) => {
+    e.stopPropagation()
+    startDrag(e.touches[0]?.clientX ?? 0)
+  }
+
+  const handleTrackTouch = (e: React.TouchEvent) => {
+    if (e.touches[0]) setTimeFromClientX(e.touches[0].clientX)
   }
 
   const handleGenerate = async () => {
@@ -162,40 +191,108 @@ function Timeline({
         ))}
       </div>
 
-      <div className="mb-1">
-        <div className="flex justify-between text-[10px] text-muted-text mb-1 tabular-nums">
+      <div className="entrance-drag-zone rounded-2xl p-3 mb-1">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-1.5 entrance-drag-hint">
+            <span className="text-base leading-none" aria-hidden>
+              👆
+            </span>
+            <span className="text-[13px] font-semibold text-accent">
+              {marker ? '보라색 핸들을 좌우로 드래그' : '아래 바를 탭해 입장 시점 선택'}
+            </span>
+          </div>
+          {marker && (
+            <span className="shrink-0 rounded-full bg-accent px-2.5 py-1 text-[12px] font-bold text-white tabular-nums">
+              {marker.time}초
+            </span>
+          )}
+        </div>
+
+        <div className="flex justify-between text-[10px] text-muted-text mb-1.5 tabular-nums px-0.5">
           {tickMarks.map((pct) => (
             <span key={pct}>{fmt(Math.round(pct * duration))}</span>
           ))}
         </div>
+
         <div
           ref={barRef}
           onClick={handleBarClick}
-          className="relative h-10 bg-accent-soft rounded-full cursor-pointer select-none border border-border"
+          onTouchStart={handleTrackTouch}
+          className={`relative h-14 rounded-full cursor-pointer select-none border-2 border-accent/30 overflow-visible entrance-drag-track ${!marker ? 'entrance-drag-track--idle' : ''}`}
+          role="slider"
+          aria-label="입장 타이밍"
+          aria-valuemin={0}
+          aria-valuemax={duration}
+          aria-valuenow={marker?.time ?? 0}
         >
+          {marker && (
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-accent/25 pointer-events-none transition-[width] duration-75"
+              style={{ width: `${markerPct}%` }}
+            />
+          )}
+
           {[0.25, 0.5, 0.75].map((pct) => (
             <div
               key={pct}
-              className="absolute top-1/2 -translate-y-1/2 w-px h-3 bg-lavender/25"
+              className="absolute top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent/20 pointer-events-none"
               style={{ left: `${pct * 100}%` }}
             />
           ))}
-          {marker && (
-            <div
-              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group z-10"
-              style={{ left: `${(marker.time / duration) * 100}%` }}
-              onMouseDown={handleMarkerDrag}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="w-5 h-5 bg-accent rounded-full border-2 border-white shadow-sm" />
-              <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-charcoal text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none tabular-nums">
-                {fmt(marker.time)}
-              </div>
+
+          {!marker && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="flex items-center gap-1 text-[12px] font-medium text-accent/80">
+                <span className="entrance-drag-arrow inline-block">→</span>
+                탭 또는 드래그
+                <span className="entrance-drag-arrow inline-block scale-x-[-1]">→</span>
+              </span>
             </div>
           )}
+
+          {marker && (
+            <>
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-accent/50 pointer-events-none -translate-x-1/2"
+                style={{ left: `${markerPct}%` }}
+              />
+              <div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 touch-none"
+                style={{ left: `${markerPct}%` }}
+                onMouseDown={handleMarkerDrag}
+                onTouchStart={handleMarkerTouch}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div
+                  className={`relative flex items-center justify-center ${dragging ? 'scale-110' : ''} transition-transform`}
+                >
+                  <div
+                    className={`absolute w-10 h-10 rounded-full border-2 border-dashed border-accent/40 entrance-drag-handle-ring pointer-events-none ${dragging ? 'opacity-0' : ''}`}
+                  />
+                  <div
+                    className={`relative w-8 h-8 bg-accent rounded-full border-[3px] border-white shadow-md entrance-drag-handle ${dragging ? 'entrance-drag-handle--dragging' : ''}`}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex gap-0.5">
+                        <span className="w-0.5 h-3 bg-white/90 rounded-full" />
+                        <span className="w-0.5 h-3 bg-white/90 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-accent text-white text-[11px] font-bold px-2 py-1 rounded-lg whitespace-nowrap tabular-nums shadow-sm">
+                  {marker.time}초 후 입장
+                  <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-accent rotate-45" />
+                </div>
+              </div>
+            </>
+          )}
         </div>
-        <p className="text-[11px] text-muted-text mt-1.5">
-          {marker ? `${marker.time}초 후 입장 · 탭/드래그로 조정` : '타임라인을 탭해 입장 시점 선택'}
+
+        <p className="text-[12px] text-accent/90 font-medium mt-2.5 text-center">
+          {marker
+            ? `음악 시작 후 ${marker.time}초에 ${entranceType === 'groom' ? '신랑' : '신부'} 입장 · 핸들을 움직여 조정`
+            : '음악 타임라인에서 입장 시점을 선택하세요'}
         </p>
       </div>
 

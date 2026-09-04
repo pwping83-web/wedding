@@ -204,3 +204,75 @@ input, textarea, select, button {
 .mobile-shell--landing {
   background: transparent;
 }
+
+/* 입장 타이밍 드래그 UI */
+@keyframes entrance-handle-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(123, 111, 168, 0.55),
+      0 4px 14px rgba(123, 111, 168, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px rgba(123, 111, 168, 0),
+      0 4px 18px rgba(123, 111, 168, 0.45);
+  }
+}
+
+@keyframes entrance-ring-spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes entrance-hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes entrance-arrow-slide {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(6px); opacity: 0.7; }
+}
+
+@keyframes entrance-track-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.entrance-drag-zone {
+  border: 2px solid rgba(123, 111, 168, 0.35);
+  background: linear-gradient(180deg, #f8f6fc 0%, #eeebf5 100%);
+  box-shadow:
+    0 0 0 4px rgba(123, 111, 168, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.entrance-drag-track {
+  background: linear-gradient(90deg, #ddd8ea 0%, #e8e4f0 50%, #ddd8ea 100%);
+  background-size: 200% 100%;
+}
+
+.entrance-drag-track--idle {
+  animation: entrance-track-shimmer 2.5s ease-in-out infinite;
+}
+
+.entrance-drag-handle {
+  animation: entrance-handle-pulse 1.8s ease-in-out infinite;
+}
+
+.entrance-drag-handle--dragging {
+  animation: none;
+  box-shadow: 0 4px 18px rgba(123, 111, 168, 0.55);
+}
+
+.entrance-drag-handle-ring {
+  animation: entrance-ring-spin 3s linear infinite;
+}
+
+.entrance-drag-hint {
+  animation: entrance-hint-bounce 2s ease-in-out infinite;
+}
+
+.entrance-drag-arrow {
+  animation: entrance-arrow-slide 1.2s ease-in-out infinite;
+}
