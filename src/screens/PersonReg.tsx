@@ -158,7 +158,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
                 disabled={generating === person.id}
                 className="text-[12px] text-accent font-medium"
               >
-                {generating === person.id ? 'AI 생성 중…' : 'AI 멘트'}
+                {generating === person.id ? 'AI 생성 중…' : 'AI 멘트 생성'}
               </button>
             </Card>
           ))}

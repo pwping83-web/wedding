@@ -215,7 +215,7 @@ function Timeline({
             disabled={regenerating}
             className="text-[13px] font-medium text-accent"
           >
-            {regenerating ? 'AI 생성 중…' : 'AI 멘트'}
+            {regenerating ? 'AI 생성 중…' : 'AI 멘트 생성'}
           </button>
         </div>
       )}

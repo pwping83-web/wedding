@@ -188,7 +188,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
                   disabled={isGenerating}
                   className="flex-1 h-9 rounded-lg text-[13px] font-medium bg-accent-soft text-accent border border-accent/20 disabled:opacity-50"
                 >
-                  {isGenerating ? 'AI 생성 중…' : 'AI 멘트'}
+                  {isGenerating ? 'AI 생성 중…' : 'AI 멘트 재생성'}
                 </button>
               </div>
             </Card>
