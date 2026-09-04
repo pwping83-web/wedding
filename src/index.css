@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Nunito:wght@300;400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-bg: #F5F2EE;
+  --color-surface: #FFFFFF;
+  --color-lavender: #8B7FC7;
+  --color-lavender-light: #B5ADDF;
+  --color-lavender-pale: #F0EEF9;
+  --color-lavender-muted: #EAE7F5;
+  --color-sage: #7E9478;
+  --color-sage-light: #A5B8A0;
+  --color-sage-pale: #EEF3ED;
+  --color-charcoal: #2C2825;
+  --color-muted-text: #7A746E;
+  --color-border: #E2DDD6;
+  --color-muted-bg: #F0EDE7;
+  --color-rose: #C4918A;
+  --color-rose-pale: #F9EFEE;
+
+  --font-sans: 'Nunito', system-ui, sans-serif;
+  --font-display: 'Lora', Georgia, serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #F5F2EE;
+  font-family: 'Nunito', system-ui, sans-serif;
+  color: #2C2825;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+}
+
+input, textarea, select, button {
+  font-family: 'Nunito', system-ui, sans-serif;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D4CFC9; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #B5ADDF; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
