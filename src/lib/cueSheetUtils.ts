@@ -23,6 +23,14 @@ export function formatEntranceTiming(type: 'groom' | 'bride', seconds: number): 
   return `${role} ${seconds}초 후 입장`
 }
 
+export function getEntranceAudioTitle(
+  audio: { fileName: string; trackTitle?: string } | null | undefined,
+): string {
+  if (!audio) return '없음'
+  const title = audio.trackTitle?.trim() || audio.fileName.trim()
+  return title || '없음'
+}
+
 export function getEntranceCueMeta(
   data: AppData,
   type: 'groom' | 'bride',
@@ -32,7 +40,7 @@ export function getEntranceCueMeta(
   if (!marker) return null
 
   return {
-    audioTitle: audio?.fileName ?? null,
+    audioTitle: getEntranceAudioTitle(audio),
     timingLabel: formatEntranceTiming(type, marker.time),
     script: getEntranceDisplayScript(type, data),
     audioUrl: audio?.url ?? null,

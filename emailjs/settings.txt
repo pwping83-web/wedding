@@ -11,6 +11,8 @@ EmailJS 템플릿 설정 (template_8dglgra)
   template.html 파일 내용 전체를 복사해서 붙여넣기
   (HTML 모드 ON)
 
+  ※ 음원 MP3 첨부 불필요 — groom_audio / bride_audio 에 곡 제목만 표시
+
 [Preview 테스트용 샘플]
   groom_name     : 홍길동
   bride_name     : 김미영
@@ -18,10 +20,10 @@ EmailJS 템플릿 설정 (template_8dglgra)
   ceremony_time  : 12:20
   venue          : 라비 에벨
   mood_label     : 무게 있고 격식 있는
-  groom_audio    : 신랑입장.mp3
-  bride_audio    : 없음
-  groom_timing   : 신랑 48초 후 입장
-  bride_timing   : 미설정
+  groom_audio    : Canon in D (Pachelbel)
+  bride_audio    : A Thousand Years
+  groom_timing   : 신랑 15초 후 입장
+  bride_timing   : 신부 17초 후 입장
   mc_cue_sheet   : (큐시트 텍스트)
   to_email       : tseizou@naver.com
   subject        : [웨딩 큐시트] 홍길동 · 김미영

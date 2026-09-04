@@ -1,7 +1,7 @@
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
 import { buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
-import { buildCueSheetPlainText } from './cueSheetUtils'
+import { buildCueSheetPlainText, getEntranceAudioTitle } from './cueSheetUtils'
 
 export const MC_EMAIL = 'tseizou@naver.com'
 
@@ -23,8 +23,8 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
   const cueSheet = buildCueSheetPlainText(data, 'mc')
   const subject = buildCueSheetEmailSubject(data)
 
-  const groomAudio = data.groomAudio?.fileName ?? '없음'
-  const brideAudio = data.brideAudio?.fileName ?? '없음'
+  const groomAudio = getEntranceAudioTitle(data.groomAudio)
+  const brideAudio = getEntranceAudioTitle(data.brideAudio)
   const groomTiming = data.groomMarkers[0]
     ? `신랑 ${data.groomMarkers[0].time}초 후 입장`
     : '미설정'

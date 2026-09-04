@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
-import { Card } from '../components/mobile/PageHeader'
+import Field from '../components/mobile/Field'
 import type { AppData, EntranceAudio, Marker, SetData, Style } from '../data'
 import { WAVEFORM_HEIGHTS } from '../data'
 import { getEntranceDisplayScript } from '../lib/cueSheetUtils'
@@ -33,6 +33,7 @@ interface TimelineProps {
   script: string
   onUpload: (file: File) => Promise<void>
   onRemoveAudio: () => void
+  onSetTrackTitle: (title: string) => void
   onSetTime: (time: number) => void
   onGenerateScript: () => Promise<void>
   onClear: () => void
@@ -48,6 +49,7 @@ function Timeline({
   script,
   onUpload,
   onRemoveAudio,
+  onSetTrackTitle,
   onSetTime,
   onGenerateScript,
   onClear,
@@ -170,10 +172,20 @@ function Timeline({
       </div>
 
       {audio && (
-        <div className="mb-3">
-          <p className="text-[12px] text-muted-text truncate mb-2">{audio.fileName}</p>
+        <div className="mb-3 space-y-3">
+          <p className="text-[12px] text-muted-text truncate">파일: {audio.fileName}</p>
           <audio controls src={audio.url} className="w-full h-10" preload="metadata" />
-          <button type="button" onClick={onRemoveAudio} className="text-[12px] text-muted-text mt-2">
+          <Field
+            label="음원 제목 (이메일·큐시트에 표시)"
+            placeholder="유튜브에서 검색할 곡 제목"
+            value={audio.trackTitle ?? audio.fileName}
+            onChange={(e) => onSetTrackTitle(e.target.value)}
+          />
+          <p className="text-[11px] text-muted-text leading-relaxed">
+            파일명과 실제 곡 제목이 다르면, 유튜브에서 찾을 수 있도록 곡 제목을 수기로 입력해
+            주세요.
+          </p>
+          <button type="button" onClick={onRemoveAudio} className="text-[12px] text-muted-text">
             음원 제거
           </button>
         </div>
@@ -356,8 +368,20 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
 
       return {
         ...prev,
-        [audioKey]: analyzed,
+        [audioKey]: { ...analyzed, trackTitle: file.name },
         [markerKey]: nextMarker,
+      }
+    })
+  }
+
+  const setTrackTitle = (type: 'groom' | 'bride', title: string) => {
+    const audioKey = type === 'groom' ? 'groomAudio' : 'brideAudio'
+    setData((prev) => {
+      const audio = prev[audioKey]
+      if (!audio) return prev
+      return {
+        ...prev,
+        [audioKey]: { ...audio, trackTitle: title },
       }
     })
   }
@@ -436,6 +460,7 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
             script={groomMarker ? getEntranceDisplayScript('groom', data) : ''}
             onUpload={(file) => uploadAudio('groom', file)}
             onRemoveAudio={() => removeAudio('groom')}
+            onSetTrackTitle={(title) => setTrackTitle('groom', title)}
             onSetTime={(t) => setEntranceTime('groom', t)}
             onGenerateScript={() => generateEntranceScript('groom')}
             onClear={() => clearEntrance('groom')}
@@ -450,6 +475,7 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
             script={brideMarker ? getEntranceDisplayScript('bride', data) : ''}
             onUpload={(file) => uploadAudio('bride', file)}
             onRemoveAudio={() => removeAudio('bride')}
+            onSetTrackTitle={(title) => setTrackTitle('bride', title)}
             onSetTime={(t) => setEntranceTime('bride', t)}
             onGenerateScript={() => generateEntranceScript('bride')}
             onClear={() => clearEntrance('bride')}

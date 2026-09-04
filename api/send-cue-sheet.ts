@@ -1,5 +1,5 @@
 export const config = {
-  runtime: 'edge',
+  maxDuration: 60,
 }
 
 import { getEmailConfig, sendCueSheetEmail, type SendCueSheetPayload } from '../server/sendCueSheetEmail'

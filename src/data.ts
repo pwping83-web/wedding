@@ -48,6 +48,8 @@ export function withFixedMc(persons: Person[]): Person[] {
 
 export interface EntranceAudio {
   fileName: string
+  /** 유튜브 검색용 곡 제목 (파일명과 다를 때 수기 입력) */
+  trackTitle?: string
   url: string
   duration: number
   waveform: number[]
