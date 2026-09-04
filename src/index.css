@@ -24,6 +24,10 @@
   --color-sage-pale: #EAF3ED;
   --color-rose: #B8847E;
   --color-rose-pale: #FAEEEE;
+  --color-rose-gold: #C9A87C;
+  --color-blush: #F5DDD8;
+  --color-blush-deep: #E8B4B0;
+  --color-champagne: #FFF5EE;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -87,89 +91,116 @@ input, textarea, select, button {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(238, 235, 245, 0.95) 0%, transparent 68%),
-    radial-gradient(ellipse 55% 45% at 100% 88%, rgba(250, 238, 238, 0.55) 0%, transparent 62%),
-    radial-gradient(ellipse 50% 40% at 0% 72%, rgba(234, 243, 237, 0.45) 0%, transparent 58%),
-    linear-gradient(180deg, #FBF9F6 0%, #F7F2ED 48%, #FAF6F2 100%);
+    radial-gradient(circle at 15% 20%, rgba(232, 180, 176, 0.45) 0%, transparent 42%),
+    radial-gradient(circle at 85% 15%, rgba(201, 168, 124, 0.28) 0%, transparent 38%),
+    radial-gradient(circle at 80% 85%, rgba(232, 180, 176, 0.35) 0%, transparent 40%),
+    radial-gradient(circle at 10% 80%, rgba(184, 201, 168, 0.25) 0%, transparent 36%),
+    linear-gradient(165deg, #FFF0EA 0%, #FFF7F2 35%, #FDEBE4 70%, #F8E4DC 100%);
 }
 
-.landing-bg::before {
-  content: '';
+.landing-bokeh {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle at 20% 18%, rgba(184, 132, 126, 0.08) 0 1px, transparent 1px),
-    radial-gradient(circle at 78% 28%, rgba(123, 111, 168, 0.07) 0 1px, transparent 1px),
-    radial-gradient(circle at 62% 74%, rgba(184, 132, 126, 0.06) 0 1px, transparent 1px),
-    radial-gradient(circle at 32% 82%, rgba(123, 111, 168, 0.05) 0 1px, transparent 1px);
-  background-size: 100% 100%;
   pointer-events: none;
 }
 
-.landing-rings {
+.landing-bokeh span {
   position: absolute;
-  top: 6.5rem;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+.landing-bokeh span:nth-child(1) {
+  width: 9rem;
+  height: 9rem;
+  top: 18%;
+  left: -2rem;
+  background: rgba(232, 180, 176, 0.35);
+}
+
+.landing-bokeh span:nth-child(2) {
+  width: 7rem;
+  height: 7rem;
+  top: 42%;
+  right: -1.5rem;
+  background: rgba(201, 168, 124, 0.28);
+}
+
+.landing-bokeh span:nth-child(3) {
+  width: 10rem;
+  height: 10rem;
+  bottom: 12%;
   left: 50%;
   transform: translateX(-50%);
-  width: 5.5rem;
-  height: 2.75rem;
-  opacity: 0.14;
-  pointer-events: none;
+  background: rgba(245, 221, 216, 0.5);
 }
 
-.landing-rings span {
+.landing-floral-top {
   position: absolute;
   top: 0;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1.5px solid var(--color-rose);
-  border-radius: 50%;
-}
-
-.landing-rings span:first-child {
   left: 0;
-}
-
-.landing-rings span:last-child {
   right: 0;
-}
-
-.landing-flourish {
-  position: absolute;
-  bottom: 7.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 9rem;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(184, 132, 126, 0.22) 18%,
-    rgba(123, 111, 168, 0.28) 50%,
-    rgba(184, 132, 126, 0.22) 82%,
-    transparent 100%
-  );
+  width: 100%;
+  height: auto;
   pointer-events: none;
 }
 
-.landing-flourish::before,
-.landing-flourish::after {
-  content: '✦';
+.landing-floral-corner {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.55rem;
-  color: rgba(184, 132, 126, 0.35);
+  bottom: 5rem;
+  left: -0.5rem;
+  width: 7rem;
+  height: 7rem;
+  pointer-events: none;
 }
 
-.landing-flourish::before {
-  left: 0.15rem;
+.landing-floral-corner--flip {
+  left: auto;
+  right: -0.5rem;
+  transform: scaleX(-1);
 }
 
-.landing-flourish::after {
-  right: 0.15rem;
+.landing-rings-icon {
+  width: 4.5rem;
+  height: 2.25rem;
+  margin: 0 auto 1rem;
+}
+
+.text-rose-gold {
+  color: var(--color-rose-gold);
+}
+
+.landing-card {
+  padding: 1.25rem 1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(201, 168, 124, 0.25);
+  box-shadow:
+    0 4px 24px rgba(212, 146, 140, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  backdrop-filter: blur(8px);
+}
+
+.landing-check {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #F5DDD8 0%, #FFF5EE 100%);
+  border: 1px solid rgba(201, 168, 124, 0.35);
+  color: #B8706A;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .landing-content {
   position: relative;
   z-index: 1;
+}
+
+.mobile-shell--landing {
+  background: transparent;
 }

@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react'
 
-export default function MobileShell({ children }: { children: ReactNode }) {
-  return <div className="mobile-shell">{children}</div>
+export default function MobileShell({
+  children,
+  className = '',
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return <div className={`mobile-shell ${className}`.trim()}>{children}</div>
 }

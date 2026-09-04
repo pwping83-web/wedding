@@ -32,7 +32,7 @@ export default function App() {
   const props = { data, setData, onNext: goNext, onBack: goBack }
 
   return (
-    <MobileShell>
+    <MobileShell className={screen === 'landing' ? 'mobile-shell--landing' : ''}>
       {screen === 'landing' && <Landing {...props} onStart={() => setScreen('basic')} />}
       {screen === 'basic' && <BasicInfo {...props} />}
       {screen === 'entrance' && <EntranceSetup {...props} />}
