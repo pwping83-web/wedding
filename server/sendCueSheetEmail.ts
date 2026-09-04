@@ -15,11 +15,56 @@ export type SendCueSheetPayload = {
   venue: string
   moodLabel: string
   cueSheet: string
-  cueSheetHtml: string
   groomAudio: string
   brideAudio: string
   groomTiming: string
   brideTiming: string
+}
+
+const EMAILJS_MAX_PARAMS_BYTES = 50 * 1024
+const PARAMS_HEADROOM_BYTES = 4 * 1024
+
+function byteLength(text: string): number {
+  return new TextEncoder().encode(text).length
+}
+
+function trimCueSheetForEmail(text: string, maxBytes: number): string {
+  if (byteLength(text) <= maxBytes) return text
+
+  let trimmed = text
+  const suffix = '\n\n...(큐시트가 길어 이메일 본문은 일부만 포함됩니다. 인쇄본을 참고해 주세요.)'
+
+  while (trimmed.length > 0 && byteLength(trimmed + suffix) > maxBytes) {
+    trimmed = trimmed.slice(0, Math.floor(trimmed.length * 0.92))
+  }
+
+  return trimmed.trimEnd() + suffix
+}
+
+function buildTemplateParams(payload: SendCueSheetPayload): Record<string, string> {
+  const otherFields: Record<string, string> = {
+    to_email: payload.mcEmail,
+    subject: payload.subject,
+    groom_name: payload.groomName,
+    bride_name: payload.brideName,
+    ceremony_date: payload.ceremonyDate,
+    ceremony_time: payload.ceremonyTime,
+    venue: payload.venue,
+    mood_label: payload.moodLabel,
+    groom_audio: payload.groomAudio,
+    bride_audio: payload.brideAudio,
+    groom_timing: payload.groomTiming,
+    bride_timing: payload.brideTiming,
+  }
+
+  const otherBytes = byteLength(JSON.stringify(otherFields))
+  const cueSheetBudget = EMAILJS_MAX_PARAMS_BYTES - PARAMS_HEADROOM_BYTES - otherBytes
+  const mcCueSheet = trimCueSheetForEmail(payload.cueSheet, Math.max(8 * 1024, cueSheetBudget))
+
+  return {
+    ...otherFields,
+    mc_cue_sheet: mcCueSheet,
+  }
 }
 
 export function getEmailConfig(env: Record<string, string | undefined>): EmailConfig {
@@ -49,6 +94,12 @@ export async function sendCueSheetEmail(
   config: EmailConfig,
   payload: SendCueSheetPayload,
 ): Promise<void> {
+  const templateParams = buildTemplateParams(payload)
+
+  if (byteLength(JSON.stringify(templateParams)) > EMAILJS_MAX_PARAMS_BYTES) {
+    throw new Error('큐시트 내용이 너무 깁니다. 식순을 줄이거나 인쇄 기능을 이용해 주세요.')
+  }
+
   const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -58,28 +109,7 @@ export async function sendCueSheetEmail(
       accessToken: config.privateKey,
       service_id: config.serviceId,
       template_id: config.templateId,
-      template_params: {
-        to_email: payload.mcEmail,
-        mc_email: payload.mcEmail,
-        subject: payload.subject,
-        groom_name: payload.groomName,
-        bride_name: payload.brideName,
-        ceremony_date: payload.ceremonyDate,
-        ceremony_time: payload.ceremonyTime,
-        venue: payload.venue,
-        mood_label: payload.moodLabel,
-        mc_cue_sheet: payload.cueSheet,
-        cue_sheet_html: payload.cueSheetHtml,
-        html_content: payload.cueSheetHtml,
-        groom_audio: payload.groomAudio,
-        bride_audio: payload.brideAudio,
-        groom_timing: payload.groomTiming,
-        bride_timing: payload.brideTiming,
-        message: payload.cueSheet,
-        html_message: payload.cueSheetHtml,
-        from_name: '웨딩 큐시트',
-        reply_to: payload.mcEmail,
-      },
+      template_params: templateParams,
     }),
   })
 
