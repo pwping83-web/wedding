@@ -1,7 +1,7 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import StepIndicator from '../components/StepIndicator'
-import type { AppData, Marker, SetData } from '../data'
-import { WAVEFORM_HEIGHTS } from '../data'
+import type { AppData, EntranceAudio, Marker, SetData, Style } from '../data'
+import { WAVEFORM_HEIGHTS, getEntranceScript } from '../data'
 
 interface Props {
   data: AppData
@@ -10,7 +10,40 @@ interface Props {
   onBack: () => void
 }
 
-const DURATION = 120 // seconds
+const DEFAULT_DURATION = 120
+
+async function analyzeAudioFile(file: File): Promise<EntranceAudio> {
+  const url = URL.createObjectURL(file)
+  const arrayBuffer = await file.arrayBuffer()
+  const audioContext = new AudioContext()
+
+  try {
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+    const channelData = audioBuffer.getChannelData(0)
+    const barCount = WAVEFORM_HEIGHTS.length
+    const blockSize = Math.max(1, Math.floor(channelData.length / barCount))
+    const waveform: number[] = []
+
+    for (let i = 0; i < barCount; i++) {
+      let peak = 0
+      const start = i * blockSize
+      const end = Math.min(start + blockSize, channelData.length)
+      for (let j = start; j < end; j++) {
+        peak = Math.max(peak, Math.abs(channelData[j]))
+      }
+      waveform.push(Math.max(4, Math.round(peak * 140)))
+    }
+
+    return {
+      fileName: file.name,
+      url,
+      duration: Math.max(1, Math.round(audioBuffer.duration)),
+      waveform,
+    }
+  } finally {
+    await audioContext.close()
+  }
+}
 
 function fmt(seconds: number) {
   const m = Math.floor(seconds / 60)
@@ -20,30 +53,55 @@ function fmt(seconds: number) {
 
 interface TimelineProps {
   label: string
-  markers: Marker[]
-  onAdd: (time: number) => void
-  onUpdateScript: (id: string, script: string) => void
-  onUpdateTime: (id: string, time: number) => void
-  onDelete: (id: string) => void
+  entranceType: 'groom' | 'bride'
+  personName: string
+  style: Style
+  audio: EntranceAudio | null
+  marker: Marker | null
+  onUpload: (file: File) => Promise<void>
+  onRemoveAudio: () => void
+  onSetTime: (time: number) => void
+  onCycleScript: () => void
+  onClear: () => void
 }
 
-function Timeline({ label, markers, onAdd, onUpdateScript, onUpdateTime, onDelete }: TimelineProps) {
+function Timeline({
+  label,
+  entranceType,
+  personName,
+  style,
+  audio,
+  marker,
+  onUpload,
+  onRemoveAudio,
+  onSetTime,
+  onCycleScript,
+  onClear,
+}: TimelineProps) {
   const barRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [regenerating, setRegenerating] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+
+  const duration = audio?.duration ?? DEFAULT_DURATION
+  const waveform = audio?.waveform ?? WAVEFORM_HEIGHTS
 
   const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = barRef.current!.getBoundingClientRect()
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-    onAdd(Math.round(pct * DURATION))
+    onSetTime(Math.round(pct * duration))
   }
 
-  const handleMarkerDrag = (e: React.MouseEvent, id: string) => {
+  const handleMarkerDrag = (e: React.MouseEvent) => {
+    if (!marker) return
     e.stopPropagation()
     e.preventDefault()
     const moveHandler = (me: MouseEvent) => {
       if (!barRef.current) return
       const rect = barRef.current.getBoundingClientRect()
       const pct = Math.max(0, Math.min(1, (me.clientX - rect.left) / rect.width))
-      onUpdateTime(id, Math.round(pct * DURATION))
+      onSetTime(Math.round(pct * duration))
     }
     const upHandler = () => {
       window.removeEventListener('mousemove', moveHandler)
@@ -53,38 +111,98 @@ function Timeline({ label, markers, onAdd, onUpdateScript, onUpdateTime, onDelet
     window.addEventListener('mouseup', upHandler)
   }
 
-  const sorted = [...markers].sort((a, b) => a.time - b.time)
+  const handleCycle = () => {
+    setRegenerating(true)
+    setTimeout(() => {
+      onCycleScript()
+      setRegenerating(false)
+    }, 480)
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    if (!file.type.startsWith('audio/')) {
+      setUploadError('오디오 파일만 업로드할 수 있습니다.')
+      return
+    }
+
+    setUploadError('')
+    setUploading(true)
+    try {
+      await onUpload(file)
+    } catch {
+      setUploadError('음원을 불러오지 못했습니다. 다른 파일로 다시 시도해 주세요.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const script = marker
+    ? getEntranceScript(entranceType, style, marker.scriptVariant, personName)
+    : ''
+
+  const tickMarks = [0, 0.25, 0.5, 0.75, 1]
 
   return (
     <div className="bg-surface rounded-[13px] border border-border p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-3">
         <span className="font-semibold text-charcoal text-sm">{label}</span>
-        <label className="px-3 py-1.5 bg-muted-bg rounded-[8px] text-xs text-muted-text font-medium flex items-center gap-1.5 hover:bg-lavender-pale hover:text-lavender transition-colors cursor-pointer">
-          <span>🎵</span>
-          <span>음원 업로드</span>
-          <input type="file" accept="audio/*" className="hidden" />
-        </label>
+        <div className="flex items-center gap-2">
+          {audio && (
+            <button
+              type="button"
+              onClick={onRemoveAudio}
+              className="px-2.5 py-1.5 rounded-[8px] text-xs text-muted-text hover:text-rose hover:bg-rose-pale transition-colors"
+            >
+              음원 제거
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="px-3 py-1.5 bg-muted-bg rounded-[8px] text-xs text-muted-text font-medium flex items-center gap-1.5 hover:bg-lavender-pale hover:text-lavender transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <span>🎵</span>
+            <span>{uploading ? '업로드 중...' : audio ? '음원 변경' : '음원 업로드'}</span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </div>
       </div>
 
-      {/* Waveform */}
+      {audio && (
+        <div className="mb-3 px-3 py-2 bg-lavender-pale/60 rounded-[8px] border border-lavender/15">
+          <p className="text-xs text-lavender font-medium truncate mb-2">📁 {audio.fileName}</p>
+          <audio controls src={audio.url} className="w-full h-9" preload="metadata" />
+        </div>
+      )}
+
+      {uploadError && <p className="text-xs text-rose mb-3">{uploadError}</p>}
+
       <div className="h-12 bg-muted-bg rounded-[8px] mb-4 overflow-hidden flex items-end gap-px px-1">
-        {WAVEFORM_HEIGHTS.map((h, i) => (
+        {waveform.map((h, i) => (
           <div
             key={i}
-            className="flex-1 bg-lavender/30 rounded-t-sm"
+            className={`flex-1 rounded-t-sm ${audio ? 'bg-lavender/60' : 'bg-lavender/30'}`}
             style={{ height: `${h}px` }}
           />
         ))}
       </div>
 
-      {/* Timeline bar */}
       <div className="mb-1">
         <div className="flex justify-between text-[10px] text-muted-text mb-1 tabular-nums">
-          <span>0:00</span>
-          <span>0:30</span>
-          <span>1:00</span>
-          <span>1:30</span>
-          <span>2:00</span>
+          {tickMarks.map((pct) => (
+            <span key={pct}>{fmt(Math.round(pct * duration))}</span>
+          ))}
         </div>
         <div
           ref={barRef}
@@ -98,52 +216,79 @@ function Timeline({ label, markers, onAdd, onUpdateScript, onUpdateTime, onDelet
               style={{ left: `${pct * 100}%` }}
             />
           ))}
-          {markers.map((m) => (
+          {marker && (
             <div
-              key={m.id}
               className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group z-10"
-              style={{ left: `${(m.time / DURATION) * 100}%` }}
-              onMouseDown={(e) => handleMarkerDrag(e, m.id)}
+              style={{ left: `${(marker.time / duration) * 100}%` }}
+              onMouseDown={handleMarkerDrag}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-5 h-5 bg-lavender rounded-full border-2 border-white shadow-md cursor-grab active:cursor-grabbing group-hover:scale-125 transition-transform" />
               <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-charcoal text-white text-[9px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none tabular-nums">
-                {fmt(m.time)}
+                {fmt(marker.time)}
               </div>
             </div>
-          ))}
+          )}
         </div>
         <p className="text-[10px] text-muted-text mt-1.5">
-          타임라인을 클릭해 멘트 마커를 추가하고, 드래그로 위치를 조정하세요
+          {marker
+            ? '타임라인을 클릭하거나 마커를 드래그해 입장 타이밍을 조정하세요'
+            : audio
+              ? '타임라인을 클릭해 입장 타이밍을 선택하세요 (1회만 설정)'
+              : '음원을 업로드한 뒤 입장 타이밍을 선택하세요'}
         </p>
       </div>
 
-      {/* Marker list */}
-      {sorted.length > 0 && (
-        <div className="mt-4 space-y-2">
-          {sorted.map((m) => (
-            <div
-              key={m.id}
-              className="flex items-start gap-3 p-3 bg-muted-bg rounded-[10px] group"
+      {marker && (
+        <div className="mt-4 p-4 bg-muted-bg rounded-[10px]">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lavender font-bold text-xs tabular-nums">{fmt(marker.time)}</span>
+              <span className="text-xs text-muted-text">이 시점의 멘트 선택하기</span>
+            </div>
+            <button
+              onClick={onClear}
+              className="text-muted-text/50 hover:text-rose text-xs transition-colors"
             >
-              <span className="text-lavender font-semibold text-xs min-w-[36px] mt-0.5 tabular-nums">
-                {fmt(m.time)}
+              타이밍 초기화
+            </button>
+          </div>
+
+          <div className="bg-surface rounded-[10px] border border-border p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-semibold text-lavender uppercase tracking-wide">
+                사회자 멘트
               </span>
-              <input
-                type="text"
-                value={m.script}
-                onChange={(e) => onUpdateScript(m.id, e.target.value)}
-                placeholder="이 시점의 멘트를 입력하세요..."
-                className="flex-1 bg-transparent text-sm text-charcoal outline-none placeholder:text-muted-text/50"
-              />
               <button
-                onClick={() => onDelete(m.id)}
-                className="text-muted-text/40 hover:text-rose transition-colors text-xs opacity-0 group-hover:opacity-100"
+                onClick={handleCycle}
+                disabled={regenerating}
+                className="flex items-center gap-1 text-xs text-muted-text hover:text-lavender transition-colors disabled:opacity-50 px-2 py-1 rounded-[6px] hover:bg-lavender-pale group"
               >
-                ✕
+                <span
+                  className={`text-sm transition-transform duration-400 ${
+                    regenerating ? 'animate-spin' : 'group-hover:rotate-180'
+                  }`}
+                >
+                  ↻
+                </span>
+                <span>{regenerating ? '변환 중' : '다른 멘트'}</span>
               </button>
             </div>
-          ))}
+            <p
+              className={`text-sm leading-relaxed transition-opacity duration-300 ${
+                regenerating ? 'text-muted-text/40' : 'text-charcoal'
+              }`}
+            >
+              {script}
+            </p>
+          </div>
+
+          <p className="text-[10px] text-muted-text mt-2.5 flex items-center gap-1">
+            <span>→</span>
+            <span>
+              {fmt(marker.time)}에 위 멘트 후 {entranceType === 'groom' ? '신랑' : '신부'} 입장
+            </span>
+          </p>
         </div>
       )}
     </div>
@@ -151,39 +296,66 @@ function Timeline({ label, markers, onAdd, onUpdateScript, onUpdateTime, onDelet
 }
 
 export default function EntranceSetup({ data, setData, onNext, onBack }: Props) {
-  const addMarker = (type: 'groom' | 'bride', time: number) => {
-    const m: Marker = { id: Date.now().toString(), time, script: '' }
-    if (type === 'groom') {
-      setData((prev) => ({ ...prev, groomMarkers: [...prev.groomMarkers, m] }))
-    } else {
-      setData((prev) => ({ ...prev, brideMarkers: [...prev.brideMarkers, m] }))
-    }
+  const groomMarker = data.groomMarkers[0] ?? null
+  const brideMarker = data.brideMarkers[0] ?? null
+
+  const setEntranceTime = (type: 'groom' | 'bride', time: number) => {
+    const maxTime = (type === 'groom' ? data.groomAudio : data.brideAudio)?.duration ?? DEFAULT_DURATION
+    const clampedTime = Math.max(0, Math.min(time, maxTime))
+
+    setData((prev) => {
+      const key = type === 'groom' ? 'groomMarkers' : 'brideMarkers'
+      const existing = prev[key][0]
+      if (existing) {
+        return { ...prev, [key]: [{ ...existing, time: clampedTime }] }
+      }
+      const marker: Marker = { id: Date.now().toString(), time: clampedTime, scriptVariant: 0 }
+      return { ...prev, [key]: [marker] }
+    })
   }
 
-  const updateScript = (type: 'groom' | 'bride', id: string, script: string) => {
-    const mapper = (arr: Marker[]) => arr.map((m) => (m.id === id ? { ...m, script } : m))
-    if (type === 'groom') {
-      setData((prev) => ({ ...prev, groomMarkers: mapper(prev.groomMarkers) }))
-    } else {
-      setData((prev) => ({ ...prev, brideMarkers: mapper(prev.brideMarkers) }))
-    }
+  const uploadAudio = async (type: 'groom' | 'bride', file: File) => {
+    const analyzed = await analyzeAudioFile(file)
+    const audioKey = type === 'groom' ? 'groomAudio' : 'brideAudio'
+    const markerKey = type === 'groom' ? 'groomMarkers' : 'brideMarkers'
+
+    setData((prev) => {
+      const previous = prev[audioKey]
+      if (previous?.url) URL.revokeObjectURL(previous.url)
+
+      const existingMarker = prev[markerKey][0]
+      const nextMarker = existingMarker
+        ? [{ ...existingMarker, time: Math.min(existingMarker.time, analyzed.duration) }]
+        : prev[markerKey]
+
+      return {
+        ...prev,
+        [audioKey]: analyzed,
+        [markerKey]: nextMarker,
+      }
+    })
   }
 
-  const updateTime = (type: 'groom' | 'bride', id: string, time: number) => {
-    const mapper = (arr: Marker[]) => arr.map((m) => (m.id === id ? { ...m, time } : m))
-    if (type === 'groom') {
-      setData((prev) => ({ ...prev, groomMarkers: mapper(prev.groomMarkers) }))
-    } else {
-      setData((prev) => ({ ...prev, brideMarkers: mapper(prev.brideMarkers) }))
-    }
+  const removeAudio = (type: 'groom' | 'bride') => {
+    const audioKey = type === 'groom' ? 'groomAudio' : 'brideAudio'
+    setData((prev) => {
+      const previous = prev[audioKey]
+      if (previous?.url) URL.revokeObjectURL(previous.url)
+      return { ...prev, [audioKey]: null }
+    })
   }
 
-  const deleteMarker = (type: 'groom' | 'bride', id: string) => {
-    if (type === 'groom') {
-      setData((prev) => ({ ...prev, groomMarkers: prev.groomMarkers.filter((m) => m.id !== id) }))
-    } else {
-      setData((prev) => ({ ...prev, brideMarkers: prev.brideMarkers.filter((m) => m.id !== id) }))
-    }
+  const cycleScript = (type: 'groom' | 'bride') => {
+    const key = type === 'groom' ? 'groomMarkers' : 'brideMarkers'
+    setData((prev) => ({
+      ...prev,
+      [key]: prev[key].map((m) => ({ ...m, scriptVariant: m.scriptVariant + 1 })),
+    }))
+  }
+
+  const clearEntrance = (type: 'groom' | 'bride') => {
+    const key = type === 'groom' ? 'groomMarkers' : 'brideMarkers'
+    setData((prev) => ({ ...prev, [key]: [] }))
   }
 
   return (
@@ -194,26 +366,36 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
         <div className="mb-8">
           <h1 className="font-display text-2xl font-bold text-charcoal mb-1">입장 연출 설정</h1>
           <p className="text-muted-text text-sm">
-            입장 음악과 시점별 멘트 마커를 설정하세요
+            입장 음원을 업로드하고, 타이밍과 멘트를 선택하세요
           </p>
         </div>
 
         <div className="space-y-5">
           <Timeline
             label="💒 신랑 입장"
-            markers={data.groomMarkers}
-            onAdd={(t) => addMarker('groom', t)}
-            onUpdateScript={(id, s) => updateScript('groom', id, s)}
-            onUpdateTime={(id, t) => updateTime('groom', id, t)}
-            onDelete={(id) => deleteMarker('groom', id)}
+            entranceType="groom"
+            personName={data.groomName}
+            style={data.style}
+            audio={data.groomAudio}
+            marker={groomMarker}
+            onUpload={(file) => uploadAudio('groom', file)}
+            onRemoveAudio={() => removeAudio('groom')}
+            onSetTime={(t) => setEntranceTime('groom', t)}
+            onCycleScript={() => cycleScript('groom')}
+            onClear={() => clearEntrance('groom')}
           />
           <Timeline
             label="👰 신부 입장"
-            markers={data.brideMarkers}
-            onAdd={(t) => addMarker('bride', t)}
-            onUpdateScript={(id, s) => updateScript('bride', id, s)}
-            onUpdateTime={(id, t) => updateTime('bride', id, t)}
-            onDelete={(id) => deleteMarker('bride', id)}
+            entranceType="bride"
+            personName={data.brideName}
+            style={data.style}
+            audio={data.brideAudio}
+            marker={brideMarker}
+            onUpload={(file) => uploadAudio('bride', file)}
+            onRemoveAudio={() => removeAudio('bride')}
+            onSetTime={(t) => setEntranceTime('bride', t)}
+            onCycleScript={() => cycleScript('bride')}
+            onClear={() => clearEntrance('bride')}
           />
         </div>
 

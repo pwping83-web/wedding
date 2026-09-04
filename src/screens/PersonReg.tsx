@@ -21,7 +21,7 @@ const ROLE_COLORS: Record<PersonRole, string> = {
 
 export default function PersonReg({ data, setData, onNext, onBack }: Props) {
   const [name, setName] = useState('')
-  const [role, setRole] = useState<PersonRole>('vocalist')
+  const [role, setRole] = useState<PersonRole>('speaker')
   const [relationship, setRelationship] = useState('')
   const [customRel, setCustomRel] = useState('')
   const [generating, setGenerating] = useState<string | null>(null)
@@ -69,7 +69,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
       <div className="max-w-lg mx-auto px-4 py-8 pb-20">
         <div className="mb-8">
           <h1 className="font-display text-2xl font-bold text-charcoal mb-1">인물 등록</h1>
-          <p className="text-muted-text text-sm">사회자, 주례, 축가자, 축사자를 등록하세요</p>
+          <p className="text-muted-text text-sm">사회자, 축가자, 축사자를 등록하세요</p>
         </div>
 
         {/* Add form */}

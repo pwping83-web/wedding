@@ -7,7 +7,7 @@ export type PersonRole = 'mc' | 'officiant' | 'vocalist' | 'speaker'
 export interface Marker {
   id: string
   time: number
-  script: string
+  scriptVariant: number
 }
 
 export interface OrderItem {
@@ -25,6 +25,13 @@ export interface Person {
   introVariant: number
 }
 
+export interface EntranceAudio {
+  fileName: string
+  url: string
+  duration: number
+  waveform: number[]
+}
+
 export interface AppData {
   groomName: string
   brideName: string
@@ -34,6 +41,8 @@ export interface AppData {
   style: Style
   groomMarkers: Marker[]
   brideMarkers: Marker[]
+  groomAudio: EntranceAudio | null
+  brideAudio: EntranceAudio | null
   orderItems: OrderItem[]
   persons: Person[]
   mood: Mood
@@ -79,13 +88,17 @@ export const moodEmojis: Record<Mood, string> = {
 
 export const defaultOrderItems: OrderItem[] = [
   { id: '1', title: '개식사', duration: 2, scriptVariant: 0 },
-  { id: '2', title: '신랑 입장', duration: 3, scriptVariant: 0 },
-  { id: '3', title: '신부 입장', duration: 4, scriptVariant: 0 },
-  { id: '4', title: '성혼 선언문', duration: 5, scriptVariant: 0 },
-  { id: '5', title: '주례사', duration: 10, scriptVariant: 0 },
-  { id: '6', title: '축가', duration: 5, scriptVariant: 0 },
-  { id: '7', title: '신랑신부 인사', duration: 3, scriptVariant: 0 },
-  { id: '8', title: '폐식사', duration: 2, scriptVariant: 0 },
+  { id: '2', title: '양가 어머님 입장', duration: 3, scriptVariant: 0 },
+  { id: '3', title: '신랑 입장', duration: 3, scriptVariant: 0 },
+  { id: '4', title: '신부 입장', duration: 4, scriptVariant: 0 },
+  { id: '5', title: '신랑신부 맞절', duration: 2, scriptVariant: 0 },
+  { id: '6', title: '신랑신부 혼인서약서 낭독', duration: 5, scriptVariant: 0 },
+  { id: '7', title: '성혼선언문', duration: 3, scriptVariant: 0 },
+  { id: '8', title: '축사', duration: 5, scriptVariant: 0 },
+  { id: '9', title: '축가', duration: 5, scriptVariant: 0 },
+  { id: '10', title: '양가 부모님과 내빈께 인사', duration: 4, scriptVariant: 0 },
+  { id: '11', title: '행진', duration: 3, scriptVariant: 0 },
+  { id: '12', title: '폐식사', duration: 2, scriptVariant: 0 },
 ]
 
 export const itemScripts: Record<string, Record<Mood, string[]>> = {
@@ -153,6 +166,160 @@ export const itemScripts: Record<string, Record<Mood, string[]>> = {
       '드디어 신부가 입장합니다. 오늘 가장 아름다운 신부에게 따뜻한 박수를 보내주세요.',
       '세상에서 가장 아름다운 이가 옵니다. 신부 입장입니다.',
       '사랑과 설렘을 가득 담고, 신부가 입장합니다.',
+    ],
+  },
+  '양가 어머님 입장': {
+    bright: [
+      '먼저 양가 어머님 두 분의 입장이 있겠습니다! 따뜻한 박수로 맞이해 주세요!',
+      '소중한 어머님 두 분이 함께 입장하십니다. 큰 박수 부탁드립니다!',
+      '양가 어머님 입장! 두 분의 사랑을 품어주신 어머님께 감사의 박수를 보내주세요!',
+    ],
+    solemn: [
+      '양가 어머님 두 분의 입장이 있겠습니다. 박수로 맞이해 주시기 바랍니다.',
+      '이제 양가 어머님이 입장하십니다.',
+      '양가 어머님 입장이 있겠습니다.',
+    ],
+    formal: [
+      '양가 어머님께서 입장하시겠습니다.',
+      '양가 어머님 입장이 있겠습니다.',
+      '이제 양가 어머님이 입장합니다.',
+    ],
+    warm: [
+      '두 분을 사랑으로 키워주신 양가 어머님이 함께 입장하십니다. 따뜻한 박수로 맞이해 주세요.',
+      '소중한 어머님 두 분의 입장이 있겠습니다. 감사의 마음을 담아 박수를 보내주세요.',
+      '양가 어머님이 입장합니다. 두 분의 새 출발을 축복해 주신 어머님께 박수를 보내주세요.',
+    ],
+  },
+  '신랑신부 맞절': {
+    bright: [
+      '이제 신랑신부 두 분이 서로에게 깊은 존경의 마음을 담아 맞절을 올리겠습니다!',
+      '두 분의 첫 인사, 맞절의 시간입니다! 함께 지켜봐 주세요!',
+      '서로를 향한 마음을 표현하는 맞절 순서가 이어집니다!',
+    ],
+    solemn: [
+      '신랑신부 맞절이 있겠습니다.',
+      '이제 두 분이 서로에게 맞절을 올리겠습니다.',
+      '신랑신부 맞절의 시간을 갖겠습니다.',
+    ],
+    formal: [
+      '신랑신부 맞절이 있겠습니다.',
+      '이제 맞절 순서입니다.',
+      '신랑신부께서 맞절을 올리시겠습니다.',
+    ],
+    warm: [
+      '두 분이 서로를 향한 존경과 사랑을 담아 맞절을 올리겠습니다.',
+      '이제 신랑신부 맞절의 시간입니다. 두 분의 진심을 함께해 주세요.',
+      '서로의 평생 동반자가 될 두 분, 맞절을 통해 마음을 전합니다.',
+    ],
+  },
+  '신랑신부 혼인서약서 낭독': {
+    bright: [
+      '이제 두 분이 직접 작성하신 혼인서약서를 낭독하겠습니다! 두 분의 진심 어린 약속을 함께 들어 주세요!',
+      '평생을 함께할 두 분의 혼인서약서 낭독! 가슴 벅찬 순간입니다!',
+      '두 분이 서로에게 건네는 특별한 약속, 혼인서약서 낭독이 있겠습니다!',
+    ],
+    solemn: [
+      '신랑신부 혼인서약서 낭독이 있겠습니다.',
+      '이제 두 분이 혼인서약서를 낭독하겠습니다.',
+      '두 분의 진심을 담은 혼인서약서 낭독의 시간입니다.',
+    ],
+    formal: [
+      '신랑신부 혼인서약서 낭독이 있겠습니다.',
+      '이제 혼인서약서 낭독 순서입니다.',
+      '신랑신부께서 혼인서약서를 낭독하시겠습니다.',
+    ],
+    warm: [
+      '두 분이 서로에게 전하는 마음, 혼인서약서를 낭독하겠습니다.',
+      '이 순간을 위해 준비한 두 분의 약속, 혼인서약서 낭독이 있겠습니다.',
+      '평생을 함께할 두 분의 진심이 담긴 혼인서약서를 낭독합니다.',
+    ],
+  },
+  '성혼선언문': {
+    bright: [
+      '이제 두 분의 성혼선언문을 낭독하겠습니다! 두 분의 영원한 사랑을 함께 응원해 주세요!',
+      '드디어 성혼선언! 두 분의 가슴 벅찬 약속을 함께 들어 주세요!',
+      '두 분이 서로에게 건네는 평생의 약속! 성혼선언문 낭독이 있겠습니다!',
+    ],
+    solemn: [
+      '이제 두 분의 성혼선언이 있겠습니다.',
+      '성혼선언문 낭독이 있겠습니다.',
+      '두 분이 서로에게 영원한 사랑을 약속하는 시간을 갖겠습니다.',
+    ],
+    formal: [
+      '성혼선언문을 낭독하겠습니다.',
+      '성혼선언이 있겠습니다.',
+      '이제 성혼선언문 낭독이 있겠습니다.',
+    ],
+    warm: [
+      '두 분이 서로에게 영원한 사랑을 약속하는 소중한 시간을 갖겠습니다.',
+      '이 순간을 위해 두 분이 함께 달려왔습니다. 성혼선언문 낭독이 있겠습니다.',
+      '두 분의 사랑이 오늘 영원한 약속이 됩니다. 성혼선언문을 낭독하겠습니다.',
+    ],
+  },
+  '축사': {
+    bright: [
+      '두 분을 축복해 주실 축사자의 말씀이 있겠습니다! 따뜻한 박수로 맞이해 주세요!',
+      '소중한 분의 진심 어린 축사가 이어집니다! 귀 기울여 주세요!',
+      '두 분의 미래를 축복하는 특별한 축사! 함께 들어 주세요!',
+    ],
+    solemn: [
+      '축사가 있겠습니다.',
+      '이제 축사자의 말씀이 있겠습니다.',
+      '축사 순서가 이어집니다. 경청해 주시기 바랍니다.',
+    ],
+    formal: [
+      '축사가 있겠습니다.',
+      '이제 축사 말씀이 있겠습니다.',
+      '축사자의 말씀을 경청하겠습니다.',
+    ],
+    warm: [
+      '두 분의 행복을 진심으로 축복해 주실 축사자의 말씀이 있겠습니다.',
+      '소중한 분께서 두 분에게 따뜻한 축사를 전해주시겠습니다.',
+      '마음을 담은 축사의 시간입니다.',
+    ],
+  },
+  '양가 부모님과 내빈께 인사': {
+    bright: [
+      '이제 신랑신부 두 분이 양가 부모님과 내빈 여러분께 감사의 인사를 드리겠습니다!',
+      '두 분의 진심 어린 인사 시간! 함께 응원해 주세요!',
+      '양가 부모님과 내빈 여러분께 전하는 감사의 인사가 있겠습니다!',
+    ],
+    solemn: [
+      '신랑신부께서 양가 부모님과 내빈 여러분께 인사를 드리겠습니다.',
+      '양가 부모님과 내빈께 인사가 있겠습니다.',
+      '이제 두 분의 인사 순서입니다.',
+    ],
+    formal: [
+      '양가 부모님과 내빈 여러분께 인사가 있겠습니다.',
+      '신랑신부 인사 순서입니다.',
+      '신랑신부께서 인사 말씀을 드리시겠습니다.',
+    ],
+    warm: [
+      '두 분이 양가 부모님과 내빈 여러분께 감사의 마음을 전하겠습니다.',
+      '오늘 함께해 주신 모든 분들께 진심 어린 인사를 드리겠습니다.',
+      '신랑신부께서 감사의 인사를 올리겠습니다.',
+    ],
+  },
+  '행진': {
+    bright: [
+      '이제 신랑신부 두 분의 행진이 시작됩니다! 힘차게 박수 보내주세요!',
+      '두 분의 새로운 출발! 행진과 함께 축하해 주세요!',
+      '행복한 두 분의 행진! 큰 박수로 응원해 주세요!',
+    ],
+    solemn: [
+      '신랑신부 행진이 있겠습니다.',
+      '이제 두 분의 행진이 시작됩니다.',
+      '행진 순서가 이어집니다.',
+    ],
+    formal: [
+      '신랑신부 행진이 있겠습니다.',
+      '이제 행진 순서입니다.',
+      '신랑신부께서 행진하시겠습니다.',
+    ],
+    warm: [
+      '두 분의 행복한 첫걸음, 행진이 시작됩니다.',
+      '새로운 인생의 시작을 함께하는 행진의 시간입니다.',
+      '신랑신부 두 분의 행진을 함께해 주세요.',
     ],
   },
   '성혼 선언문': {
@@ -306,10 +473,68 @@ export function getIntroScript(relationship: string, variant: number): string {
 }
 
 export function getItemScript(title: string, mood: Mood, variant: number): string {
-  const scripts = itemScripts[title]
+  const normalizedTitle = title === '성혼 선언문' ? '성혼선언문' : title
+  const scripts = itemScripts[normalizedTitle]
   if (!scripts) return `${title} 순서가 진행됩니다.`
   const moodScripts = scripts[mood]
   return moodScripts[variant % moodScripts.length]
+}
+
+export const groomEntranceScripts: Record<Style, string[]> = {
+  classic: [
+    '이제 오늘의 주인공 신랑 {name}님이 입장하시겠습니다. 따뜻한 박수로 맞이해 주시기 바랍니다.',
+    '신랑 {name}님의 입장이 있겠습니다. 정중한 박수로 환영해 주십시오.',
+    '지금부터 신랑 {name}님이 입장합니다. 박수로 맞이해 주시기 바랍니다.',
+  ],
+  casual: [
+    '자, 이제 신랑 {name}님 등장! 오늘 가장 멋진 남자, 박수 부탁드려요!',
+    '드디어 신랑 {name}님이 나오십니다! 힘차게 박수 보내주세요~',
+    '신랑 입장! {name}님, 뜨거운 환영 박수로 맞이해 주세요!',
+  ],
+  modern: [
+    'Now, please welcome the groom, {name}.',
+    '신랑 {name}님, 입장해 주십시오. 박수로 함께해 주세요.',
+    "The moment we've all been waiting for — groom {name} is entering.",
+  ],
+  fun: [
+    '쿵쿵! 신랑 {name}님 입장! 오늘 주인공 등장이에요, 박수 박수!',
+    '여러분 손뼉 준비! 멋진 신랑 {name}님이 등장합니다!',
+    '신랑 {name}님 입장! 자리에서 일어나 환호해 주셔도 좋아요!',
+  ],
+}
+
+export const brideEntranceScripts: Record<Style, string[]> = {
+  classic: [
+    '이제 신부 {name}님이 입장하시겠습니다. 아름다운 신부를 박수로 맞이해 주시기 바랍니다.',
+    '신부 {name}님의 입장이 있겠습니다. 정중한 박수로 환영해 주십시오.',
+    '지금부터 신부 {name}님이 입장합니다. 따뜻한 박수를 보내주세요.',
+  ],
+  casual: [
+    '드디어! 신부 {name}님 등장! 오늘 가장 아름다운 분, 박수 부탁드려요~',
+    '신부 입장! {name}님, 설레는 순간 함께해 주세요!',
+    '자, 이제 {name} 신부님이 나오십니다! 큰 박수로 맞이해 주세요!',
+  ],
+  modern: [
+    'Please welcome the bride, {name}.',
+    '신부 {name}님, 입장해 주십시오. 박수로 함께해 주세요.',
+    'The bride, {name}, is now entering.',
+  ],
+  fun: [
+    '반짝반짝! 신부 {name}님 입장! 오늘의 여왕 등장이에요!',
+    '여러분 박수 크게! 아름다운 신부 {name}님이 등장합니다!',
+    '신부 {name}님 입장! 환호와 박수로 축복해 주세요!',
+  ],
+}
+
+export function getEntranceScript(
+  type: 'groom' | 'bride',
+  style: Style,
+  variant: number,
+  name: string,
+): string {
+  const templates = type === 'groom' ? groomEntranceScripts[style] : brideEntranceScripts[style]
+  const displayName = name.trim() || (type === 'groom' ? '신랑' : '신부')
+  return templates[variant % templates.length].replace(/\{name\}/g, displayName)
 }
 
 export const WAVEFORM_HEIGHTS = [
@@ -329,6 +554,8 @@ export const initialData: AppData = {
   style: 'classic',
   groomMarkers: [],
   brideMarkers: [],
+  groomAudio: null,
+  brideAudio: null,
   orderItems: defaultOrderItems,
   persons: [],
   mood: 'warm',

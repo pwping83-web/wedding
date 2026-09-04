@@ -161,6 +161,7 @@ export default function FinalOutput({ data, onBack }: Props) {
                 const script = getItemScript(item.title, data.mood, item.scriptVariant)
                 const person = data.persons.find((p) => {
                   if (item.title === '축가') return p.role === 'vocalist'
+                  if (item.title === '축사') return p.role === 'speaker'
                   if (item.title === '주례사') return p.role === 'officiant'
                   return false
                 })
