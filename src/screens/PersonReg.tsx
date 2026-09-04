@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import StepIndicator from '../components/StepIndicator'
 import type { AppData, Person, PersonRole, SetData } from '../data'
-import { roleLabels, getIntroScript } from '../data'
+import { roleLabels, getPersonIntroScript } from '../data'
+import { buildIntroGeneratePayload, requestGeneratedScript } from '../lib/generateScript'
 
 interface Props {
   data: AppData
@@ -47,17 +48,33 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
     setData((prev) => ({ ...prev, persons: prev.persons.filter((p) => p.id !== id) }))
   }
 
-  const cycleIntro = (id: string) => {
+  const generateIntro = async (id: string) => {
+    const person = data.persons.find((p) => p.id === id)
+    if (!person) return
+
     setGenerating(id)
-    setTimeout(() => {
+    try {
+      const script = await requestGeneratedScript(
+        buildIntroGeneratePayload(data, person.relationship, getPersonIntroScript(person)),
+      )
       setData((prev) => ({
         ...prev,
         persons: prev.persons.map((p) =>
-          p.id === id ? { ...p, introVariant: p.introVariant + 1 } : p
+          p.id === id ? { ...p, customIntro: script } : p,
         ),
       }))
+    } catch {
+      setData((prev) => ({
+        ...prev,
+        persons: prev.persons.map((p) =>
+          p.id === id
+            ? { ...p, introVariant: p.introVariant + 1, customIntro: undefined }
+            : p,
+        ),
+      }))
+    } finally {
       setGenerating(null)
-    }, 550)
+    }
   }
 
   const canAdd = name.trim() && effectiveRel.trim()
@@ -161,7 +178,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
         ) : (
           <div className="space-y-3">
             {data.persons.map((person) => {
-              const intro = getIntroScript(person.relationship, person.introVariant)
+              const intro = getPersonIntroScript(person)
               const isGen = generating === person.id
               return (
                 <div key={person.id} className="bg-surface rounded-[13px] border border-border p-5">
@@ -195,7 +212,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
                   </div>
 
                   <button
-                    onClick={() => cycleIntro(person.id)}
+                    onClick={() => generateIntro(person.id)}
                     disabled={isGen}
                     className="flex items-center gap-1.5 text-xs text-lavender hover:text-lavender-light transition-colors disabled:opacity-60 group"
                   >
@@ -206,7 +223,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
                     >
                       ↻
                     </span>
-                    <span>{isGen ? '생성 중...' : '다른 멘트 생성하기'}</span>
+                    <span>{isGen ? 'AI 생성 중...' : 'AI 멘트 생성하기'}</span>
                   </button>
                 </div>
               )

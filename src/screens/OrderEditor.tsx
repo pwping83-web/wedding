@@ -99,7 +99,7 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
         <div className="flex items-start justify-between mb-8">
           <div>
             <h1 className="font-display text-2xl font-bold text-charcoal mb-1">식순 편집</h1>
-            <p className="text-muted-text text-sm">주례 없는 예식 기본 순서 · 드래그해서 변경하세요</p>
+            <p className="text-muted-text text-sm">주례 없는 예식 기본 순서(약 24분) · 드래그해서 변경하세요</p>
           </div>
           <div className="px-3 py-1.5 bg-sage-pale rounded-full border border-sage/20">
             <span className="text-sage text-sm font-bold tabular-nums">총 {total}분</span>

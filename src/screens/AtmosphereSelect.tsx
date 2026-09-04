@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import StepIndicator from '../components/StepIndicator'
 import type { AppData, Mood, SetData } from '../data'
-import { moodLabels, moodDescriptions, moodEmojis, getItemScript } from '../data'
+import { moodLabels, moodDescriptions, moodEmojis, getOrderItemScript } from '../data'
+import { buildOrderGeneratePayload, requestGeneratedScript } from '../lib/generateScript'
 
 interface Props {
   data: AppData
@@ -37,20 +38,44 @@ export default function AtmosphereSelect({ data, setData, onNext, onBack }: Prop
   const [regenerating, setRegenerating] = useState<string | null>(null)
 
   const setMood = (mood: Mood) => {
-    setData((prev) => ({ ...prev, mood }))
+    setData((prev) => ({
+      ...prev,
+      mood,
+      orderItems: prev.orderItems.map((i) => ({ ...i, scriptVariant: 0, customScript: undefined })),
+    }))
   }
 
-  const cycleVariant = (itemId: string) => {
+  const generateScript = async (itemId: string) => {
+    const item = data.orderItems.find((i) => i.id === itemId)
+    if (!item) return
+
     setRegenerating(itemId)
-    setTimeout(() => {
+    try {
+      const script = await requestGeneratedScript(
+        buildOrderGeneratePayload(
+          data,
+          item.title,
+          getOrderItemScript(item, data.mood, data),
+        ),
+      )
       setData((prev) => ({
         ...prev,
         orderItems: prev.orderItems.map((i) =>
-          i.id === itemId ? { ...i, scriptVariant: i.scriptVariant + 1 } : i
+          i.id === itemId ? { ...i, customScript: script } : i,
         ),
       }))
+    } catch {
+      setData((prev) => ({
+        ...prev,
+        orderItems: prev.orderItems.map((i) =>
+          i.id === itemId
+            ? { ...i, scriptVariant: i.scriptVariant + 1, customScript: undefined }
+            : i,
+        ),
+      }))
+    } finally {
       setRegenerating(null)
-    }, 480)
+    }
   }
 
   return (
@@ -112,7 +137,7 @@ export default function AtmosphereSelect({ data, setData, onNext, onBack }: Prop
 
           <div className="space-y-3">
             {data.orderItems.map((item) => {
-              const script = getItemScript(item.title, data.mood, item.scriptVariant)
+              const script = getOrderItemScript(item, data.mood, data)
               const isRegen = regenerating === item.id
               return (
                 <div
@@ -122,10 +147,10 @@ export default function AtmosphereSelect({ data, setData, onNext, onBack }: Prop
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold text-charcoal text-sm">{item.title}</span>
                     <button
-                      onClick={() => cycleVariant(item.id)}
+                      onClick={() => generateScript(item.id)}
                       disabled={isRegen}
                       className="flex items-center gap-1 text-xs text-muted-text hover:text-lavender transition-colors disabled:opacity-50 px-2 py-1 rounded-[6px] hover:bg-lavender-pale group"
-                      title="다른 멘트 생성하기"
+                      title="AI로 다른 멘트 생성하기"
                     >
                       <span
                         className={`text-sm transition-transform duration-400 ${
@@ -134,7 +159,7 @@ export default function AtmosphereSelect({ data, setData, onNext, onBack }: Prop
                       >
                         ↻
                       </span>
-                      <span>{isRegen ? '변환 중' : '다른 멘트'}</span>
+                      <span>{isRegen ? 'AI 생성 중' : 'AI 멘트'}</span>
                     </button>
                   </div>
                   <p

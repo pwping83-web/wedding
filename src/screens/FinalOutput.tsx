@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { AppData, SetData } from '../data'
-import { getItemScript, moodLabels, roleLabels } from '../data'
+import { getOrderItemScript, moodLabels, roleLabels } from '../data'
 
 interface Props {
   data: AppData
@@ -158,7 +158,7 @@ export default function FinalOutput({ data, onBack }: Props) {
           <div className="px-8 py-6">
             <div className="space-y-0">
               {items.map((item, index) => {
-                const script = getItemScript(item.title, data.mood, item.scriptVariant)
+                const script = getOrderItemScript(item, data.mood, data)
                 const person = data.persons.find((p) => {
                   if (item.title === '축가') return p.role === 'vocalist'
                   if (item.title === '축사') return p.role === 'speaker'

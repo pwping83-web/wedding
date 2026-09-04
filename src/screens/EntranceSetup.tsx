@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import StepIndicator from '../components/StepIndicator'
 import type { AppData, EntranceAudio, Marker, SetData, Style } from '../data'
-import { WAVEFORM_HEIGHTS, getEntranceScript } from '../data'
+import { WAVEFORM_HEIGHTS, getMarkerEntranceScript } from '../data'
+import { buildEntranceGeneratePayload, requestGeneratedScript } from '../lib/generateScript'
 
 interface Props {
   data: AppData
@@ -58,10 +59,11 @@ interface TimelineProps {
   style: Style
   audio: EntranceAudio | null
   marker: Marker | null
+  script: string
   onUpload: (file: File) => Promise<void>
   onRemoveAudio: () => void
   onSetTime: (time: number) => void
-  onCycleScript: () => void
+  onGenerateScript: () => Promise<void>
   onClear: () => void
 }
 
@@ -72,10 +74,11 @@ function Timeline({
   style,
   audio,
   marker,
+  script,
   onUpload,
   onRemoveAudio,
   onSetTime,
-  onCycleScript,
+  onGenerateScript,
   onClear,
 }: TimelineProps) {
   const barRef = useRef<HTMLDivElement>(null)
@@ -111,12 +114,13 @@ function Timeline({
     window.addEventListener('mouseup', upHandler)
   }
 
-  const handleCycle = () => {
+  const handleGenerate = async () => {
     setRegenerating(true)
-    setTimeout(() => {
-      onCycleScript()
+    try {
+      await onGenerateScript()
+    } finally {
       setRegenerating(false)
-    }, 480)
+    }
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,9 +144,7 @@ function Timeline({
     }
   }
 
-  const script = marker
-    ? getEntranceScript(entranceType, style, marker.scriptVariant, personName)
-    : ''
+  const scriptDisplay = script
 
   const tickMarks = [0, 0.25, 0.5, 0.75, 1]
 
@@ -260,7 +262,7 @@ function Timeline({
                 사회자 멘트
               </span>
               <button
-                onClick={handleCycle}
+                onClick={handleGenerate}
                 disabled={regenerating}
                 className="flex items-center gap-1 text-xs text-muted-text hover:text-lavender transition-colors disabled:opacity-50 px-2 py-1 rounded-[6px] hover:bg-lavender-pale group"
               >
@@ -271,7 +273,7 @@ function Timeline({
                 >
                   ↻
                 </span>
-                <span>{regenerating ? '변환 중' : '다른 멘트'}</span>
+                <span>{regenerating ? 'AI 생성 중' : 'AI 멘트'}</span>
               </button>
             </div>
             <p
@@ -279,7 +281,7 @@ function Timeline({
                 regenerating ? 'text-muted-text/40' : 'text-charcoal'
               }`}
             >
-              {script}
+              {scriptDisplay}
             </p>
           </div>
 
@@ -345,12 +347,34 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
     })
   }
 
-  const cycleScript = (type: 'groom' | 'bride') => {
+  const generateEntranceScript = async (type: 'groom' | 'bride') => {
     const key = type === 'groom' ? 'groomMarkers' : 'brideMarkers'
-    setData((prev) => ({
-      ...prev,
-      [key]: prev[key].map((m) => ({ ...m, scriptVariant: m.scriptVariant + 1 })),
-    }))
+    const marker = data[key][0]
+    if (!marker) return
+
+    const personName = type === 'groom' ? data.groomName : data.brideName
+    const currentScript = getMarkerEntranceScript(type, data.style, marker, personName)
+
+    try {
+      const script = await requestGeneratedScript(
+        buildEntranceGeneratePayload(data, type, currentScript),
+      )
+      setData((prev) => ({
+        ...prev,
+        [key]: prev[key].map((m) =>
+          m.id === marker.id ? { ...m, customScript: script } : m,
+        ),
+      }))
+    } catch {
+      setData((prev) => ({
+        ...prev,
+        [key]: prev[key].map((m) =>
+          m.id === marker.id
+            ? { ...m, scriptVariant: m.scriptVariant + 1, customScript: undefined }
+            : m,
+        ),
+      }))
+    }
   }
 
   const clearEntrance = (type: 'groom' | 'bride') => {
@@ -378,10 +402,15 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
             style={data.style}
             audio={data.groomAudio}
             marker={groomMarker}
+            script={
+              groomMarker
+                ? getMarkerEntranceScript('groom', data.style, groomMarker, data.groomName)
+                : ''
+            }
             onUpload={(file) => uploadAudio('groom', file)}
             onRemoveAudio={() => removeAudio('groom')}
             onSetTime={(t) => setEntranceTime('groom', t)}
-            onCycleScript={() => cycleScript('groom')}
+            onGenerateScript={() => generateEntranceScript('groom')}
             onClear={() => clearEntrance('groom')}
           />
           <Timeline
@@ -391,10 +420,15 @@ export default function EntranceSetup({ data, setData, onNext, onBack }: Props) 
             style={data.style}
             audio={data.brideAudio}
             marker={brideMarker}
+            script={
+              brideMarker
+                ? getMarkerEntranceScript('bride', data.style, brideMarker, data.brideName)
+                : ''
+            }
             onUpload={(file) => uploadAudio('bride', file)}
             onRemoveAudio={() => removeAudio('bride')}
             onSetTime={(t) => setEntranceTime('bride', t)}
-            onCycleScript={() => cycleScript('bride')}
+            onGenerateScript={() => generateEntranceScript('bride')}
             onClear={() => clearEntrance('bride')}
           />
         </div>

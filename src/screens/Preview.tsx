@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import StepIndicator from '../components/StepIndicator'
 import type { AppData, SetData } from '../data'
-import { getItemScript, roleLabels } from '../data'
+import { getOrderItemScript, roleLabels } from '../data'
 
 interface Props {
   data: AppData
@@ -94,7 +94,7 @@ export default function Preview({ data, onBack, onGoOutput }: Props) {
         {tab === 'card' && (
           <div className="space-y-3">
             {items.map((item, index) => {
-              const script = getItemScript(item.title, data.mood, item.scriptVariant)
+              const script = getOrderItemScript(item, data.mood, data)
               const person = data.persons.find((p) => {
                 if (item.title === '축가') return p.role === 'vocalist'
                 if (item.title === '축사') return p.role === 'speaker'
@@ -161,8 +161,8 @@ export default function Preview({ data, onBack, onGoOutput }: Props) {
                         <span className="font-semibold text-charcoal text-sm">{item.title}</span>
                         <span className="text-muted-text text-xs tabular-nums">{item.duration}분</span>
                       </div>
-                      <p className="text-muted-text text-xs leading-relaxed mt-1 line-clamp-2">
-                        {getItemScript(item.title, data.mood, item.scriptVariant)}
+                      <p className="text-muted-text text-xs leading-relaxed mt-1">
+                        {getOrderItemScript(item, data.mood, data)}
                       </p>
                     </div>
                   </div>
