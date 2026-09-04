@@ -2,6 +2,10 @@ import { useState } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import Field from '../components/mobile/Field'
+import ChipSelectWithCustom, {
+  isChipValueValid,
+  resolveChipValue,
+} from '../components/mobile/ChipSelectWithCustom'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, Person, PersonRole, SetData } from '../data'
 import { roleLabels, getPersonIntroScript } from '../data'
@@ -18,12 +22,16 @@ const RELS = ['고등학교 동창', '대학교 동창', '직장 동료', '군�
 
 export default function PersonReg({ data, setData, onNext, onBack }: Props) {
   const [name, setName] = useState('')
-  const [role, setRole] = useState<PersonRole>('speaker')
-  const [relationship, setRelationship] = useState('')
+  const [role, setRole] = useState<PersonRole>('vocalist')
+  const [relationshipPreset, setRelationshipPreset] = useState('')
+  const [customRelationship, setCustomRelationship] = useState('')
   const [generating, setGenerating] = useState<string | null>(null)
 
+  const relationship = resolveChipValue(relationshipPreset, customRelationship)
+  const canAdd = name.trim() && isChipValueValid(relationshipPreset, customRelationship)
+
   const addPerson = () => {
-    if (!name.trim() || !relationship.trim()) return
+    if (!canAdd) return
     const person: Person = {
       id: Date.now().toString(),
       name: name.trim(),
@@ -33,7 +41,8 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
     }
     setData((prev) => ({ ...prev, persons: [...prev.persons, person] }))
     setName('')
-    setRelationship('')
+    setRelationshipPreset('')
+    setCustomRelationship('')
   }
 
   const generateIntro = async (id: string) => {
@@ -76,7 +85,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
         </div>
       }
     >
-      <Card className="p-4 space-y-3 mb-4">
+      <Card className="p-4 space-y-4 mb-4">
         <Field label="이름" placeholder="홍길동" value={name} onChange={(e) => setName(e.target.value)} />
         <div>
           <p className="text-[13px] font-medium text-charcoal mb-2">역할</p>
@@ -99,26 +108,17 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
               ))}
           </div>
         </div>
-        <div>
-          <p className="text-[13px] font-medium text-charcoal mb-2">관계</p>
-          <div className="flex flex-wrap gap-2">
-            {RELS.map((rel) => (
-              <button
-                key={rel}
-                type="button"
-                onClick={() => setRelationship(rel)}
-                className={`px-3 py-1.5 rounded-full text-[12px] border ${
-                  relationship === rel
-                    ? 'bg-accent-soft text-accent border-accent/30'
-                    : 'bg-surface text-muted-text border-border'
-                }`}
-              >
-                {rel}
-              </button>
-            ))}
-          </div>
-        </div>
-        <Btn onClick={addPerson} disabled={!name.trim() || !relationship.trim()}>
+        <ChipSelectWithCustom
+          label="신랑/신부와의 관계"
+          options={RELS}
+          value={relationshipPreset}
+          onChange={setRelationshipPreset}
+          customValue={customRelationship}
+          onCustomChange={setCustomRelationship}
+          customPlaceholder="관계를 입력하세요 (예: 대학원 동기, 사촌)"
+          hint="목록에 없으면 직접 입력을 선택하세요"
+        />
+        <Btn onClick={addPerson} disabled={!canAdd}>
           추가
         </Btn>
       </Card>

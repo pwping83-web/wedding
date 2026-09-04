@@ -7,7 +7,6 @@ import type { AppData, SetData } from '../data'
 import CueSheetDocument from '../components/CueSheetDocument'
 import { analyzeAudioFile } from '../lib/audioAnalysis'
 import { deliverCueSheetToMc } from '../lib/deliverCueSheet'
-import type { CueSheetVariant } from '../lib/cueSheetUtils'
 import { getEntranceCueMeta } from '../lib/cueSheetUtils'
 
 interface Props {
@@ -18,9 +17,7 @@ interface Props {
 }
 
 export default function FinalOutput({ data, setData, onBack }: Props) {
-  const [view, setView] = useState<CueSheetVariant>('mc')
   const [mcEmail, setMcEmail] = useState(data.email || '')
-  const [coupleEmail, setCoupleEmail] = useState(data.coupleEmail || '')
   const [delivered, setDelivered] = useState(false)
   const [delivering, setDelivering] = useState(false)
   const [deliverError, setDeliverError] = useState('')
@@ -56,16 +53,16 @@ export default function FinalOutput({ data, setData, onBack }: Props) {
     if (!mcEmail.trim()) return
     setDelivering(true)
     setDeliverError('')
-    setData((prev) => ({ ...prev, email: mcEmail.trim(), coupleEmail: coupleEmail.trim() }))
+    setData((prev) => ({ ...prev, email: mcEmail.trim() }))
     try {
       await deliverCueSheetToMc({
         mcEmail: mcEmail.trim(),
-        coupleEmail: coupleEmail.trim() || undefined,
-        data: { ...data, email: mcEmail.trim(), coupleEmail: coupleEmail.trim() },
+        data: { ...data, email: mcEmail.trim() },
       })
       setDelivered(true)
+      setTimeout(() => setDelivered(false), 4000)
     } catch (error) {
-      setDeliverError(error instanceof Error ? error.message : '전달 실패')
+      setDeliverError(error instanceof Error ? error.message : '전송에 실패했습니다.')
     } finally {
       setDelivering(false)
     }
@@ -74,46 +71,22 @@ export default function FinalOutput({ data, setData, onBack }: Props) {
   return (
     <ScreenLayout
       title="최종 큐시트"
-      subtitle="전달 · 인쇄"
+      subtitle="인쇄하거나 사회자에게 이메일로 보내세요"
       onBack={onBack}
       contentClassName="pb-36"
       footer={
         <div className="space-y-2">
-          <Btn onClick={() => window.print()}>
-            {view === 'mc' ? '사회자용 인쇄' : '본인용 인쇄'}
-          </Btn>
+          <Btn onClick={() => window.print()}>인쇄</Btn>
           <Btn
             variant="secondary"
             onClick={handleDeliver}
-            disabled={!mcEmail.trim() || delivering}
+            disabled={!mcEmail.trim() || delivering || delivered}
           >
-            {delivered ? '전달 완료' : delivering ? '전달 중…' : '사회자에게 전달'}
+            {delivered ? '전송 완료' : delivering ? '전송 중…' : '사회자에게 전송'}
           </Btn>
         </div>
       }
     >
-      {/* View toggle */}
-      <div className="flex gap-1 bg-muted-bg rounded-xl p-1 mb-5 no-print">
-        {(
-          [
-            ['mc', '사회자용'],
-            ['couple', '본인용'],
-          ] as [CueSheetVariant, string][]
-        ).map(([v, label]) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => setView(v)}
-            className={`flex-1 py-2 rounded-lg text-[13px] font-semibold ${
-              view === v ? 'bg-surface text-charcoal shadow-sm' : 'text-muted-text'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Audio upload */}
       <Card className="p-4 mb-4 no-print">
         <p className="text-[14px] font-semibold mb-3">입장 음원</p>
         <div className="space-y-3">
@@ -158,8 +131,7 @@ export default function FinalOutput({ data, setData, onBack }: Props) {
         </div>
       </Card>
 
-      {/* Email */}
-      <Card className="p-4 mb-5 space-y-3 no-print">
+      <Card className="p-4 mb-5 no-print">
         <Field
           label="사회자 이메일"
           type="email"
@@ -167,24 +139,11 @@ export default function FinalOutput({ data, setData, onBack }: Props) {
           value={mcEmail}
           onChange={(e) => setMcEmail(e.target.value)}
         />
-        <Field
-          label="본인 이메일 (선택)"
-          type="email"
-          placeholder="사본 수신"
-          value={coupleEmail}
-          onChange={(e) => setCoupleEmail(e.target.value)}
-        />
-        {deliverError && <p className="text-[12px] text-danger">{deliverError}</p>}
+        {deliverError && <p className="text-[12px] text-danger mt-2">{deliverError}</p>}
       </Card>
 
-      {/* Document */}
       <div className="print-document">
-        <div className={view === 'mc' ? 'block' : 'hidden print:hidden'}>
-          <CueSheetDocument data={data} variant="mc" />
-        </div>
-        <div className={view === 'couple' ? 'block' : 'hidden print:hidden'}>
-          <CueSheetDocument data={data} variant="couple" />
-        </div>
+        <CueSheetDocument data={data} variant="mc" />
       </div>
     </ScreenLayout>
   )

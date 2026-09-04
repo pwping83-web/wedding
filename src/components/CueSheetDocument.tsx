@@ -30,9 +30,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
   return (
     <div className="bg-surface rounded-2xl border border-border overflow-hidden">
       <div className="px-5 py-6 border-b border-border text-center">
-        <p className="text-[11px] font-medium text-accent mb-1">
-          {variant === 'mc' ? '사회자 큐시트' : '신랑·신부용'}
-        </p>
+        <p className="text-[11px] font-medium text-accent mb-1">웨딩 큐시트</p>
         <h1 className="text-[18px] font-semibold text-charcoal">
           {data.groomName || '신랑'} · {data.brideName || '신부'}
         </h1>
