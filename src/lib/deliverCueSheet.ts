@@ -5,6 +5,11 @@ import { buildCueSheetPlainText, getEntranceAudioTitle } from './cueSheetUtils'
 
 export const MC_EMAIL = 'tseizou@naver.com'
 
+function apiUrl() {
+  const base = import.meta.env.BASE_URL || '/'
+  return `${base}api/send-cue-sheet`.replace(/([^:]\/)\/+/g, '$1')
+}
+
 function formatDateLabel(date: string): string {
   if (!date) return '날짜 미정'
   return new Date(`${date}T00:00:00`).toLocaleDateString('ko-KR', {
@@ -32,7 +37,7 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
     ? `신부 ${data.brideMarkers[0].time}초 후 입장`
     : '미설정'
 
-  const response = await fetch('/api/send-cue-sheet', {
+  const response = await fetch(apiUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -52,8 +57,19 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
     }),
   })
 
-  const result = (await response.json()) as { error?: string }
+  const raw = await response.text()
+  let result: { error?: string; ok?: boolean } = {}
+  try {
+    result = raw ? (JSON.parse(raw) as { error?: string; ok?: boolean }) : {}
+  } catch {
+    throw new Error(
+      response.ok
+        ? '서버 응답을 처리하지 못했습니다.'
+        : `서버 오류(${response.status}). Vercel 배포·EmailJS 설정을 확인해 주세요.`,
+    )
+  }
+
   if (!response.ok) {
-    throw new Error(result.error || '이메일 전송에 실패했습니다.')
+    throw new Error(result.error || `이메일 전송에 실패했습니다. (${response.status})`)
   }
 }
