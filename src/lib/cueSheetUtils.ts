@@ -7,6 +7,7 @@ import {
   moodLabels,
   roleLabels,
 } from '../data'
+import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { getTimedEntranceScript } from './timedEntranceScript'
 
 export type CueSheetVariant = 'mc' | 'couple'
@@ -35,6 +36,8 @@ export function getEntranceCueMeta(
   data: AppData,
   type: 'groom' | 'bride',
 ): EntranceCueMeta | null {
+  if (!ENTRANCE_AUDIO_TIMING_ENABLED) return null
+
   const audio = type === 'groom' ? data.groomAudio : data.brideAudio
   const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
   if (!marker) return null
@@ -61,6 +64,12 @@ export function getEntranceDisplayScript(
   const title = type === 'groom' ? '신랑 입장' : '신부 입장'
   const item = data.orderItems.find((orderItem) => orderItem.title === title)
   const ctx = buildScriptContext(data)
+
+  if (!ENTRANCE_AUDIO_TIMING_ENABLED) {
+    if (item?.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
+    if (item) return getOrderItemScript(item, data.mood, data)
+    return ''
+  }
 
   if (marker?.customScript?.trim()) return applyScriptVars(marker.customScript, ctx)
   if (item?.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
@@ -112,7 +121,7 @@ export function buildCueSheetPlainText(data: AppData, variant: CueSheetVariant):
     lines.push('')
   }
 
-  if (variant === 'mc') {
+  if (variant === 'mc' && ENTRANCE_AUDIO_TIMING_ENABLED) {
     lines.push('[ 입장 음원 · 타이밍 ]')
     const groomMeta = getEntranceCueMeta(data, 'groom')
     const brideMeta = getEntranceCueMeta(data, 'bride')

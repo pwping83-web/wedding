@@ -1,9 +1,13 @@
+import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
+
 interface Props {
   currentStep: number
   onBack?: () => void
 }
 
-const STEPS = ['기본 정보', '입장 연출', '식순 편집', '인물 등록', '분위기 선택', '미리보기']
+const STEPS = ENTRANCE_AUDIO_TIMING_ENABLED
+  ? ['기본 정보', '입장 연출', '식순 편집', '인물 등록', '분위기 선택', '미리보기']
+  : ['기본 정보', '식순 편집', '인물 등록', '분위기 선택', '미리보기']
 
 export default function StepIndicator({ currentStep, onBack }: Props) {
   return (

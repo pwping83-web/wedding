@@ -3,6 +3,7 @@ import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, OrderItem, SetData } from '../data'
+import { flowStep } from '../config/features'
 
 interface Props {
   data: AppData
@@ -50,7 +51,7 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
 
   return (
     <ScreenLayout
-      step={3}
+      step={flowStep('order')}
       stepLabel="식순"
       title="식순 편집"
       subtitle={`주례 없는 기본 13단계 · 총 ${total}분`}

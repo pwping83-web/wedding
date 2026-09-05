@@ -1,5 +1,6 @@
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
+import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
 import { buildCueSheetPlainText, getEntranceAudioTitle } from './cueSheetUtils'
 
@@ -28,14 +29,16 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
   const cueSheet = buildCueSheetPlainText(data, 'mc')
   const subject = buildCueSheetEmailSubject(data)
 
-  const groomAudio = getEntranceAudioTitle(data.groomAudio)
-  const brideAudio = getEntranceAudioTitle(data.brideAudio)
-  const groomTiming = data.groomMarkers[0]
-    ? `신랑 ${data.groomMarkers[0].time}초 후 입장`
-    : '미설정'
-  const brideTiming = data.brideMarkers[0]
-    ? `신부 ${data.brideMarkers[0].time}초 후 입장`
-    : '미설정'
+  const groomAudio = ENTRANCE_AUDIO_TIMING_ENABLED ? getEntranceAudioTitle(data.groomAudio) : '-'
+  const brideAudio = ENTRANCE_AUDIO_TIMING_ENABLED ? getEntranceAudioTitle(data.brideAudio) : '-'
+  const groomTiming =
+    ENTRANCE_AUDIO_TIMING_ENABLED && data.groomMarkers[0]
+      ? `신랑 ${data.groomMarkers[0].time}초 후 입장`
+      : '-'
+  const brideTiming =
+    ENTRANCE_AUDIO_TIMING_ENABLED && data.brideMarkers[0]
+      ? `신부 ${data.brideMarkers[0].time}초 후 입장`
+      : '-'
 
   const response = await fetch(apiUrl(), {
     method: 'POST',

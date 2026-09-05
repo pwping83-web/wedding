@@ -9,6 +9,7 @@ import ChipSelectWithCustom, {
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, Person, PersonRole, SetData } from '../data'
 import { FIXED_MC, getPersonIntroScript, roleLabels, withFixedMc } from '../data'
+import { flowStep } from '../config/features'
 import { buildIntroGeneratePayload, requestGeneratedScript } from '../lib/generateScript'
 
 interface Props {
@@ -130,7 +131,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
 
   return (
     <ScreenLayout
-      step={4}
+      step={flowStep('persons')}
       stepLabel="인물"
       title="인물 등록"
       subtitle="사회자 박건 · 축가/축사 등 추가 (선택)"

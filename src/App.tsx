@@ -2,6 +2,7 @@ import MobileShell from './components/mobile/MobileShell'
 import { useState } from 'react'
 import { initialData } from './data'
 import type { AppData } from './data'
+import { ENTRANCE_AUDIO_TIMING_ENABLED } from './config/features'
 import Landing from './screens/Landing'
 import BasicInfo from './screens/BasicInfo'
 import EntranceSetup from './screens/EntranceSetup'
@@ -13,7 +14,9 @@ import FinalOutput from './screens/FinalOutput'
 
 type Screen = 'landing' | 'basic' | 'entrance' | 'order' | 'persons' | 'atmosphere' | 'preview' | 'output'
 
-const SCREENS: Screen[] = ['landing', 'basic', 'entrance', 'order', 'persons', 'atmosphere', 'preview', 'output']
+const SCREENS: Screen[] = ENTRANCE_AUDIO_TIMING_ENABLED
+  ? ['landing', 'basic', 'entrance', 'order', 'persons', 'atmosphere', 'preview', 'output']
+  : ['landing', 'basic', 'order', 'persons', 'atmosphere', 'preview', 'output']
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('landing')
@@ -35,7 +38,7 @@ export default function App() {
     <MobileShell className={screen === 'landing' ? 'mobile-shell--landing' : ''}>
       {screen === 'landing' && <Landing {...props} onStart={() => setScreen('basic')} />}
       {screen === 'basic' && <BasicInfo {...props} />}
-      {screen === 'entrance' && <EntranceSetup {...props} />}
+      {ENTRANCE_AUDIO_TIMING_ENABLED && screen === 'entrance' && <EntranceSetup {...props} />}
       {screen === 'order' && <OrderEditor {...props} />}
       {screen === 'persons' && <PersonReg {...props} />}
       {screen === 'atmosphere' && <AtmosphereSelect {...props} />}

@@ -4,6 +4,7 @@ import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, OrderItem, SetData } from '../data'
 import { roleLabels } from '../data'
+import { ENTRANCE_AUDIO_TIMING_ENABLED, flowStep } from '../config/features'
 import {
   getEntranceCueMeta,
   entranceTypeForTitle,
@@ -49,7 +50,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
     setGeneratingId(item.id)
     setGenerateError('')
     try {
-      if (entranceType) {
+      if (entranceType && ENTRANCE_AUDIO_TIMING_ENABLED) {
         const script = await requestGeneratedScript(
           buildEntranceGeneratePayload(data, entranceType, currentScript),
         )
@@ -73,7 +74,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
         }))
       }
     } catch (error) {
-      if (entranceType) {
+      if (entranceType && ENTRANCE_AUDIO_TIMING_ENABLED) {
         setData((prev) => {
           const key = entranceType === 'groom' ? 'groomMarkers' : 'brideMarkers'
           return {
@@ -105,7 +106,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
 
   return (
     <ScreenLayout
-      step={6}
+      step={flowStep('preview')}
       stepLabel="미리보기"
       title="식순 미리보기"
       subtitle={`${data.orderItems.length}단계 · ${total}분`}
@@ -149,7 +150,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
                 <span className="text-[12px] text-muted-text shrink-0">{item.duration}분</span>
               </div>
 
-              {entranceMeta && (
+              {ENTRANCE_AUDIO_TIMING_ENABLED && entranceMeta && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {entranceMeta.audioTitle && (
                     <span className="text-[11px] bg-accent-soft text-accent px-2 py-0.5 rounded-full truncate max-w-full">

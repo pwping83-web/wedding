@@ -4,6 +4,7 @@ import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, Mood, SetData } from '../data'
 import { moodLabels, moodDescriptions } from '../data'
+import { flowStep } from '../config/features'
 
 interface Props {
   data: AppData
@@ -25,7 +26,7 @@ export default function AtmosphereSelect({ data, setData, onNext, onBack }: Prop
 
   return (
     <ScreenLayout
-      step={5}
+      step={flowStep('atmosphere')}
       stepLabel="분위기"
       title="멘트 분위기"
       subtitle="선택하면 모든 사회자 멘트 톤이 바뀝니다"

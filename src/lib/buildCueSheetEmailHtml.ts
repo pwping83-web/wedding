@@ -7,6 +7,7 @@ import {
   getEntranceCueMeta,
   getItemScriptForCueSheet,
 } from './cueSheetUtils'
+import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 
 function escapeHtml(value: string): string {
   return value
@@ -67,7 +68,7 @@ export function buildCueSheetEmailHtml(data: AppData): string {
       : ''
 
   const entranceHtml =
-    groomMeta || brideMeta
+    ENTRANCE_AUDIO_TIMING_ENABLED && (groomMeta || brideMeta)
       ? `
       <tr><td style="padding:8px 28px 16px;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#F3F0EB;border-radius:12px;border:1px solid #E8E5E0;">
@@ -119,7 +120,7 @@ export function buildCueSheetEmailHtml(data: AppData): string {
           </tr>
         </table>
         ${
-          entranceMeta
+          ENTRANCE_AUDIO_TIMING_ENABLED && entranceMeta
             ? `<p style="margin:0 0 6px;font-size:12px;color:#5A8F6A;">
                 ${entranceMeta.audioTitle ? `🎵 ${escapeHtml(entranceMeta.audioTitle)} · ` : ''}
                 ${escapeHtml(entranceMeta.timingLabel)}

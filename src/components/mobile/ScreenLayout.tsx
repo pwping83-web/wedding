@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { FLOW_STEP_COUNT } from '../../config/features'
 import StepBar from './StepBar'
 import PageHeader from './PageHeader'
 import BottomBar from './BottomBar'
@@ -26,7 +27,7 @@ export default function ScreenLayout({
 }: Props) {
   return (
     <div className="min-h-[100dvh] flex flex-col">
-      <StepBar step={step} label={stepLabel} onBack={onBack} />
+      <StepBar step={step} total={FLOW_STEP_COUNT} label={stepLabel} onBack={onBack} />
       <main className={`flex-1 px-5 pt-6 pb-28 ${contentClassName}`}>
         <PageHeader title={title} subtitle={subtitle} />
         {children}

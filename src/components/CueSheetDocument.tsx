@@ -7,6 +7,7 @@ import {
   buildOrderItemsWithTime,
   type CueSheetVariant,
 } from '../lib/cueSheetUtils'
+import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { getPersonIntroScript, moodLabels, roleLabels } from '../data'
 
 interface Props {
@@ -43,7 +44,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
         <p className="text-[11px] text-muted-text mt-2">{moodLabels[data.mood]}</p>
       </div>
 
-      {variant === 'mc' && (groomMeta || brideMeta) && (
+      {ENTRANCE_AUDIO_TIMING_ENABLED && variant === 'mc' && (groomMeta || brideMeta) && (
         <div className="px-5 py-4 bg-muted-bg border-b border-border space-y-2">
           <p className="text-[12px] font-semibold text-charcoal">입장 음원 · 타이밍</p>
           {groomMeta && (
@@ -83,7 +84,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
                 </span>
               </div>
 
-              {entranceMeta && (
+              {ENTRANCE_AUDIO_TIMING_ENABLED && entranceMeta && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {entranceMeta.audioTitle && (
                     <span className="text-[11px] bg-accent-soft text-accent px-2 py-0.5 rounded-full">

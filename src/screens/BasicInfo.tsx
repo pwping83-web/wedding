@@ -108,7 +108,7 @@ export default function BasicInfo({ data, setData, onNext, onBack }: Props) {
               </button>
             ))}
           </div>
-          <p className="text-[12px] text-muted-text mt-2">{STYLE_HINT[data.style]} 톤의 입장 멘트</p>
+          <p className="text-[12px] text-muted-text mt-2">{STYLE_HINT[data.style]} 톤의 MC 멘트</p>
         </div>
 
         {data.groomName && data.brideName && (

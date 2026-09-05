@@ -10,7 +10,7 @@ interface Props {
   onStart: () => void
 }
 
-const features = ['6단계 간편 입력', 'AI 멘트 자동 생성', '사회자 이메일 전달 · 인쇄']
+const features = ['5단계 간편 입력', 'AI 멘트 자동 생성', '사회자 이메일 전달 · 인쇄']
 
 export default function Landing({ onStart }: Props) {
   return (
@@ -37,7 +37,7 @@ export default function Landing({ onStart }: Props) {
         </h1>
 
         <p className="text-[15px] text-muted-text leading-relaxed mb-8 max-w-[300px]">
-          예식 정보 · 식순 · 멘트 · 입장 음원까지
+          예식 정보 · 식순 · 멘트까지
           <br />
           사회자에게 바로 전달하세요.
         </p>
