@@ -90,7 +90,11 @@ export function getEmailConfig(env: Record<string, string | undefined>): EmailCo
   return { publicKey, privateKey, serviceId, templateId }
 }
 
-export async function sendCueSheetEmail(
+function parseRecipientEmails(mcEmail: string): string[] {
+  return [...new Set(mcEmail.split(',').map((email) => email.trim()).filter(Boolean))]
+}
+
+async function sendCueSheetEmailOnce(
   config: EmailConfig,
   payload: SendCueSheetPayload,
 ): Promise<void> {
@@ -116,6 +120,20 @@ export async function sendCueSheetEmail(
   if (!response.ok) {
     const detail = await response.text()
     throw new Error(parseEmailJsError(detail))
+  }
+}
+
+export async function sendCueSheetEmail(
+  config: EmailConfig,
+  payload: SendCueSheetPayload,
+): Promise<void> {
+  const recipients = parseRecipientEmails(payload.mcEmail)
+  if (recipients.length === 0) {
+    throw new Error('사회자 이메일이 설정되지 않았습니다.')
+  }
+
+  for (const recipient of recipients) {
+    await sendCueSheetEmailOnce(config, { ...payload, mcEmail: recipient })
   }
 }
 

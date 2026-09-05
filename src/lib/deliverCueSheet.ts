@@ -4,7 +4,8 @@ import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
 import { buildCueSheetPlainText, getEntranceAudioTitle } from './cueSheetUtils'
 
-export const MC_EMAIL = 'tseizou@naver.com'
+export const MC_RECIPIENT_EMAILS = ['tseizou@naver.com', 'grandostium2025@naver.com'] as const
+export const MC_EMAIL = MC_RECIPIENT_EMAILS[0]
 
 function apiUrl() {
   const base = import.meta.env.BASE_URL || '/'
@@ -44,7 +45,7 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      mcEmail: MC_EMAIL,
+      mcEmail: MC_RECIPIENT_EMAILS.join(','),
       subject,
       groomName: data.groomName || '신랑',
       brideName: data.brideName || '신부',

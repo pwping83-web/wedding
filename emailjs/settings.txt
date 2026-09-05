@@ -25,5 +25,5 @@ EmailJS 템플릿 설정 (template_8dglgra)
   groom_timing   : 신랑 15초 후 입장
   bride_timing   : 신부 17초 후 입장
   mc_cue_sheet   : (큐시트 텍스트)
-  to_email       : tseizou@naver.com
+  to_email       : tseizou@naver.com  (또는 grandostium2025@naver.com — 수신자별 개별 발송)
   subject        : [웨딩 큐시트] 홍길동 · 김미영
