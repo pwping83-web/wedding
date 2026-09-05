@@ -1,14 +1,12 @@
 import type { AppData } from '../data'
+import { moodLabels } from '../data'
 import {
   getEntranceCueMeta,
-  entranceTypeForTitle,
-  getItemScriptForCueSheet,
-  addMinutesLabel,
-  buildOrderItemsWithTime,
   type CueSheetVariant,
 } from '../lib/cueSheetUtils'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
-import { getPersonIntroScript, moodLabels, roleLabels } from '../data'
+import { buildCueSheetDisplayRows } from '../lib/cueSheetRows'
+import FormatMcScript from '../lib/formatMcScript'
 
 interface Props {
   data: AppData
@@ -16,100 +14,86 @@ interface Props {
 }
 
 export default function CueSheetDocument({ data, variant }: Props) {
-  const items = buildOrderItemsWithTime(data)
+  const rows = buildCueSheetDisplayRows(data, variant)
   const groomMeta = getEntranceCueMeta(data, 'groom')
   const brideMeta = getEntranceCueMeta(data, 'bride')
 
   const dateStr = data.date
-    ? new Date(data.date + 'T00:00:00').toLocaleDateString('ko-KR', {
+    ? new Date(`${data.date}T00:00:00`).toLocaleDateString('ko-KR', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+        weekday: 'short',
       })
     : ''
 
+  const headerTitle =
+    variant === 'mc'
+      ? `${data.groomName || '신랑'} · ${data.brideName || '신부'} 결혼 예식 — 사회자 큐시트`
+      : `${data.groomName || '신랑'} · ${data.brideName || '신부'} 결혼 예식`
+
   return (
-    <div className="bg-surface rounded-2xl border border-border overflow-hidden">
-      <div className="px-5 py-6 border-b border-border text-center">
-        <p className="text-[11px] font-medium text-accent mb-1">웨딩 큐시트</p>
-        <h1 className="text-[18px] font-semibold text-charcoal">
-          {data.groomName || '신랑'} · {data.brideName || '신부'}
-        </h1>
-        {dateStr && <p className="text-[13px] text-muted-text mt-1">{dateStr}</p>}
-        {data.time && (
-          <p className="text-[13px] text-muted-text">
-            {data.time} · {data.venue || '예식장'}
-          </p>
-        )}
-        <p className="text-[11px] text-muted-text mt-2">{moodLabels[data.mood]}</p>
-      </div>
+    <article className="cue-sheet">
+      <header className="cue-sheet-header">
+        <p className="cue-sheet-header__eyebrow">WEDDING CEREMONY CUE SHEET</p>
+        <h1 className="cue-sheet-header__title">{headerTitle}</h1>
+        <p className="cue-sheet-header__meta">
+          {[dateStr, data.time, data.venue].filter(Boolean).join(' · ')}
+        </p>
+        <p className="cue-sheet-header__mood">분위기: {moodLabels[data.mood]}</p>
+      </header>
 
       {ENTRANCE_AUDIO_TIMING_ENABLED && variant === 'mc' && (groomMeta || brideMeta) && (
-        <div className="px-5 py-4 bg-muted-bg border-b border-border space-y-2">
-          <p className="text-[12px] font-semibold text-charcoal">입장 음원 · 타이밍</p>
+        <div className="cue-sheet-audio-summary">
+          <strong>입장 음원 · 타이밍</strong>
           {groomMeta && (
-            <p className="text-[13px]">
-              신랑 · {groomMeta.audioTitle ?? '음원 없음'} ·{' '}
-              <span className="font-semibold text-success">{groomMeta.timingLabel}</span>
-            </p>
+            <span>
+              신랑 {groomMeta.audioTitle ?? '음원 없음'} · {groomMeta.timingLabel}
+            </span>
           )}
           {brideMeta && (
-            <p className="text-[13px]">
-              신부 · {brideMeta.audioTitle ?? '음원 없음'} ·{' '}
-              <span className="font-semibold text-success">{brideMeta.timingLabel}</span>
-            </p>
+            <span>
+              신부 {brideMeta.audioTitle ?? '음원 없음'} · {brideMeta.timingLabel}
+            </span>
           )}
         </div>
       )}
 
-      <div className="px-5 py-4 space-y-4">
-        {items.map((item, index) => {
-          const script = getItemScriptForCueSheet(item, data)
-          const entranceType = entranceTypeForTitle(item.title)
-          const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
-          const person = data.persons.find((p) => {
-            if (item.title === '축가') return p.role === 'vocalist'
-            if (item.title === '축사') return p.role === 'speaker'
-            return false
-          })
-
-          return (
-            <div key={item.id} className="pb-4 border-b border-border last:border-0">
-              <div className="flex justify-between gap-2 mb-1">
-                <p className="text-[14px] font-semibold">
-                  {index + 1}. {item.title}
-                </p>
-                <span className="text-[12px] text-muted-text tabular-nums shrink-0">
-                  {addMinutesLabel(data.time, item.startMin)}
-                </span>
-              </div>
-
-              {ENTRANCE_AUDIO_TIMING_ENABLED && entranceMeta && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {entranceMeta.audioTitle && (
-                    <span className="text-[11px] bg-accent-soft text-accent px-2 py-0.5 rounded-full">
-                      {entranceMeta.audioTitle}
-                    </span>
-                  )}
-                  <span className="text-[11px] bg-success-soft text-success px-2 py-0.5 rounded-full font-medium">
-                    {entranceMeta.timingLabel}
-                  </span>
+      <table className="cue-sheet-table">
+        <thead>
+          <tr>
+            <th className="cue-sheet-table__label-col">순서 · 시간</th>
+            <th className="cue-sheet-table__script-col">MC 대본</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id} className="cue-sheet-table__row">
+              <td className="cue-sheet-table__label">
+                <div className="cue-sheet-label-main">{row.labelMain}</div>
+                {row.labelSub && <div className="cue-sheet-label-sub">{row.labelSub}</div>}
+                <div className="cue-sheet-label-time">{row.timeLabel}</div>
+              </td>
+              <td className="cue-sheet-table__script">
+                {(row.audioNote || row.timingNote) && (
+                  <p className="cue-sheet-meta-line">
+                    {row.audioNote && <span>🎵 {row.audioNote}</span>}
+                    {row.timingNote && <span>{row.timingNote}</span>}
+                  </p>
+                )}
+                {row.personNote && <p className="cue-sheet-person-line">{row.personNote}</p>}
+                <div className="cue-sheet-script-text">
+                  <FormatMcScript text={row.script} />
                 </div>
-              )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-              {person && variant === 'mc' && (
-                <p className="text-[12px] text-muted-text mb-1">
-                  {roleLabels[person.role]} {person.name} — {getPersonIntroScript(person)}
-                </p>
-              )}
-
-              <p className="text-[13px] leading-relaxed text-charcoal whitespace-pre-wrap">
-                {script}
-              </p>
-            </div>
-          )
-        })}
-      </div>
-    </div>
+      <footer className="cue-sheet-footer">
+        AI 자동 식순 큐시트 · 사회자 전달용
+      </footer>
+    </article>
   )
 }

@@ -82,9 +82,200 @@ input, textarea, select, button {
 
 @media print {
   body { background: white !important; }
-  .mobile-shell { max-width: none; box-shadow: none; }
+  .mobile-shell { max-width: none; width: 100%; box-shadow: none; margin: 0; }
   .no-print { display: none !important; }
   .print-document .hidden { display: none !important; }
+  .print-document {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+/* 사회자용 큐시트 — 2열 표 레이아웃 */
+.cue-sheet {
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.cue-sheet-header {
+  text-align: center;
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 2px solid #1a1a1a;
+  margin-bottom: 0;
+}
+
+.cue-sheet-header__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #7b6fa8;
+}
+
+.cue-sheet-header__title {
+  margin: 0 0 0.5rem;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.cue-sheet-header__meta,
+.cue-sheet-header__mood {
+  margin: 0.2rem 0 0;
+  font-size: 12px;
+  color: #555;
+}
+
+.cue-sheet-audio-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.65rem 0.85rem;
+  background: #f3f0eb;
+  border-bottom: 1px solid #ccc;
+  font-size: 12px;
+}
+
+.cue-sheet-audio-summary strong {
+  width: 100%;
+  font-size: 12px;
+}
+
+.cue-sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.cue-sheet-table thead {
+  display: none;
+}
+
+.cue-sheet-table__label-col {
+  width: 24%;
+}
+
+.cue-sheet-table__script-col {
+  width: 76%;
+}
+
+.cue-sheet-table__row {
+  page-break-inside: avoid;
+}
+
+.cue-sheet-table__label,
+.cue-sheet-table__script {
+  border: 1px solid #bbb;
+  vertical-align: top;
+  padding: 0.65rem 0.7rem;
+}
+
+.cue-sheet-table__label {
+  background: #fafafa;
+  border-right: 1px dashed #999;
+  text-align: center;
+}
+
+.cue-sheet-label-main {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c45c5c;
+  white-space: pre-line;
+  line-height: 1.35;
+}
+
+.cue-sheet-label-sub {
+  margin-top: 0.15rem;
+  font-size: 12px;
+  font-weight: 700;
+  color: #c45c5c;
+}
+
+.cue-sheet-label-time {
+  margin-top: 0.45rem;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.cue-sheet-meta-line {
+  margin: 0 0 0.35rem;
+  font-size: 11px;
+  color: #5a8f6a;
+  font-weight: 600;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.cue-sheet-person-line {
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px dashed #ddd;
+  font-size: 11px;
+  color: #7b6fa8;
+  line-height: 1.5;
+}
+
+.cue-sheet-script-text {
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+.cue-script-cue {
+  color: #c45c5c;
+  font-weight: 700;
+}
+
+.cue-script-emphasis {
+  color: #2f6fad;
+  font-weight: 700;
+}
+
+.cue-sheet-footer {
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 10px;
+  color: #888;
+  border-top: 1px solid #ddd;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  .cue-sheet {
+    font-size: 11pt;
+  }
+
+  .cue-sheet-header__title {
+    font-size: 16pt;
+  }
+
+  .cue-sheet-table__label,
+  .cue-sheet-table__script {
+    padding: 7px 9px;
+  }
+
+  .cue-sheet-script-text {
+    font-size: 11pt;
+    line-height: 1.8;
+  }
+
+  .cue-sheet-label-main {
+    font-size: 11pt;
+  }
+
+  .cue-sheet-table__row {
+    break-inside: avoid;
+  }
 }
 
 .landing-bg {

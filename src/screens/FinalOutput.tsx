@@ -34,7 +34,7 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
   return (
     <ScreenLayout
       title="최종 큐시트"
-      subtitle="인쇄하거나 사회자에게 이메일로 보내세요"
+      subtitle="인쇄하면 사회자용 2열 대본 형태로 출력됩니다"
       onBack={onBack}
       contentClassName="pb-36"
       footer={
