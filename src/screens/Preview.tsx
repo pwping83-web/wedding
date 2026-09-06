@@ -39,6 +39,71 @@ interface Props {
   onGoOutput: () => void
 }
 
+function updateItemScript(setData: SetData, item: OrderItem, text: string) {
+  const entranceType = entranceTypeForTitle(item.title)
+  const customScript = text.trim() ? text : undefined
+
+  setData((prev) => {
+    const orderItems = prev.orderItems.map((i) =>
+      i.id === item.id ? { ...i, customScript } : i,
+    )
+
+    if (!entranceType) {
+      return { ...prev, orderItems }
+    }
+
+    const markerKey = entranceType === 'groom' ? 'groomMarkers' : 'brideMarkers'
+    const markers = prev[markerKey].map((marker) => ({ ...marker, customScript }))
+
+    return { ...prev, orderItems, [markerKey]: markers }
+  })
+}
+
+function ScriptEditor({
+  item,
+  data,
+  setData,
+  disabled,
+}: {
+  item: OrderItem
+  data: AppData
+  setData: SetData
+  disabled?: boolean
+}) {
+  const script = getItemScriptForCueSheet(item, data)
+  const isCustom = Boolean(item.customScript?.trim())
+
+  return (
+    <div className="mb-3">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <label className="text-[12px] font-medium text-charcoal">사회자 멘트</label>
+        {isCustom && (
+          <button
+            type="button"
+            onClick={() => updateItemScript(setData, item, '')}
+            className="text-[11px] text-muted-text underline-offset-2 hover:underline"
+          >
+            기본 멘트로 되돌리기
+          </button>
+        )}
+      </div>
+      <textarea
+        value={script}
+        disabled={disabled}
+        onChange={(e) => updateItemScript(setData, item, e.target.value)}
+        rows={Math.max(4, Math.min(12, script.split('\n').length + 1))}
+        className={`w-full px-3 py-2.5 bg-surface border border-border rounded-xl text-[13px] text-charcoal leading-relaxed resize-y min-h-[96px] outline-none focus:border-accent focus:ring-2 focus:ring-accent/15 ${
+          disabled ? 'opacity-40' : ''
+        }`}
+        placeholder="멘트를 직접 입력하세요"
+      />
+      <p className="text-[11px] text-muted-text mt-1.5">
+        직접 수정한 내용은 인쇄·사회자 전송 큐시트에 그대로 반영됩니다
+      </p>
+    </div>
+  )
+}
+
 function EntranceTimingFields({
   type,
   data,
@@ -221,7 +286,6 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
             entranceType && hasEntranceTimingConfig(data, entranceType)
               ? getEntranceCueMeta(data, entranceType)
               : null
-          const script = getItemScriptForCueSheet(item, data)
           const isSpeaking = speakingId === item.id
           const isGenerating = generatingId === item.id
 
@@ -274,19 +338,18 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
                 </p>
               )}
 
-              <p
-                className={`text-[13px] text-charcoal leading-relaxed mb-3 whitespace-pre-wrap ${
-                  isGenerating ? 'opacity-40' : ''
-                }`}
-              >
-                {script}
-              </p>
+              <ScriptEditor
+                item={item}
+                data={data}
+                setData={setData}
+                disabled={isGenerating}
+              />
 
               <div className="flex gap-2 pt-2 border-t border-border">
                 {speechOk && (
                   <button
                     type="button"
-                    onClick={() => handleSpeak(item.id, script)}
+                    onClick={() => handleSpeak(item.id, getItemScriptForCueSheet(item, data))}
                     className={`flex-1 h-9 rounded-lg text-[13px] font-medium border ${
                       isSpeaking
                         ? 'bg-accent text-white border-accent'
