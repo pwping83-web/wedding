@@ -69,10 +69,15 @@ function buildRowNotes(
   return lines.join('\n')
 }
 
+function hideEntranceSecondNumbers(script: string): string {
+  return script.replace(/\d+(\s*초)/g, '   $1')
+}
+
 function buildCueSheetRowScript(item: OrderItem, data: AppData): string {
-  const script = getItemScriptForCueSheet(item, data)
   const entranceType = entranceTypeForTitle(item.title)
   const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
+  let script = getItemScriptForCueSheet(item, data)
+  if (entranceType) script = hideEntranceSecondNumbers(script)
   if (!entranceMeta) return script
 
   const lines: string[] = []

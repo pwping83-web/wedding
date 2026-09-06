@@ -42,11 +42,11 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
       : '-'
   const groomTiming =
     isEntranceTimingEnabled(data, 'groom') && data.groomMarkers[0]?.time
-      ? `신랑 ${data.groomMarkers[0].time}초 후 입장`
+      ? '신랑   초 후 입장'
       : '-'
   const brideTiming =
     isEntranceTimingEnabled(data, 'bride') && data.brideMarkers[0]?.time
-      ? `신부 ${data.brideMarkers[0].time}초 후 입장`
+      ? '신부   초 후 입장'
       : '-'
 
   const response = await fetch(apiUrl(), {

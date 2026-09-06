@@ -143,7 +143,7 @@ function EntranceTimingFields({
           <input
             type="text"
             inputMode="numeric"
-            placeholder="14"
+            placeholder=""
             value={marker?.time ? String(marker.time) : ''}
             onChange={(e) => {
               const raw = e.target.value
