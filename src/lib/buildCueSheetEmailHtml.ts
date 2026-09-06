@@ -1,5 +1,4 @@
 import type { AppData } from '../data'
-import { moodLabels } from '../data'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from './cueSheetRows'
 import {
   computeCueSheetRowSpacing,
@@ -106,23 +105,10 @@ export function buildCueSheetEmailSubject(data: AppData): string {
 }
 
 export function buildCueSheetEmailHtml(data: AppData): string {
-  const groom = escapeHtml(data.groomName || '신랑')
-  const bride = escapeHtml(data.brideName || '신부')
   const groomRaw = data.groomName || '신랑'
   const brideRaw = data.brideName || '신부'
-  const dateLabel = escapeHtml(formatDateLabel(data.date))
-  const timeLabel = escapeHtml(data.time || '')
-  const venueLabel = escapeHtml(data.venue || '예식장')
-  const moodLabel = escapeHtml(moodLabels[data.mood])
   const rows = buildCueSheetDisplayRows(data, 'mc')
   const { rowPaddingPx } = computeCueSheetRowSpacing(rows)
-
-  const headerHtml = `
-    <div style="padding:8px 6px 6px;text-align:center;border-bottom:2px solid #173F9F;">
-      <p style="margin:0 0 2px;font-size:6.5pt;font-weight:700;color:#7B6FA8;letter-spacing:0.1em;">WEDDING CEREMONY CUE SHEET</p>
-      <h1 style="margin:0 0 3px;font-size:10pt;font-weight:700;color:#1A1A1A;line-height:1.3;">${groom} · ${bride}</h1>
-      <p style="margin:0;font-size:8pt;color:#555;line-height:1.35;">${dateLabel}${timeLabel ? ` · ${timeLabel}` : ''}${venueLabel ? ` · ${venueLabel}` : ''} · 분위기: ${moodLabel}</p>
-    </div>`
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -132,7 +118,6 @@ export function buildCueSheetEmailHtml(data: AppData): string {
 </head>
 <body style="margin:0;padding:0;background:#FFFFFF;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#1A1A1A;">
   <div style="width:100%;max-width:760px;margin:0 auto;">
-    ${headerHtml}
     ${renderTableHtml(rows, groomRaw, brideRaw, rowPaddingPx)}
   </div>
 </body>

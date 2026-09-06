@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import type { AppData } from '../data'
-import { moodLabels } from '../data'
 import type { CueSheetVariant } from '../lib/cueSheetUtils'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
 import { computeCueSheetRowSpacing } from '../lib/cueSheetSpacing'
@@ -53,17 +52,6 @@ export default function CueSheetDocument({ data, variant }: Props) {
   const rows = buildCueSheetDisplayRows(data, variant)
   const spacing = useMemo(() => computeCueSheetRowSpacing(rows), [rows])
 
-  const dateStr = data.date
-    ? new Date(`${data.date}T00:00:00`).toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'short',
-      })
-    : ''
-
-  const headerTitle = `${data.groomName || '신랑'} · ${data.brideName || '신부'}`
-
   const spacingStyle = {
     '--cue-row-padding-y': `${spacing.rowPaddingPx}px`,
   } as CSSProperties
@@ -71,16 +59,6 @@ export default function CueSheetDocument({ data, variant }: Props) {
   return (
     <article className="cue-sheet" style={spacingStyle}>
       <section className="cue-sheet-page">
-        <header className="cue-sheet-header">
-          <p className="cue-sheet-header__eyebrow">WEDDING CEREMONY CUE SHEET</p>
-          <h1 className="cue-sheet-header__title">{headerTitle}</h1>
-          <p className="cue-sheet-header__meta">
-            {[dateStr, data.time, data.venue, `분위기: ${moodLabels[data.mood]}`]
-              .filter(Boolean)
-              .join(' · ')}
-          </p>
-        </header>
-
         {renderTable(rows, data.groomName, data.brideName)}
       </section>
     </article>
