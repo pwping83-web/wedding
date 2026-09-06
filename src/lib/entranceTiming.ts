@@ -10,6 +10,16 @@ export function entranceTrackTitleKey(
   return type === 'groom' ? 'groomEntranceTrackTitle' : 'brideEntranceTrackTitle'
 }
 
+export function entranceTimingEnabledKey(
+  type: 'groom' | 'bride',
+): 'groomEntranceTimingEnabled' | 'brideEntranceTimingEnabled' {
+  return type === 'groom' ? 'groomEntranceTimingEnabled' : 'brideEntranceTimingEnabled'
+}
+
+export function isEntranceTimingEnabled(data: AppData, type: 'groom' | 'bride'): boolean {
+  return data[entranceTimingEnabledKey(type)] ?? false
+}
+
 export function getEntranceMarker(
   data: AppData,
   type: 'groom' | 'bride',
@@ -30,34 +40,40 @@ export function parseEntranceSeconds(raw: string): number | null {
 }
 
 export function hasEntranceTiming(data: AppData, type: 'groom' | 'bride'): boolean {
-  if (!data.entranceTimingEnabled) return false
+  if (!isEntranceTimingEnabled(data, type)) return false
   const marker = getEntranceMarker(data, type)
   return marker != null && marker.time > 0
 }
 
 export function hasEntranceTimingConfig(data: AppData, type: 'groom' | 'bride'): boolean {
-  if (!data.entranceTimingEnabled) return false
+  if (!isEntranceTimingEnabled(data, type)) return false
   return hasEntranceTiming(data, type) || getEntranceTrackTitle(data, type).length > 0
 }
 
-export function clearAllEntranceTiming(setData: SetData) {
-  setData((prev) => ({
-    ...prev,
-    entranceTimingEnabled: false,
-    groomMarkers: [],
-    brideMarkers: [],
-    groomEntranceTrackTitle: '',
-    brideEntranceTrackTitle: '',
-    orderItems: prev.orderItems.map((item) =>
-      item.title === '신랑 입장' || item.title === '신부 입장'
-        ? { ...item, customScript: undefined }
-        : item,
-    ),
-  }))
-}
+export function setEntranceTimingEnabled(
+  setData: SetData,
+  type: 'groom' | 'bride',
+  enabled: boolean,
+) {
+  const enabledKey = entranceTimingEnabledKey(type)
+  const markerKey = entranceMarkerKey(type)
+  const trackKey = entranceTrackTitleKey(type)
+  const orderTitle = type === 'groom' ? '신랑 입장' : '신부 입장'
 
-export function enableEntranceTiming(setData: SetData) {
-  setData((prev) => ({ ...prev, entranceTimingEnabled: true }))
+  setData((prev) => {
+    if (enabled) {
+      return { ...prev, [enabledKey]: true }
+    }
+    return {
+      ...prev,
+      [enabledKey]: false,
+      [markerKey]: [],
+      [trackKey]: '',
+      orderItems: prev.orderItems.map((item) =>
+        item.title === orderTitle ? { ...item, customScript: undefined } : item,
+      ),
+    }
+  })
 }
 
 export function setEntranceTrackTitle(
