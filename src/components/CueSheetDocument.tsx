@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+import type { CSSProperties } from 'react'
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
 import {
@@ -6,6 +8,7 @@ import {
 } from '../lib/cueSheetUtils'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
+import { computeCueSheetTypography } from '../lib/cueSheetTypography'
 import FormatMcScript from '../lib/formatMcScript'
 
 interface Props {
@@ -23,30 +26,25 @@ function renderTable(
       <colgroup>
         <col className="cue-sheet-table__col-label" />
         <col className="cue-sheet-table__col-script" />
-        <col className="cue-sheet-table__col-notes" />
       </colgroup>
       <thead>
         <tr>
           <th className="cue-sheet-table__head">구분</th>
           <th className="cue-sheet-table__head">사회자 멘트</th>
-          <th className="cue-sheet-table__head">비고</th>
         </tr>
       </thead>
       <tbody>
         {pageRows.map((row) => (
-          <tr key={row.id} className="cue-sheet-table__row">
+          <tr
+            key={row.id}
+            className="cue-sheet-table__row"
+            data-order-title={row.orderTitle}
+          >
             <td className="cue-sheet-table__label">{row.labelMain}</td>
             <td className="cue-sheet-table__script">
               <div className="cue-sheet-script-text">
                 <FormatMcScript text={row.script} groomName={groomName} brideName={brideName} />
               </div>
-            </td>
-            <td className="cue-sheet-table__notes">
-              {row.notes.split('\n').map((line, index) => (
-                <span key={index} className="cue-sheet-notes-line">
-                  {line}
-                </span>
-              ))}
             </td>
           </tr>
         ))}
@@ -57,6 +55,7 @@ function renderTable(
 
 export default function CueSheetDocument({ data, variant }: Props) {
   const rows = buildCueSheetDisplayRows(data, variant)
+  const typography = useMemo(() => computeCueSheetTypography(rows), [rows])
   const groomMeta = getEntranceCueMeta(data, 'groom')
   const brideMeta = getEntranceCueMeta(data, 'bride')
 
@@ -71,8 +70,14 @@ export default function CueSheetDocument({ data, variant }: Props) {
 
   const headerTitle = `${data.groomName || '신랑'} · ${data.brideName || '신부'}`
 
+  const typographyStyle = {
+    '--cue-script-size': `${typography.scriptPt}pt`,
+    '--cue-label-size': `${typography.labelPt}pt`,
+    '--cue-script-leading': String(typography.lineHeight),
+  } as CSSProperties
+
   return (
-    <article className="cue-sheet">
+    <article className="cue-sheet" style={typographyStyle}>
       <section className="cue-sheet-page">
         <header className="cue-sheet-header">
           <p className="cue-sheet-header__eyebrow">WEDDING CEREMONY CUE SHEET</p>
