@@ -1,7 +1,12 @@
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from './cueSheetRows'
-import { computeCueSheetTypography } from './cueSheetTypography'
+import {
+  computeCueSheetRowSpacing,
+  CUE_SHEET_LABEL_PT,
+  CUE_SHEET_LINE_HEIGHT,
+  CUE_SHEET_SCRIPT_PT,
+} from './cueSheetSpacing'
 
 function escapeHtml(value: string): string {
   return value
@@ -20,8 +25,8 @@ const CUE_PATTERN = /(\([^)]*\)|\[[^\]]*\])/g
 const EMPHASIS_PATTERN =
   /(배경\s*음악|박\s*수|맞\s*절|박\s*전|환\s*호|음\s*악\s*주세요|큰\s*박\s*수|따뜻한\s*박\s*수|입장해\s*주|일어나\s*주|맞이해\s*주|박수로\s*맞이|박수\s*부탁)/g
 
-function labelCellStyle(labelPt: number): string {
-  return `width:16%;min-width:28mm;padding:3px 2px;border-top:1px dotted #444;border-right:1px dotted #444;text-align:center;vertical-align:middle;font-size:${labelPt}pt;font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:break-word;color:#111;background:#FAFAFA;`
+function labelCellStyle(rowPaddingPx: number): string {
+  return `width:16%;min-width:28mm;padding:${rowPaddingPx}px 2px;border-top:1px dotted #444;border-right:1px dotted #444;text-align:center;vertical-align:middle;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:break-word;color:#111;background:#FAFAFA;`
 }
 
 function highlightNamesHtml(text: string, groomName: string, brideName: string): string {
@@ -59,18 +64,16 @@ function renderTableHtml(
   pageRows: CueSheetDisplayRow[],
   groomName: string,
   brideName: string,
-  labelPt: number,
-  scriptPt: number,
-  lineHeight: number,
+  rowPaddingPx: number,
 ): string {
   const rows = pageRows
     .map((row) => {
       return `
         <tr>
-          <td style="${labelCellStyle(labelPt)}">
+          <td style="${labelCellStyle(rowPaddingPx)}">
             ${escapeHtml(row.labelMain)}
           </td>
-          <td style="width:84%;padding:3px 5px;border-top:1px dotted #444;vertical-align:top;font-size:${scriptPt}pt;line-height:${lineHeight};color:#222;overflow-wrap:break-word;word-break:keep-all;">
+          <td style="width:84%;padding:${rowPaddingPx}px 5px;border-top:1px dotted #444;vertical-align:top;font-size:${CUE_SHEET_SCRIPT_PT}pt;line-height:${CUE_SHEET_LINE_HEIGHT};color:#222;overflow-wrap:break-word;word-break:keep-all;">
             ${formatScriptHtml(row.script, groomName, brideName)}
           </td>
         </tr>`
@@ -85,8 +88,8 @@ function renderTableHtml(
       </colgroup>
       <thead>
         <tr>
-          <th style="width:16%;min-width:28mm;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;border-right:1px dotted #444;background:#EEF2FA;font-size:${labelPt}pt;font-weight:700;color:#173F9F;">구분</th>
-          <th style="width:84%;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;background:#EEF2FA;font-size:${labelPt}pt;font-weight:700;color:#173F9F;">사회자 멘트</th>
+          <th style="width:16%;min-width:28mm;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;border-right:1px dotted #444;background:#EEF2FA;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;color:#173F9F;">구분</th>
+          <th style="width:84%;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;background:#EEF2FA;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;color:#173F9F;">사회자 멘트</th>
         </tr>
       </thead>
       <tbody>
@@ -112,7 +115,7 @@ export function buildCueSheetEmailHtml(data: AppData): string {
   const venueLabel = escapeHtml(data.venue || '예식장')
   const moodLabel = escapeHtml(moodLabels[data.mood])
   const rows = buildCueSheetDisplayRows(data, 'mc')
-  const { scriptPt, labelPt, lineHeight } = computeCueSheetTypography(rows)
+  const { rowPaddingPx } = computeCueSheetRowSpacing(rows)
 
   const headerHtml = `
     <div style="padding:8px 6px 6px;text-align:center;border-bottom:2px solid #173F9F;">
@@ -130,7 +133,7 @@ export function buildCueSheetEmailHtml(data: AppData): string {
 <body style="margin:0;padding:0;background:#FFFFFF;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#1A1A1A;">
   <div style="width:100%;max-width:760px;margin:0 auto;">
     ${headerHtml}
-    ${renderTableHtml(rows, groomRaw, brideRaw, labelPt, scriptPt, lineHeight)}
+    ${renderTableHtml(rows, groomRaw, brideRaw, rowPaddingPx)}
   </div>
 </body>
 </html>`

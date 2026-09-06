@@ -8,7 +8,7 @@ import {
 } from '../lib/cueSheetUtils'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
-import { computeCueSheetTypography } from '../lib/cueSheetTypography'
+import { computeCueSheetRowSpacing } from '../lib/cueSheetSpacing'
 import FormatMcScript from '../lib/formatMcScript'
 
 interface Props {
@@ -55,7 +55,7 @@ function renderTable(
 
 export default function CueSheetDocument({ data, variant }: Props) {
   const rows = buildCueSheetDisplayRows(data, variant)
-  const typography = useMemo(() => computeCueSheetTypography(rows), [rows])
+  const spacing = useMemo(() => computeCueSheetRowSpacing(rows), [rows])
   const groomMeta = getEntranceCueMeta(data, 'groom')
   const brideMeta = getEntranceCueMeta(data, 'bride')
 
@@ -70,14 +70,12 @@ export default function CueSheetDocument({ data, variant }: Props) {
 
   const headerTitle = `${data.groomName || '신랑'} · ${data.brideName || '신부'}`
 
-  const typographyStyle = {
-    '--cue-script-size': `${typography.scriptPt}pt`,
-    '--cue-label-size': `${typography.labelPt}pt`,
-    '--cue-script-leading': String(typography.lineHeight),
+  const spacingStyle = {
+    '--cue-row-padding-y': `${spacing.rowPaddingPx}px`,
   } as CSSProperties
 
   return (
-    <article className="cue-sheet" style={typographyStyle}>
+    <article className="cue-sheet" style={spacingStyle}>
       <section className="cue-sheet-page">
         <header className="cue-sheet-header">
           <p className="cue-sheet-header__eyebrow">WEDDING CEREMONY CUE SHEET</p>

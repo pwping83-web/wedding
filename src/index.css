@@ -132,9 +132,7 @@ input, textarea, select, button {
 
 /* 사회자용 큐시트 — HTML table (세로줄 일치) */
 .cue-sheet {
-  --cue-script-size: 12pt;
-  --cue-label-size: 9pt;
-  --cue-script-leading: 1.45;
+  --cue-row-padding-y: 6px;
   background: #fff;
   color: #1a1a1a;
   width: 100%;
@@ -205,7 +203,7 @@ input, textarea, select, button {
   border-bottom: 1px solid #173f9f;
   border-right: 1px dotted #444;
   padding: 4px 3px;
-  font-size: clamp(9pt, var(--cue-label-size), 10.5pt);
+  font-size: 9pt;
   font-weight: 700;
   text-align: center;
   background: #eef2fa;
@@ -229,11 +227,11 @@ input, textarea, select, button {
 }
 
 .cue-sheet-table__label {
-  padding: 4px 3px;
+  padding: var(--cue-row-padding-y) 3px;
   border-right: 1px dotted #444;
   text-align: center;
   vertical-align: middle;
-  font-size: clamp(9pt, var(--cue-label-size), 10.5pt);
+  font-size: 9pt;
   font-weight: 700;
   line-height: 1.35;
   word-break: keep-all;
@@ -243,7 +241,7 @@ input, textarea, select, button {
 }
 
 .cue-sheet-table__script {
-  padding: 4px 6px;
+  padding: var(--cue-row-padding-y) 6px;
   overflow-wrap: break-word;
   word-break: keep-all;
 }
@@ -254,8 +252,8 @@ input, textarea, select, button {
 }
 
 .cue-sheet-script-text {
-  font-size: clamp(12pt, var(--cue-script-size), 14pt);
-  line-height: var(--cue-script-leading);
+  font-size: 12pt;
+  line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: keep-all;
@@ -301,17 +299,17 @@ input, textarea, select, button {
   }
 
   .cue-sheet-table__label {
-    font-size: clamp(9pt, var(--cue-label-size), 10.5pt);
-    padding: 3px 2px;
+    font-size: 9pt;
+    padding: var(--cue-row-padding-y) 2px;
   }
 
   .cue-sheet-table__script {
-    padding: 3px 5px;
+    padding: var(--cue-row-padding-y) 5px;
   }
 
   .cue-sheet-script-text {
-    font-size: clamp(12pt, var(--cue-script-size), 14pt);
-    line-height: var(--cue-script-leading);
+    font-size: 12pt;
+    line-height: 1.45;
   }
 }
 
