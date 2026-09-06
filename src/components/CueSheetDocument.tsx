@@ -5,11 +5,7 @@ import {
   type CueSheetVariant,
 } from '../lib/cueSheetUtils'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
-import {
-  buildCueSheetDisplayRows,
-  splitCueSheetPages,
-  type CueSheetDisplayRow,
-} from '../lib/cueSheetRows'
+import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
 import FormatMcScript from '../lib/formatMcScript'
 
 interface Props {
@@ -21,7 +17,6 @@ function renderTable(
   pageRows: CueSheetDisplayRow[],
   groomName: string,
   brideName: string,
-  showHeader: boolean,
 ) {
   return (
     <table className="cue-sheet-table">
@@ -30,15 +25,13 @@ function renderTable(
         <col className="cue-sheet-table__col-script" />
         <col className="cue-sheet-table__col-notes" />
       </colgroup>
-      {showHeader && (
-        <thead>
-          <tr>
-            <th className="cue-sheet-table__head">구분</th>
-            <th className="cue-sheet-table__head">사회자 멘트</th>
-            <th className="cue-sheet-table__head">비고</th>
-          </tr>
-        </thead>
-      )}
+      <thead>
+        <tr>
+          <th className="cue-sheet-table__head">구분</th>
+          <th className="cue-sheet-table__head">사회자 멘트</th>
+          <th className="cue-sheet-table__head">비고</th>
+        </tr>
+      </thead>
       <tbody>
         {pageRows.map((row) => (
           <tr key={row.id} className="cue-sheet-table__row">
@@ -64,7 +57,6 @@ function renderTable(
 
 export default function CueSheetDocument({ data, variant }: Props) {
   const rows = buildCueSheetDisplayRows(data, variant)
-  const { firstPageRows, secondPageRows } = splitCueSheetPages(rows)
   const groomMeta = getEntranceCueMeta(data, 'groom')
   const brideMeta = getEntranceCueMeta(data, 'bride')
 
@@ -81,7 +73,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
 
   return (
     <article className="cue-sheet">
-      <section className="cue-sheet-page cue-sheet-page--first">
+      <section className="cue-sheet-page">
         <header className="cue-sheet-header">
           <p className="cue-sheet-header__eyebrow">WEDDING CEREMONY CUE SHEET</p>
           <h1 className="cue-sheet-header__title">{headerTitle}</h1>
@@ -108,14 +100,8 @@ export default function CueSheetDocument({ data, variant }: Props) {
           </div>
         )}
 
-        {renderTable(firstPageRows, data.groomName, data.brideName, true)}
+        {renderTable(rows, data.groomName, data.brideName)}
       </section>
-
-      {secondPageRows.length > 0 && (
-        <section className="cue-sheet-page cue-sheet-page--continued">
-          {renderTable(secondPageRows, data.groomName, data.brideName, true)}
-        </section>
-      )}
     </article>
   )
 }

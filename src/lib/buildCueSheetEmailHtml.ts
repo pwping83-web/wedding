@@ -1,10 +1,6 @@
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
-import {
-  buildCueSheetDisplayRows,
-  splitCueSheetPages,
-  type CueSheetDisplayRow,
-} from './cueSheetRows'
+import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from './cueSheetRows'
 
 function escapeHtml(value: string): string {
   return value
@@ -22,6 +18,9 @@ function escapeRegExp(value: string): string {
 const CUE_PATTERN = /(\([^)]*\)|\[[^\]]*\])/g
 const EMPHASIS_PATTERN =
   /(배경\s*음악|박\s*수|맞\s*절|박\s*전|환\s*호|음\s*악\s*주세요|큰\s*박\s*수|따뜻한\s*박\s*수|입장해\s*주|일어나\s*주|맞이해\s*주|박수로\s*맞이|박수\s*부탁)/g
+
+const LABEL_CELL_STYLE =
+  'width:15%;min-width:28mm;padding:3px 2px;border-top:1px dotted #444;border-right:1px dotted #444;text-align:center;vertical-align:middle;font-size:9pt;font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:break-word;color:#111;background:#FAFAFA;'
 
 function highlightNamesHtml(text: string, groomName: string, brideName: string): string {
   const names = [...new Set([groomName.trim(), brideName.trim()].filter(Boolean))].sort(
@@ -58,30 +57,18 @@ function renderTableHtml(
   pageRows: CueSheetDisplayRow[],
   groomName: string,
   brideName: string,
-  showHeader: boolean,
 ): string {
-  const header = showHeader
-    ? `
-      <thead>
-        <tr>
-          <th style="width:12%;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;border-right:1px dotted #444;background:#EEF2FA;font-size:9pt;font-weight:700;color:#173F9F;">구분</th>
-          <th style="width:63%;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;border-right:1px dotted #444;background:#EEF2FA;font-size:9pt;font-weight:700;color:#173F9F;">사회자 멘트</th>
-          <th style="width:25%;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;background:#EEF2FA;font-size:9pt;font-weight:700;color:#173F9F;">비고</th>
-        </tr>
-      </thead>`
-    : ''
-
   const rows = pageRows
     .map((row) => {
       return `
         <tr>
-          <td style="width:12%;padding:3px 2px;border-top:1px dotted #444;border-right:1px dotted #444;text-align:center;vertical-align:middle;font-size:9pt;font-weight:700;line-height:1.3;white-space:nowrap;color:#111;background:#FAFAFA;">
+          <td style="${LABEL_CELL_STYLE}">
             ${escapeHtml(row.labelMain)}
           </td>
-          <td style="width:63%;padding:3px 5px;border-top:1px dotted #444;border-right:1px dotted #444;vertical-align:top;font-size:12pt;line-height:1.45;color:#222;overflow-wrap:break-word;word-break:keep-all;">
+          <td style="width:58%;padding:3px 5px;border-top:1px dotted #444;border-right:1px dotted #444;vertical-align:top;font-size:12pt;line-height:1.45;color:#222;overflow-wrap:break-word;word-break:keep-all;">
             ${formatScriptHtml(row.script, groomName, brideName)}
           </td>
-          <td style="width:25%;padding:3px 4px;border-top:1px dotted #444;vertical-align:top;font-size:9pt;line-height:1.45;color:#444;white-space:pre-line;background:#FCFCFC;">
+          <td style="width:27%;padding:3px 4px;border-top:1px dotted #444;vertical-align:top;font-size:9pt;line-height:1.45;color:#444;white-space:pre-line;background:#FCFCFC;">
             ${escapeHtml(row.notes)}
           </td>
         </tr>`
@@ -91,11 +78,17 @@ function renderTableHtml(
   return `
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;border-left:2px solid #173F9F;border-right:2px solid #173F9F;">
       <colgroup>
-        <col style="width:12%;" />
-        <col style="width:63%;" />
-        <col style="width:25%;" />
+        <col style="width:15%;min-width:28mm;" />
+        <col style="width:58%;" />
+        <col style="width:27%;" />
       </colgroup>
-      ${header}
+      <thead>
+        <tr>
+          <th style="width:15%;min-width:28mm;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;border-right:1px dotted #444;background:#EEF2FA;font-size:9pt;font-weight:700;color:#173F9F;">구분</th>
+          <th style="width:58%;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;border-right:1px dotted #444;background:#EEF2FA;font-size:9pt;font-weight:700;color:#173F9F;">사회자 멘트</th>
+          <th style="width:27%;padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;background:#EEF2FA;font-size:9pt;font-weight:700;color:#173F9F;">비고</th>
+        </tr>
+      </thead>
       <tbody>
         ${rows}
       </tbody>
@@ -119,7 +112,6 @@ export function buildCueSheetEmailHtml(data: AppData): string {
   const venueLabel = escapeHtml(data.venue || '예식장')
   const moodLabel = escapeHtml(moodLabels[data.mood])
   const rows = buildCueSheetDisplayRows(data, 'mc')
-  const { firstPageRows, secondPageRows } = splitCueSheetPages(rows)
 
   const headerHtml = `
     <div style="padding:8px 6px 6px;text-align:center;border-bottom:2px solid #173F9F;">
@@ -127,17 +119,6 @@ export function buildCueSheetEmailHtml(data: AppData): string {
       <h1 style="margin:0 0 3px;font-size:10pt;font-weight:700;color:#1A1A1A;line-height:1.3;">${groom} · ${bride}</h1>
       <p style="margin:0;font-size:8pt;color:#555;line-height:1.35;">${dateLabel}${timeLabel ? ` · ${timeLabel}` : ''}${venueLabel ? ` · ${venueLabel}` : ''} · 분위기: ${moodLabel}</p>
     </div>`
-
-  const firstPage = `
-    <div style="page-break-after:always;">
-      ${headerHtml}
-      ${renderTableHtml(firstPageRows, groomRaw, brideRaw, true)}
-    </div>`
-
-  const secondPage =
-    secondPageRows.length > 0
-      ? `<div>${renderTableHtml(secondPageRows, groomRaw, brideRaw, true)}</div>`
-      : ''
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -147,8 +128,8 @@ export function buildCueSheetEmailHtml(data: AppData): string {
 </head>
 <body style="margin:0;padding:0;background:#FFFFFF;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;color:#1A1A1A;">
   <div style="width:100%;max-width:760px;margin:0 auto;">
-    ${firstPage}
-    ${secondPage}
+    ${headerHtml}
+    ${renderTableHtml(rows, groomRaw, brideRaw)}
   </div>
 </body>
 </html>`

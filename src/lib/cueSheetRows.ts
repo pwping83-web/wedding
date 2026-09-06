@@ -36,7 +36,7 @@ export function getCueSheetRowLabel(title: string): string {
     case '폐식사':
       return '폐식사'
     default:
-      return title
+      return title.replace(/(\S)\(/g, '$1 (')
   }
 }
 
