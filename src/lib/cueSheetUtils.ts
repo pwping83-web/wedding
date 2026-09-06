@@ -20,9 +20,9 @@ export type EntranceCueMeta = {
   audioUrl: string | null
 }
 
-export function formatEntranceTiming(type: 'groom' | 'bride', _seconds: number): string {
+export function formatEntranceTiming(type: 'groom' | 'bride', seconds: number): string {
   const role = type === 'groom' ? '신랑' : '신부'
-  return `${role}   초 후 입장`
+  return `${role} ${seconds}초 후 입장`
 }
 
 export function getEntranceAudioTitle(

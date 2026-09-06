@@ -68,23 +68,18 @@ function buildRowNotes(
   return lines.join('\n')
 }
 
-function hideEntranceSecondNumbers(script: string): string {
-  return script.replace(/\d+(\s*초)/g, '   $1')
-}
-
 function buildCueSheetRowScript(item: OrderItem, data: AppData): string {
   const entranceType = entranceTypeForTitle(item.title)
   const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
-  let script = getItemScriptForCueSheet(item, data)
-  if (entranceType) script = hideEntranceSecondNumbers(script)
+  const script = getItemScriptForCueSheet(item, data)
   if (!entranceMeta) return script
 
-  const lines: string[] = []
-  if (entranceMeta.audioTitle) lines.push(`곡: ${entranceMeta.audioTitle}`)
-  if (entranceMeta.timingLabel) lines.push(entranceMeta.timingLabel)
-  if (lines.length === 0) return script
+  const parts: string[] = []
+  if (entranceMeta.audioTitle) parts.push(`곡: ${entranceMeta.audioTitle}`)
+  parts.push(script)
+  if (entranceMeta.timingLabel) parts.push(entranceMeta.timingLabel)
 
-  return `${lines.join('\n')}\n\n${script}`
+  return parts.join('\n\n')
 }
 
 export function buildCueSheetDisplayRows(
