@@ -69,6 +69,20 @@ function buildRowNotes(
   return lines.join('\n')
 }
 
+function buildCueSheetRowScript(item: OrderItem, data: AppData): string {
+  const script = getItemScriptForCueSheet(item, data)
+  const entranceType = entranceTypeForTitle(item.title)
+  const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
+  if (!entranceMeta) return script
+
+  const lines: string[] = []
+  if (entranceMeta.audioTitle) lines.push(`곡: ${entranceMeta.audioTitle}`)
+  if (entranceMeta.timingLabel) lines.push(entranceMeta.timingLabel)
+  if (lines.length === 0) return script
+
+  return `${lines.join('\n')}\n\n${script}`
+}
+
 export function buildCueSheetDisplayRows(
   data: AppData,
   variant: CueSheetVariant,
@@ -84,7 +98,7 @@ export function buildCueSheetDisplayRows(
       id: item.id,
       orderTitle: item.title,
       labelMain: getCueSheetRowLabel(item.title),
-      script: getItemScriptForCueSheet(item, data),
+      script: buildCueSheetRowScript(item, data),
       notes: buildRowNotes(item, variant, person, entranceMeta),
       durationMin: item.duration,
     }

@@ -50,7 +50,10 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
 
   const total = data.orderItems.reduce((s, i) => s + i.duration, 0)
   const hasMarriageDeclaration = data.orderItems.some((item) => isMarriageDeclarationTitle(item.title))
-  const readerOptions: MarriageDeclarationReader[] = ['mc', 'couple']
+  const readerOptions: MarriageDeclarationReader[] = ['mc', 'couple', 'custom']
+  const marriageDeclarationItem = data.orderItems.find((item) =>
+    isMarriageDeclarationTitle(item.title),
+  )
 
   return (
     <ScreenLayout
@@ -146,6 +149,32 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
               </label>
             ))}
           </div>
+          {data.marriageDeclarationReader === 'custom' && marriageDeclarationItem && (
+            <div className="pt-1">
+              <label className="block text-[13px] font-medium text-charcoal mb-1.5">
+                성혼선언문 멘트
+              </label>
+              <textarea
+                value={marriageDeclarationItem.customScript ?? ''}
+                onChange={(e) =>
+                  setData((prev) => ({
+                    ...prev,
+                    orderItems: prev.orderItems.map((item) =>
+                      item.id === marriageDeclarationItem.id
+                        ? { ...item, customScript: e.target.value }
+                        : item,
+                    ),
+                  }))
+                }
+                rows={5}
+                placeholder="성혼선언문 멘트를 직접 입력하세요"
+                className="w-full px-3 py-2.5 bg-surface border border-border rounded-xl text-[14px] text-charcoal leading-relaxed resize-y min-h-[120px] outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+              />
+              <p className="text-[11px] text-muted-text mt-1.5">
+                입력한 내용은 미리보기·인쇄·사회자 전송 큐시트에 그대로 반영됩니다
+              </p>
+            </div>
+          )}
         </Card>
       )}
 

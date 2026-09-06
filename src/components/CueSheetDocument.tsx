@@ -6,7 +6,6 @@ import {
   getEntranceCueMeta,
   type CueSheetVariant,
 } from '../lib/cueSheetUtils'
-import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
 import { computeCueSheetRowSpacing } from '../lib/cueSheetSpacing'
 import FormatMcScript from '../lib/formatMcScript'
@@ -87,7 +86,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
           </p>
         </header>
 
-        {ENTRANCE_AUDIO_TIMING_ENABLED && variant === 'mc' && (groomMeta || brideMeta) && (
+        {variant === 'mc' && (groomMeta || brideMeta) && (
           <div className="cue-sheet-audio-summary">
             <strong>입장 음원 · 타이밍</strong>
             {groomMeta && (

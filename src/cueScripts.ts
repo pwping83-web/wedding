@@ -423,6 +423,12 @@ export function getMarriageDeclarationScript(
   reader: MarriageDeclarationReader,
   data?: AppData,
 ): string {
+  if (reader === 'custom') {
+    const item = data?.orderItems.find((orderItem) => isMarriageDeclarationTitle(orderItem.title))
+    const ctx = data ? buildScriptContext(data) : {}
+    if (item?.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
+    return '성혼선언문 멘트를 직접 입력해 주세요.'
+  }
   const scripts = reader === 'mc' ? marriageDeclarationMcScripts : itemScripts['성혼선언문']
   const moodScripts = scripts[mood]
   const raw = moodScripts[variant % moodScripts.length]

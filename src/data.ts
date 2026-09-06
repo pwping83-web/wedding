@@ -11,7 +11,7 @@ export type Style = 'classic' | 'casual' | 'modern' | 'fun'
 export type Mood = 'bright' | 'solemn' | 'formal' | 'warm'
 export type PersonRole = 'mc' | 'officiant' | 'vocalist' | 'speaker'
 /** 성혼선언문 낭독자 — 기본값 사회자 */
-export type MarriageDeclarationReader = 'mc' | 'couple'
+export type MarriageDeclarationReader = 'mc' | 'couple' | 'custom'
 
 export interface Marker {
   id: string
@@ -124,6 +124,7 @@ export const moodEmojis: Record<Mood, string> = {
 export const marriageDeclarationReaderLabels: Record<MarriageDeclarationReader, string> = {
   mc: '사회자 낭독',
   couple: '신랑·신부 낭독',
+  custom: '기타 (직접 입력)',
 }
 
 export const defaultOrderItems: OrderItem[] = [
@@ -157,16 +158,21 @@ export function getOrderItemScript(
   data: AppData,
 ): string {
   const ctx = buildScriptContext(data)
-  if (item.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
   if (isMarriageDeclarationTitle(item.title)) {
+    const reader = data.marriageDeclarationReader ?? 'mc'
+    if (reader === 'custom') {
+      if (item.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
+      return '성혼선언문 멘트를 직접 입력해 주세요.'
+    }
     return getMarriageDeclarationScript(
       item.title,
       mood,
       item.scriptVariant,
-      data.marriageDeclarationReader ?? 'mc',
+      reader,
       data,
     )
   }
+  if (item.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
   return getItemScript(item.title, mood, item.scriptVariant, data)
 }
 

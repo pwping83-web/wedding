@@ -48,14 +48,21 @@ function updateItemScript(setData: SetData, item: OrderItem, text: string) {
       i.id === item.id ? { ...i, customScript } : i,
     )
 
+    const marriageCustom =
+      isMarriageDeclarationTitle(item.title) && prev.marriageDeclarationReader !== 'custom'
+
     if (!entranceType) {
-      return { ...prev, orderItems }
+      return marriageCustom
+        ? { ...prev, orderItems, marriageDeclarationReader: 'custom' as const }
+        : { ...prev, orderItems }
     }
 
     const markerKey = entranceType === 'groom' ? 'groomMarkers' : 'brideMarkers'
     const markers = prev[markerKey].map((marker) => ({ ...marker, customScript }))
 
-    return { ...prev, orderItems, [markerKey]: markers }
+    return marriageCustom
+      ? { ...prev, orderItems, [markerKey]: markers, marriageDeclarationReader: 'custom' as const }
+      : { ...prev, orderItems, [markerKey]: markers }
   })
 }
 
@@ -71,7 +78,9 @@ function ScriptEditor({
   disabled?: boolean
 }) {
   const script = getItemScriptForCueSheet(item, data)
-  const isCustom = Boolean(item.customScript?.trim())
+  const isCustom = isMarriageDeclarationTitle(item.title)
+    ? data.marriageDeclarationReader === 'custom' && Boolean(item.customScript?.trim())
+    : Boolean(item.customScript?.trim())
 
   return (
     <div className="mb-3">
