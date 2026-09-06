@@ -37,7 +37,7 @@ export default function Landing({ onStart }: Props) {
         </h1>
 
         <p className="text-[14px] font-semibold text-charcoal/80 mb-4">
-          (ENX 웨딩.MC)
+          (ENX 웨딩 · MC)
         </p>
 
         <p className="text-[15px] text-muted-text leading-relaxed mb-8 max-w-[300px]">
