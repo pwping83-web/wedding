@@ -188,6 +188,38 @@ export function buildGeneratePrompt(input: GenerateScriptInput): string {
   return base.join('\n')
 }
 
+export function cleanGeneratedScript(kind: GenerateScriptKind, script: string): string {
+  let cleaned = script
+    .trim()
+    .replace(/^```[a-zA-Z]*\s*/g, '')
+    .replace(/```$/g, '')
+    .trim()
+
+  cleaned = cleaned
+    .split('\n')
+    .map((line) =>
+      line
+        .trim()
+        .replace(/^[-*]\s+/, '')
+        .replace(/^\d+[.)]\s+/, '')
+        .replace(/^사회자\s*[:：]\s*/, '')
+        .replace(/^멘트\s*[:：]\s*/, ''),
+    )
+    .join('\n')
+    .replace(/^["'“”]+/, '')
+    .replace(/["'“”]+$/, '')
+    .trim()
+
+  if (kind === 'entrance') {
+    const forbidden = /(초\s*후|[0-9０-９]+\s*초|음악이\s*시작|입장\s*음악|타이밍|기다려\s*주세요|대기해\s*주세요|잠시만)/
+    if (forbidden.test(cleaned)) {
+      throw new Error('입장 멘트에 금지된 타이밍/대기 문구가 포함되었습니다.')
+    }
+  }
+
+  return cleaned
+}
+
 export function maxCompletionTokens(kind: GenerateScriptKind): number {
   return kind === 'entrance' ? 400 : 1200
 }

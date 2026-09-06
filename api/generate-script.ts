@@ -5,6 +5,7 @@ export const config = {
 import {
   buildGeneratePrompt,
   buildGenerateSystemPrompt,
+  cleanGeneratedScript,
   maxCompletionTokens,
   type GenerateScriptInput,
 } from '../server/generateScriptPrompt'
@@ -18,7 +19,8 @@ async function generateScriptText(input: GenerateScriptInput, apiKey: string): P
     },
     body: JSON.stringify({
       model: 'openai/gpt-oss-120b',
-      temperature: 0.85,
+      temperature: 0.92,
+      top_p: 0.9,
       max_completion_tokens: maxCompletionTokens(input.kind),
       messages: [
         {
@@ -40,7 +42,7 @@ async function generateScriptText(input: GenerateScriptInput, apiKey: string): P
   }
   const text = payload.choices?.[0]?.message?.content?.trim()
   if (!text) throw new Error('Groq returned empty script')
-  return text
+  return cleanGeneratedScript(input.kind, text)
 }
 
 const corsHeaders = {
