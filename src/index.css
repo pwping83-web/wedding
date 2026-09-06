@@ -82,12 +82,28 @@ input, textarea, select, button {
 
 @media print {
   body { background: white !important; }
-  .mobile-shell { max-width: none; width: 100%; box-shadow: none; margin: 0; }
+  html, body {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  .mobile-shell {
+    max-width: none !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
   .no-print { display: none !important; }
   .print-document .hidden { display: none !important; }
   .print-document {
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
   }
 }
 
@@ -151,50 +167,58 @@ input, textarea, select, button {
   font-size: 12px;
 }
 
-.cue-sheet-table {
+.cue-sheet-table,
+.cue-sheet-grid {
   width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
   border-left: 2px solid #173f9f;
   border-right: 2px solid #173f9f;
 }
 
-.cue-sheet-table thead {
-  display: none;
+.cue-sheet-grid {
+  display: flex;
+  flex-direction: column;
 }
 
-.cue-sheet-table__label-col {
-  width: 7%;
-}
-
-.cue-sheet-table__script-col {
-  width: 93%;
-}
-
-.cue-sheet-table__row {
-  page-break-inside: avoid;
-}
-
-.cue-sheet-table__label,
-.cue-sheet-table__script {
+.cue-sheet-grid__row {
+  display: grid;
+  grid-template-columns: 13mm minmax(0, 1fr);
   border-top: 1px dotted #444;
-  border-bottom: 1px dotted #444;
-  vertical-align: top;
-  padding: 0.3rem 0.45rem;
 }
 
-.cue-sheet-table__label {
+.cue-sheet-grid__row:last-child {
+  border-bottom: 1px dotted #444;
+}
+
+.cue-sheet-grid__label,
+.cue-sheet-grid__script {
+  vertical-align: top;
+  padding: 0.28rem 0.35rem;
+}
+
+.cue-sheet-grid__label {
+  width: 13mm;
+  max-width: 13mm;
+  min-width: 13mm;
   background: #fafafa;
   border-right: 1px dotted #444;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.cue-sheet-grid__script {
+  min-width: 0;
 }
 
 .cue-sheet-label-main {
-  font-size: 8.5px;
+  font-size: 7.5px;
   font-weight: 700;
   color: #1a1a1a;
   white-space: pre-line;
-  line-height: 1.35;
+  line-height: 1.25;
+  word-break: keep-all;
 }
 
 .cue-sheet-label-sub {
@@ -259,17 +283,20 @@ input, textarea, select, button {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 6mm 7mm;
+    margin: 5mm 6mm;
   }
 
   .cue-sheet {
     font-size: 8.5pt;
+    width: 100% !important;
   }
 
   .cue-sheet-page {
-    min-height: calc(297mm - 12mm);
+    width: 100% !important;
+    min-height: calc(297mm - 10mm);
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
   }
 
   .cue-sheet-page--first {
@@ -278,49 +305,55 @@ input, textarea, select, button {
   }
 
   .cue-sheet-page__body {
-    flex: 1;
+    flex: 1 1 auto;
     display: flex;
+    min-height: 0;
   }
 
-  .cue-sheet-table {
+  .cue-sheet-grid {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     height: 100%;
+  }
+
+  .cue-sheet-grid--fill .cue-sheet-grid__row {
+    flex: 1 1 0;
+    min-height: 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .cue-sheet-grid__row {
+    grid-template-columns: 12mm minmax(0, 1fr);
+  }
+
+  .cue-sheet-grid__label {
+    width: 12mm;
+    max-width: 12mm;
+    min-width: 12mm;
+    padding: 2px 2px;
+  }
+
+  .cue-sheet-grid__script {
+    padding: 3px 6px;
   }
 
   .cue-sheet-header__title {
     font-size: 11pt;
   }
 
-  .cue-sheet-table__label,
-  .cue-sheet-table__script {
-    padding: 3px 5px;
-  }
-
   .cue-sheet-script-text {
     font-size: 8.5pt;
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
   .cue-sheet-label-main {
-    font-size: 6.5pt;
+    font-size: 6pt;
   }
 
-  .cue-sheet-table__row {
-    break-inside: avoid;
-  }
-
-  .cue-sheet-page-break-row {
-    display: table-row;
-  }
-
-  .cue-sheet-page-break-row td {
-    padding: 0 !important;
-    border: 0 !important;
-  }
-
-  .cue-sheet-page-break {
-    display: block;
-    break-after: page;
-    page-break-after: always;
+  .cue-sheet-label-sub {
+    font-size: 5.5pt;
   }
 }
 

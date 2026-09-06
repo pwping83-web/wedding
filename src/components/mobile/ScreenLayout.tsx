@@ -27,9 +27,13 @@ export default function ScreenLayout({
 }: Props) {
   return (
     <div className="min-h-[100dvh] flex flex-col">
-      <StepBar step={step} total={FLOW_STEP_COUNT} label={stepLabel} onBack={onBack} />
+      <div className="no-print">
+        <StepBar step={step} total={FLOW_STEP_COUNT} label={stepLabel} onBack={onBack} />
+      </div>
       <main className={`flex-1 px-5 pt-6 pb-28 ${contentClassName}`}>
-        <PageHeader title={title} subtitle={subtitle} />
+        <div className="no-print">
+          <PageHeader title={title} subtitle={subtitle} />
+        </div>
         {children}
       </main>
       {footer && <BottomBar>{footer}</BottomBar>}

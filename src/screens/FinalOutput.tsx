@@ -34,9 +34,9 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
   return (
     <ScreenLayout
       title="최종 큐시트"
-      subtitle="인쇄하면 사회자용 2열 대본 형태로 출력됩니다"
+      subtitle="인쇄하면 A4 2장 · 사회자용 2열 대본 형태로 출력됩니다"
       onBack={onBack}
-      contentClassName="pb-36"
+      contentClassName="pb-36 print:px-0 print:pt-0 print:pb-0"
       footer={
         <div className="space-y-2">
           <Btn onClick={() => window.print()}>인쇄</Btn>
