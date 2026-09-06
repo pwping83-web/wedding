@@ -12,6 +12,7 @@ import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 
 export type CueSheetDisplayRow = {
   id: string
+  orderTitle: string
   labelMain: string
   labelSub?: string
   timeLabel: string
@@ -21,12 +22,30 @@ export type CueSheetDisplayRow = {
   timingNote?: string
 }
 
+/** 웨딩홀 양식과 동일한 좌측 라벨 */
 export function getCueSheetRowLabel(title: string): { main: string; sub?: string } {
-  if (title === '안내멘트(10분전)') return { main: '예식 시작', sub: '10분 전' }
-  if (title === '안내멘트(5분전)') return { main: '예식 시작', sub: '5분 전' }
-  if (title === '부모님과 하객분들께 인사') return { main: '부모님과\n하객분들께\n인사' }
-  if (title === '신랑신부 혼인서약서 낭독') return { main: '혼인서약서\n낭독' }
-  return { main: title }
+  switch (title) {
+    case '신랑 입장':
+      return { main: '신랑입장' }
+    case '신부 입장':
+      return { main: '신부입장' }
+    case '신랑신부 맞절':
+      return { main: '맞절' }
+    case '신랑신부 혼인서약서 낭독':
+      return { main: '혼인서약서\n낭독' }
+    case '부모님과 하객분들께 인사':
+      return { main: '부모님과\n하객분들께\n인사' }
+    case '행진':
+      return { main: '행진' }
+    case '폐식사':
+      return { main: '폐식사' }
+    default:
+      return { main: title }
+  }
+}
+
+export function getRowFlexWeight(script: string): number {
+  return Math.max(1, Math.round(script.length / 90))
 }
 
 function findPersonForItem(item: OrderItem, data: AppData) {
@@ -60,6 +79,7 @@ export function buildCueSheetDisplayRows(
 
     return {
       id: item.id,
+      orderTitle: item.title,
       labelMain: main,
       labelSub: sub,
       timeLabel: addMinutesLabel(data.time, item.startMin),
@@ -69,4 +89,15 @@ export function buildCueSheetDisplayRows(
       timingNote: entranceMeta?.timingLabel,
     }
   })
+}
+
+export function splitCueSheetPages(rows: CueSheetDisplayRow[]) {
+  const brideEntranceIndex = rows.findIndex((row) => row.orderTitle === '신부 입장')
+  if (brideEntranceIndex < 0) {
+    return { firstPageRows: rows, secondPageRows: [] as CueSheetDisplayRow[] }
+  }
+  return {
+    firstPageRows: rows.slice(0, brideEntranceIndex + 1),
+    secondPageRows: rows.slice(brideEntranceIndex + 1),
+  }
 }

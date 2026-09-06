@@ -6,7 +6,12 @@ import {
   type CueSheetVariant,
 } from '../lib/cueSheetUtils'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
-import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
+import {
+  buildCueSheetDisplayRows,
+  getRowFlexWeight,
+  splitCueSheetPages,
+  type CueSheetDisplayRow,
+} from '../lib/cueSheetRows'
 import FormatMcScript from '../lib/formatMcScript'
 
 interface Props {
@@ -14,62 +19,42 @@ interface Props {
   variant: CueSheetVariant
 }
 
-function splitPages(rows: CueSheetDisplayRow[]) {
-  const brideEntranceIndex = rows.findIndex((row) => row.labelMain === '신부 입장')
-  if (brideEntranceIndex < 0) {
-    return { firstPageRows: rows, secondPageRows: [] as CueSheetDisplayRow[] }
-  }
-  return {
-    firstPageRows: rows.slice(0, brideEntranceIndex + 1),
-    secondPageRows: rows.slice(brideEntranceIndex + 1),
-  }
-}
-
 function renderGrid(
   pageRows: CueSheetDisplayRow[],
   fillPage: boolean,
-  pageKind: 'first' | 'continued',
+  groomName: string,
+  brideName: string,
 ) {
-  const bodyHeightMm = pageKind === 'first' ? 232 : 268
-  const rowMinHeightMm =
-    fillPage && pageRows.length > 0 ? bodyHeightMm / pageRows.length : undefined
-
   return (
-    <div
-      className={`cue-sheet-grid${fillPage ? ' cue-sheet-grid--fill' : ''}`}
-      style={{ '--page-rows': pageRows.length } as CSSProperties}
-    >
-      {pageRows.map((row) => (
-        <div
-          key={row.id}
-          className="cue-sheet-grid__row"
-          style={rowMinHeightMm ? { minHeight: `${rowMinHeightMm}mm` } : undefined}
-        >
-          <div className="cue-sheet-grid__label">
-            <div className="cue-sheet-label-main">{row.labelMain}</div>
-            {row.labelSub && <div className="cue-sheet-label-sub">{row.labelSub}</div>}
-          </div>
-          <div className="cue-sheet-grid__script">
-            {(row.audioNote || row.timingNote) && (
-              <p className="cue-sheet-meta-line">
-                {row.audioNote && <span>🎵 {row.audioNote}</span>}
-                {row.timingNote && <span>{row.timingNote}</span>}
-              </p>
-            )}
-            {row.personNote && <p className="cue-sheet-person-line">{row.personNote}</p>}
-            <div className="cue-sheet-script-text">
-              <FormatMcScript text={row.script} />
+    <div className={`cue-sheet-grid${fillPage ? ' cue-sheet-grid--fill' : ''}`}>
+      {pageRows.map((row) => {
+        const weight = getRowFlexWeight(row.script)
+        return (
+          <div
+            key={row.id}
+            className="cue-sheet-grid__row"
+            style={{ flex: `${weight} 1 auto` } as CSSProperties}
+          >
+            <div className="cue-sheet-grid__label">
+              <div className="cue-sheet-label-main">{row.labelMain}</div>
+              {row.labelSub && <div className="cue-sheet-label-sub">{row.labelSub}</div>}
+            </div>
+            <div className="cue-sheet-grid__script">
+              {row.personNote && <p className="cue-sheet-person-line">{row.personNote}</p>}
+              <div className="cue-sheet-script-text">
+                <FormatMcScript text={row.script} groomName={groomName} brideName={brideName} />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
 
 export default function CueSheetDocument({ data, variant }: Props) {
   const rows = buildCueSheetDisplayRows(data, variant)
-  const { firstPageRows, secondPageRows } = splitPages(rows)
+  const { firstPageRows, secondPageRows } = splitCueSheetPages(rows)
   const groomMeta = getEntranceCueMeta(data, 'groom')
   const brideMeta = getEntranceCueMeta(data, 'bride')
 
@@ -82,10 +67,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
       })
     : ''
 
-  const headerTitle =
-    variant === 'mc'
-      ? `${data.groomName || '신랑'} · ${data.brideName || '신부'} 결혼 예식 — 사회자 큐시트`
-      : `${data.groomName || '신랑'} · ${data.brideName || '신부'} 결혼 예식`
+  const headerTitle = `${data.groomName || '신랑'} · ${data.brideName || '신부'}`
 
   return (
     <article className="cue-sheet">
@@ -94,9 +76,8 @@ export default function CueSheetDocument({ data, variant }: Props) {
           <p className="cue-sheet-header__eyebrow">WEDDING CEREMONY CUE SHEET</p>
           <h1 className="cue-sheet-header__title">{headerTitle}</h1>
           <p className="cue-sheet-header__meta">
-            {[dateStr, data.venue].filter(Boolean).join(' · ')}
+            {[dateStr, data.venue, `분위기: ${moodLabels[data.mood]}`].filter(Boolean).join(' · ')}
           </p>
-          <p className="cue-sheet-header__mood">분위기: {moodLabels[data.mood]}</p>
         </header>
 
         {ENTRANCE_AUDIO_TIMING_ENABLED && variant === 'mc' && (groomMeta || brideMeta) && (
@@ -115,15 +96,16 @@ export default function CueSheetDocument({ data, variant }: Props) {
           </div>
         )}
 
-        <div className="cue-sheet-page__body">{renderGrid(firstPageRows, true, 'first')}</div>
-
-        <footer className="cue-sheet-footer">AI 자동 식순 큐시트 · 사회자 전달용</footer>
+        <div className="cue-sheet-page__body">
+          {renderGrid(firstPageRows, true, data.groomName, data.brideName)}
+        </div>
       </section>
 
       {secondPageRows.length > 0 && (
         <section className="cue-sheet-page cue-sheet-page--continued">
-          <div className="cue-sheet-page__body">{renderGrid(secondPageRows, true, 'continued')}</div>
-          <footer className="cue-sheet-footer">AI 자동 식순 큐시트 · 사회자 전달용</footer>
+          <div className="cue-sheet-page__body">
+            {renderGrid(secondPageRows, true, data.groomName, data.brideName)}
+          </div>
         </section>
       )}
     </article>
