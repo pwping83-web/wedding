@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
 import {
@@ -8,7 +7,6 @@ import {
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import {
   buildCueSheetDisplayRows,
-  getRowFlexWeight,
   splitCueSheetPages,
   type CueSheetDisplayRow,
 } from '../lib/cueSheetRows'
@@ -19,35 +17,31 @@ interface Props {
   variant: CueSheetVariant
 }
 
-function renderGrid(
+function renderTable(
   pageRows: CueSheetDisplayRow[],
-  fillPage: boolean,
   groomName: string,
   brideName: string,
 ) {
   return (
-    <div className={`cue-sheet-grid${fillPage ? ' cue-sheet-grid--fill' : ''}`}>
-      {pageRows.map((row) => {
-        const weight = getRowFlexWeight(row.script)
-        return (
-          <div
-            key={row.id}
-            className="cue-sheet-grid__row"
-            style={{ flex: `${weight} 1 auto` } as CSSProperties}
-          >
-            <div className="cue-sheet-grid__label">
-              <div className="cue-sheet-label-main">{row.labelMain}</div>
-            </div>
-            <div className="cue-sheet-grid__script">
+    <table className="cue-sheet-table">
+      <colgroup>
+        <col className="cue-sheet-table__col-label" />
+        <col className="cue-sheet-table__col-script" />
+      </colgroup>
+      <tbody>
+        {pageRows.map((row) => (
+          <tr key={row.id} className="cue-sheet-table__row">
+            <td className="cue-sheet-table__label">{row.labelMain}</td>
+            <td className="cue-sheet-table__script">
               {row.personNote && <p className="cue-sheet-person-line">{row.personNote}</p>}
               <div className="cue-sheet-script-text">
                 <FormatMcScript text={row.script} groomName={groomName} brideName={brideName} />
               </div>
-            </div>
-          </div>
-        )
-      })}
-    </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
 
@@ -95,16 +89,12 @@ export default function CueSheetDocument({ data, variant }: Props) {
           </div>
         )}
 
-        <div className="cue-sheet-page__body">
-          {renderGrid(firstPageRows, true, data.groomName, data.brideName)}
-        </div>
+        {renderTable(firstPageRows, data.groomName, data.brideName)}
       </section>
 
       {secondPageRows.length > 0 && (
         <section className="cue-sheet-page cue-sheet-page--continued">
-          <div className="cue-sheet-page__body">
-            {renderGrid(secondPageRows, true, data.groomName, data.brideName)}
-          </div>
+          {renderTable(secondPageRows, data.groomName, data.brideName)}
         </section>
       )}
     </article>

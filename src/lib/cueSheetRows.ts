@@ -44,10 +44,6 @@ export function getCueSheetRowLabel(title: string): { main: string; sub?: string
   }
 }
 
-export function getRowFlexWeight(script: string): number {
-  return Math.max(1, Math.round(script.length / 90))
-}
-
 function findPersonForItem(item: OrderItem, data: AppData) {
   return data.persons.find((person) => {
     if (item.title === '축가') return person.role === 'vocalist'
