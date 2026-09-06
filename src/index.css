@@ -181,7 +181,7 @@ input, textarea, select, button {
 
 .cue-sheet-grid__row {
   display: grid;
-  grid-template-columns: 13mm minmax(0, 1fr);
+  grid-template-columns: 10mm minmax(0, 1fr);
   border-top: 1px dotted #444;
 }
 
@@ -196,9 +196,9 @@ input, textarea, select, button {
 }
 
 .cue-sheet-grid__label {
-  width: 13mm;
-  max-width: 13mm;
-  min-width: 13mm;
+  width: 10mm;
+  max-width: 10mm;
+  min-width: 10mm;
   background: #fafafa;
   border-right: 1px dotted #444;
   text-align: center;
@@ -293,10 +293,13 @@ input, textarea, select, button {
 
   .cue-sheet-page {
     width: 100% !important;
-    min-height: calc(297mm - 10mm);
+    height: 287mm;
+    min-height: 287mm;
+    max-height: 287mm;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    overflow: hidden;
   }
 
   .cue-sheet-page--first {
@@ -306,37 +309,40 @@ input, textarea, select, button {
 
   .cue-sheet-page__body {
     flex: 1 1 auto;
-    display: flex;
+    display: block;
     min-height: 0;
+    overflow: hidden;
   }
 
   .cue-sheet-grid {
-    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 100%;
   }
 
   .cue-sheet-grid--fill .cue-sheet-grid__row {
-    flex: 1 1 0;
-    min-height: 0;
     page-break-inside: avoid;
     break-inside: avoid;
+    align-items: stretch;
   }
 
   .cue-sheet-grid__row {
-    grid-template-columns: 12mm minmax(0, 1fr);
+    grid-template-columns: 10mm minmax(0, 1fr);
   }
 
   .cue-sheet-grid__label {
-    width: 12mm;
-    max-width: 12mm;
-    min-width: 12mm;
-    padding: 2px 2px;
+    width: 10mm;
+    max-width: 10mm;
+    min-width: 10mm;
+    padding: 2px 1px;
   }
 
   .cue-sheet-grid__script {
-    padding: 3px 6px;
+    padding: 4px 7px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
 
   .cue-sheet-header__title {

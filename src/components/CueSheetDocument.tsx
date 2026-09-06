@@ -25,18 +25,26 @@ function splitPages(rows: CueSheetDisplayRow[]) {
   }
 }
 
-function renderGrid(pageRows: CueSheetDisplayRow[], fillPage: boolean) {
-  const style = {
-    '--page-rows': pageRows.length,
-  } as CSSProperties
+function renderGrid(
+  pageRows: CueSheetDisplayRow[],
+  fillPage: boolean,
+  pageKind: 'first' | 'continued',
+) {
+  const bodyHeightMm = pageKind === 'first' ? 232 : 268
+  const rowMinHeightMm =
+    fillPage && pageRows.length > 0 ? bodyHeightMm / pageRows.length : undefined
 
   return (
     <div
       className={`cue-sheet-grid${fillPage ? ' cue-sheet-grid--fill' : ''}`}
-      style={style}
+      style={{ '--page-rows': pageRows.length } as CSSProperties}
     >
       {pageRows.map((row) => (
-        <div key={row.id} className="cue-sheet-grid__row">
+        <div
+          key={row.id}
+          className="cue-sheet-grid__row"
+          style={rowMinHeightMm ? { minHeight: `${rowMinHeightMm}mm` } : undefined}
+        >
           <div className="cue-sheet-grid__label">
             <div className="cue-sheet-label-main">{row.labelMain}</div>
             {row.labelSub && <div className="cue-sheet-label-sub">{row.labelSub}</div>}
@@ -107,14 +115,14 @@ export default function CueSheetDocument({ data, variant }: Props) {
           </div>
         )}
 
-        <div className="cue-sheet-page__body">{renderGrid(firstPageRows, true)}</div>
+        <div className="cue-sheet-page__body">{renderGrid(firstPageRows, true, 'first')}</div>
 
         <footer className="cue-sheet-footer">AI 자동 식순 큐시트 · 사회자 전달용</footer>
       </section>
 
       {secondPageRows.length > 0 && (
         <section className="cue-sheet-page cue-sheet-page--continued">
-          <div className="cue-sheet-page__body">{renderGrid(secondPageRows, true)}</div>
+          <div className="cue-sheet-page__body">{renderGrid(secondPageRows, true, 'continued')}</div>
           <footer className="cue-sheet-footer">AI 자동 식순 큐시트 · 사회자 전달용</footer>
         </section>
       )}

@@ -51,7 +51,7 @@ function renderRowsHtml(pageRows: CueSheetDisplayRow[]): string {
     .map((row) => {
       return `
       <tr>
-        <td style="width:12mm;max-width:12mm;min-width:12mm;padding:3px 2px;border-top:1px dotted #444;border-bottom:1px dotted #444;border-right:1px dotted #444;background:#FAFAFA;text-align:center;vertical-align:middle;">
+        <td style="width:10mm;max-width:10mm;min-width:10mm;padding:3px 1px;border-top:1px dotted #444;border-bottom:1px dotted #444;border-right:1px dotted #444;background:#FAFAFA;text-align:center;vertical-align:middle;">
           <div style="font-size:6pt;font-weight:700;line-height:1.25;color:#111;white-space:pre-line;word-break:keep-all;">${preserveLineBreaks(escapeHtml(row.labelMain))}</div>
           ${row.labelSub ? `<div style="margin-top:2px;font-size:5.5pt;font-weight:700;color:#111;">${escapeHtml(row.labelSub)}</div>` : ''}
         </td>
@@ -72,7 +72,7 @@ function renderPageTable(pageRows: CueSheetDisplayRow[]): string {
   return `
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;border-left:2px solid #173F9F;border-right:2px solid #173F9F;">
       <colgroup>
-        <col style="width:12mm;" />
+        <col style="width:10mm;" />
         <col />
       </colgroup>
       ${renderRowsHtml(pageRows)}
