@@ -75,6 +75,10 @@ export interface AppData {
   mood: Mood
   /** 성혼선언문 낭독자 (기본: 사회자) */
   marriageDeclarationReader: MarriageDeclarationReader
+  /** 입장 타이밍 기능 사용 여부 (체크 시에만 UI·멘트 반영) */
+  entranceTimingEnabled: boolean
+  groomEntranceTrackTitle: string
+  brideEntranceTrackTitle: string
   email: string
   coupleEmail: string
 }
@@ -310,6 +314,9 @@ export const initialData: AppData = {
   persons: withFixedMc([]),
   mood: 'warm',
   marriageDeclarationReader: 'mc',
+  entranceTimingEnabled: false,
+  groomEntranceTrackTitle: '',
+  brideEntranceTrackTitle: '',
   email: '',
   coupleEmail: '',
 }

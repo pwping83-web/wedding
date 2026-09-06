@@ -8,6 +8,7 @@ import {
   roleLabels,
 } from '../data'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
+import { getEntranceTrackTitle } from './entranceTiming'
 import { getTimedEntranceScript } from './timedEntranceScript'
 
 export type CueSheetVariant = 'mc' | 'couple'
@@ -36,15 +37,22 @@ export function getEntranceCueMeta(
   data: AppData,
   type: 'groom' | 'bride',
 ): EntranceCueMeta | null {
-  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
-  if (!marker || marker.time <= 0) return null
+  if (!data.entranceTimingEnabled) return null
 
+  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
+  const seconds = marker?.time ?? 0
+  const manualTitle = getEntranceTrackTitle(data, type)
   const audio = type === 'groom' ? data.groomAudio : data.brideAudio
+  const audioTitle =
+    manualTitle ||
+    (ENTRANCE_AUDIO_TIMING_ENABLED && audio ? getEntranceAudioTitle(audio) : '') ||
+    null
+
+  if (seconds <= 0 && !audioTitle) return null
 
   return {
-    audioTitle:
-      ENTRANCE_AUDIO_TIMING_ENABLED && audio ? getEntranceAudioTitle(audio) : null,
-    timingLabel: formatEntranceTiming(type, marker.time),
+    audioTitle,
+    timingLabel: seconds > 0 ? formatEntranceTiming(type, seconds) : '',
     script: getEntranceDisplayScript(type, data),
     audioUrl: ENTRANCE_AUDIO_TIMING_ENABLED ? (audio?.url ?? null) : null,
   }
@@ -68,7 +76,7 @@ export function getEntranceDisplayScript(
   if (marker?.customScript?.trim()) return applyScriptVars(marker.customScript, ctx)
   if (item?.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
 
-  if (marker && marker.time > 0) {
+  if (marker && marker.time > 0 && data.entranceTimingEnabled) {
     return getTimedEntranceScript(type, data, marker.time)
   }
 
@@ -120,7 +128,7 @@ export function buildCueSheetPlainText(data: AppData, variant: CueSheetVariant):
     lines.push('')
   }
 
-  if (variant === 'mc') {
+  if (variant === 'mc' && data.entranceTimingEnabled) {
     const groomMeta = getEntranceCueMeta(data, 'groom')
     const brideMeta = getEntranceCueMeta(data, 'bride')
     if (groomMeta || brideMeta) {
