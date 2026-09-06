@@ -99,6 +99,14 @@ input, textarea, select, button {
   line-height: 1.55;
 }
 
+.cue-sheet-page {
+  background: #fff;
+}
+
+.cue-sheet-page__body {
+  width: 100%;
+}
+
 .cue-sheet-header {
   text-align: center;
   padding: 0.85rem 0.75rem 0.7rem;
@@ -156,11 +164,11 @@ input, textarea, select, button {
 }
 
 .cue-sheet-table__label-col {
-  width: 9%;
+  width: 7%;
 }
 
 .cue-sheet-table__script-col {
-  width: 91%;
+  width: 93%;
 }
 
 .cue-sheet-table__row {
@@ -172,7 +180,7 @@ input, textarea, select, button {
   border-top: 1px dotted #444;
   border-bottom: 1px dotted #444;
   vertical-align: top;
-  padding: 0.34rem 0.5rem;
+  padding: 0.3rem 0.45rem;
 }
 
 .cue-sheet-table__label {
@@ -182,7 +190,7 @@ input, textarea, select, button {
 }
 
 .cue-sheet-label-main {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   color: #1a1a1a;
   white-space: pre-line;
@@ -258,6 +266,26 @@ input, textarea, select, button {
     font-size: 8.5pt;
   }
 
+  .cue-sheet-page {
+    min-height: calc(297mm - 12mm);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cue-sheet-page--first {
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .cue-sheet-page__body {
+    flex: 1;
+    display: flex;
+  }
+
+  .cue-sheet-table {
+    height: 100%;
+  }
+
   .cue-sheet-header__title {
     font-size: 11pt;
   }
@@ -273,7 +301,7 @@ input, textarea, select, button {
   }
 
   .cue-sheet-label-main {
-    font-size: 7pt;
+    font-size: 6.5pt;
   }
 
   .cue-sheet-table__row {

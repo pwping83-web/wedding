@@ -46,7 +46,6 @@ export function buildCueSheetEmailHtml(data: AppData): string {
   const groom = escapeHtml(data.groomName || '신랑')
   const bride = escapeHtml(data.brideName || '신부')
   const dateLabel = escapeHtml(formatDateLabel(data.date))
-  const timeLabel = escapeHtml(data.time || '')
   const venueLabel = escapeHtml(data.venue || '예식장')
   const moodLabel = escapeHtml(moodLabels[data.mood])
   const rows = buildCueSheetDisplayRows(data, 'mc')
@@ -55,11 +54,11 @@ export function buildCueSheetEmailHtml(data: AppData): string {
     .map((row) => {
       return `
       <tr>
-        <td style="width:9%;padding:4px 5px;border-top:1px dotted #444;border-bottom:1px dotted #444;border-right:1px dotted #444;background:#FAFAFA;text-align:center;vertical-align:top;">
-          <div style="font-size:9px;font-weight:700;line-height:1.35;color:#111;white-space:pre-line;">${preserveLineBreaks(escapeHtml(row.labelMain))}</div>
+        <td style="width:7%;padding:4px 4px;border-top:1px dotted #444;border-bottom:1px dotted #444;border-right:1px dotted #444;background:#FAFAFA;text-align:center;vertical-align:top;">
+          <div style="font-size:8.5px;font-weight:700;line-height:1.35;color:#111;white-space:pre-line;">${preserveLineBreaks(escapeHtml(row.labelMain))}</div>
           ${row.labelSub ? `<div style="margin-top:2px;font-size:8px;font-weight:700;color:#111;">${escapeHtml(row.labelSub)}</div>` : ''}
         </td>
-        <td style="width:91%;padding:4px 7px;border-top:1px dotted #444;border-bottom:1px dotted #444;vertical-align:top;">
+        <td style="width:93%;padding:4px 7px;border-top:1px dotted #444;border-bottom:1px dotted #444;vertical-align:top;">
           ${
             row.personNote
               ? `<div style="margin:0 0 5px;padding-bottom:4px;border-bottom:1px dotted #D8D8D8;font-size:10px;line-height:1.45;color:#7B6FA8;">${escapeHtml(row.personNote)}</div>`
@@ -95,7 +94,7 @@ export function buildCueSheetEmailHtml(data: AppData): string {
                 ${groom} · ${bride} 결혼 예식 — 사회자 큐시트
               </h1>
               <p style="margin:0;font-size:11px;color:#555;line-height:1.45;">
-                ${dateLabel}${dateLabel && timeLabel ? ' · ' : ''}${timeLabel}${(dateLabel || timeLabel) && venueLabel ? '<br/>' : ''}${venueLabel}
+                ${dateLabel}${dateLabel && venueLabel ? '<br/>' : ''}${venueLabel}
               </p>
               <p style="margin:4px 0 0;font-size:10px;color:#777;">분위기: ${moodLabel}</p>
             </td>
