@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
 import {
@@ -62,31 +63,39 @@ export default function CueSheetDocument({ data, variant }: Props) {
       <table className="cue-sheet-table">
         <thead>
           <tr>
-            <th className="cue-sheet-table__label-col">순서 · 시간</th>
+            <th className="cue-sheet-table__label-col">순서</th>
             <th className="cue-sheet-table__script-col">MC 대본</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.id} className="cue-sheet-table__row">
-              <td className="cue-sheet-table__label">
-                <div className="cue-sheet-label-main">{row.labelMain}</div>
-                {row.labelSub && <div className="cue-sheet-label-sub">{row.labelSub}</div>}
-                <div className="cue-sheet-label-time">{row.timeLabel}</div>
-              </td>
-              <td className="cue-sheet-table__script">
-                {(row.audioNote || row.timingNote) && (
-                  <p className="cue-sheet-meta-line">
-                    {row.audioNote && <span>🎵 {row.audioNote}</span>}
-                    {row.timingNote && <span>{row.timingNote}</span>}
-                  </p>
-                )}
-                {row.personNote && <p className="cue-sheet-person-line">{row.personNote}</p>}
-                <div className="cue-sheet-script-text">
-                  <FormatMcScript text={row.script} />
-                </div>
-              </td>
-            </tr>
+            <Fragment key={row.id}>
+              <tr className="cue-sheet-table__row">
+                <td className="cue-sheet-table__label">
+                  <div className="cue-sheet-label-main">{row.labelMain}</div>
+                  {row.labelSub && <div className="cue-sheet-label-sub">{row.labelSub}</div>}
+                </td>
+                <td className="cue-sheet-table__script">
+                  {(row.audioNote || row.timingNote) && (
+                    <p className="cue-sheet-meta-line">
+                      {row.audioNote && <span>🎵 {row.audioNote}</span>}
+                      {row.timingNote && <span>{row.timingNote}</span>}
+                    </p>
+                  )}
+                  {row.personNote && <p className="cue-sheet-person-line">{row.personNote}</p>}
+                  <div className="cue-sheet-script-text">
+                    <FormatMcScript text={row.script} />
+                  </div>
+                </td>
+              </tr>
+              {row.labelMain === '신부 입장' && (
+                <tr className="cue-sheet-page-break-row" aria-hidden="true">
+                  <td colSpan={2}>
+                    <div className="cue-sheet-page-break" />
+                  </td>
+                </tr>
+              )}
+            </Fragment>
           ))}
         </tbody>
       </table>

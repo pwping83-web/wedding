@@ -55,12 +55,11 @@ export function buildCueSheetEmailHtml(data: AppData): string {
     .map((row) => {
       return `
       <tr>
-        <td style="width:13%;padding:5px 6px;border-top:1px dotted #444;border-bottom:1px dotted #444;border-right:1px dotted #444;background:#FAFAFA;text-align:center;vertical-align:top;">
-          <div style="font-size:10px;font-weight:700;line-height:1.35;color:#111;white-space:pre-line;">${preserveLineBreaks(escapeHtml(row.labelMain))}</div>
-          ${row.labelSub ? `<div style="margin-top:2px;font-size:9px;font-weight:700;color:#111;">${escapeHtml(row.labelSub)}</div>` : ''}
-          <div style="margin-top:4px;font-size:9px;font-weight:600;color:#666;">${escapeHtml(row.timeLabel)}</div>
+        <td style="width:9%;padding:4px 5px;border-top:1px dotted #444;border-bottom:1px dotted #444;border-right:1px dotted #444;background:#FAFAFA;text-align:center;vertical-align:top;">
+          <div style="font-size:9px;font-weight:700;line-height:1.35;color:#111;white-space:pre-line;">${preserveLineBreaks(escapeHtml(row.labelMain))}</div>
+          ${row.labelSub ? `<div style="margin-top:2px;font-size:8px;font-weight:700;color:#111;">${escapeHtml(row.labelSub)}</div>` : ''}
         </td>
-        <td style="width:87%;padding:5px 7px;border-top:1px dotted #444;border-bottom:1px dotted #444;vertical-align:top;">
+        <td style="width:91%;padding:4px 7px;border-top:1px dotted #444;border-bottom:1px dotted #444;vertical-align:top;">
           ${
             row.personNote
               ? `<div style="margin:0 0 5px;padding-bottom:4px;border-bottom:1px dotted #D8D8D8;font-size:10px;line-height:1.45;color:#7B6FA8;">${escapeHtml(row.personNote)}</div>`
@@ -68,7 +67,12 @@ export function buildCueSheetEmailHtml(data: AppData): string {
           }
           <div style="font-size:11px;line-height:1.55;color:#222;word-break:keep-all;">${formatScriptHtml(row.script)}</div>
         </td>
-      </tr>`
+      </tr>
+      ${
+        row.labelMain === '신부 입장'
+          ? '<tr><td colspan="2" style="padding:0;border:0;height:0;page-break-after:always;"></td></tr>'
+          : ''
+      }`
     })
     .join('')
 
