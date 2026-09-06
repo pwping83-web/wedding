@@ -4,14 +4,12 @@ import Btn from '../components/mobile/Btn'
 import Field from '../components/mobile/Field'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, OrderItem, SetData } from '../data'
-import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels, roleLabels } from '../data'
+import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels, normalizeMarriageDeclarationReader, roleLabels } from '../data'
 import { flowStep } from '../config/features'
 import {
   getEntranceCueMeta,
   entranceTypeForTitle,
   getItemScriptForCueSheet,
-  addMinutesLabel,
-  buildOrderItemsWithTime,
 } from '../lib/cueSheetUtils'
 import {
   getEntranceMarker,
@@ -195,8 +193,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
   const [generatingId, setGeneratingId] = useState<string | null>(null)
   const [generateError, setGenerateError] = useState('')
 
-  const items = buildOrderItemsWithTime(data)
-  const total = data.orderItems.reduce((s, i) => s + i.duration, 0)
+  const items = data.orderItems
   const speechOk = isSpeechSupported()
 
   useEffect(() => () => stopSpeaking(), [])
@@ -273,7 +270,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
       step={flowStep('preview')}
       stepLabel="미리보기"
       title="식순 미리보기"
-      subtitle={`${data.orderItems.length}단계 · ${total}분`}
+      subtitle={`${data.orderItems.length}단계`}
       onBack={onBack}
       footer={
         <div className="space-y-2">
@@ -308,12 +305,9 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
             <Card key={item.id} className="p-4">
               <div className="flex justify-between items-start gap-2 mb-2">
                 <div className="min-w-0">
-                  <p className="text-[12px] text-muted-text tabular-nums">
-                    {index + 1} · {addMinutesLabel(data.time, item.startMin)}
-                  </p>
+                  <p className="text-[12px] text-muted-text tabular-nums">{index + 1}</p>
                   <p className="text-[15px] font-semibold text-charcoal">{item.title}</p>
                 </div>
-                <span className="text-[12px] text-muted-text shrink-0">{item.duration}분</span>
               </div>
 
               {entranceType && (
@@ -343,7 +337,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
 
               {isMarriageDeclarationTitle(item.title) && (
                 <p className="text-[11px] text-accent font-medium mb-2">
-                  {marriageDeclarationReaderLabels[data.marriageDeclarationReader]}
+                  {marriageDeclarationReaderLabels[normalizeMarriageDeclarationReader(data.marriageDeclarationReader)]}
                 </p>
               )}
 

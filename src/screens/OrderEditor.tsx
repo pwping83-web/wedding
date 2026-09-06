@@ -3,7 +3,7 @@ import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, MarriageDeclarationReader, OrderItem, SetData } from '../data'
-import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels } from '../data'
+import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels, normalizeMarriageDeclarationReader } from '../data'
 import { flowStep } from '../config/features'
 
 interface Props {
@@ -48,9 +48,9 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
     setNewTitle('')
   }
 
-  const total = data.orderItems.reduce((s, i) => s + i.duration, 0)
   const hasMarriageDeclaration = data.orderItems.some((item) => isMarriageDeclarationTitle(item.title))
-  const readerOptions: MarriageDeclarationReader[] = ['mc', 'couple', 'custom']
+  const readerOptions: MarriageDeclarationReader[] = ['mc', 'custom']
+  const marriageReader = normalizeMarriageDeclarationReader(data.marriageDeclarationReader)
   const marriageDeclarationItem = data.orderItems.find((item) =>
     isMarriageDeclarationTitle(item.title),
   )
@@ -60,7 +60,7 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
       step={flowStep('order')}
       stepLabel="식순"
       title="식순 편집"
-      subtitle={`주례 없는 기본 13단계 · 총 ${total}분`}
+      subtitle="주례 없는 기본 13단계"
       onBack={onBack}
       footer={<Btn onClick={onNext}>다음</Btn>}
     >
@@ -81,26 +81,6 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
             <span className="flex-1 text-[14px] font-medium text-charcoal truncate">
               {item.title}
             </span>
-            <div className="flex items-center gap-1 shrink-0">
-              <input
-                type="number"
-                min={1}
-                max={60}
-                value={item.duration}
-                onChange={(e) =>
-                  setData((prev) => ({
-                    ...prev,
-                    orderItems: prev.orderItems.map((i) =>
-                      i.id === item.id
-                        ? { ...i, duration: Math.max(1, parseInt(e.target.value) || 1) }
-                        : i,
-                    ),
-                  }))
-                }
-                className="w-10 h-8 text-center bg-muted-bg rounded-lg text-[13px] outline-none"
-              />
-              <span className="text-[12px] text-muted-text">분</span>
-            </div>
             <button
               type="button"
               onClick={() =>
@@ -128,7 +108,7 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
               <label
                 key={reader}
                 className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer ${
-                  data.marriageDeclarationReader === reader
+                  marriageReader === reader
                     ? 'border-accent bg-accent-soft'
                     : 'border-border bg-surface'
                 }`}
@@ -137,7 +117,7 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
                   type="radio"
                   name="marriageDeclarationReader"
                   value={reader}
-                  checked={data.marriageDeclarationReader === reader}
+                  checked={marriageReader === reader}
                   onChange={() =>
                     setData((prev) => ({ ...prev, marriageDeclarationReader: reader }))
                   }
@@ -149,7 +129,7 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
               </label>
             ))}
           </div>
-          {data.marriageDeclarationReader === 'custom' && marriageDeclarationItem && (
+          {marriageReader === 'custom' && marriageDeclarationItem && (
             <div className="pt-1">
               <label className="block text-[13px] font-medium text-charcoal mb-1.5">
                 성혼선언문 멘트

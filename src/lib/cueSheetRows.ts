@@ -64,7 +64,6 @@ function buildRowNotes(
   if (entranceMeta?.timingLabel) {
     lines.push(entranceMeta.timingLabel)
   }
-  lines.push(`약 ${item.duration}분`)
 
   return lines.join('\n')
 }
