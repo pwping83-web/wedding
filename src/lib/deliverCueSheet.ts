@@ -1,8 +1,8 @@
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
-import { buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
-import { buildCueSheetPlainText, getEntranceAudioTitle } from './cueSheetUtils'
+import { buildCueSheetEmailHtml, buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
+import { getEntranceAudioTitle } from './cueSheetUtils'
 
 export const MC_EMAIL = 'tseizou@naver.com'
 
@@ -26,7 +26,7 @@ type DeliveryPayload = {
 }
 
 export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<void> {
-  const cueSheet = buildCueSheetPlainText(data, 'mc')
+  const cueSheet = buildCueSheetEmailHtml(data)
   const subject = buildCueSheetEmailSubject(data)
 
   const groomAudio = ENTRANCE_AUDIO_TIMING_ENABLED ? getEntranceAudioTitle(data.groomAudio) : '-'

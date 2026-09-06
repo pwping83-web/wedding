@@ -95,14 +95,14 @@ input, textarea, select, button {
 .cue-sheet {
   background: #fff;
   color: #1a1a1a;
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .cue-sheet-header {
   text-align: center;
-  padding: 1.25rem 1rem 1rem;
-  border-bottom: 2px solid #1a1a1a;
+  padding: 0.85rem 0.75rem 0.7rem;
+  border-bottom: 2px solid #173f9f;
   margin-bottom: 0;
 }
 
@@ -116,7 +116,7 @@ input, textarea, select, button {
 
 .cue-sheet-header__title {
   margin: 0 0 0.5rem;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.4;
 }
@@ -147,6 +147,8 @@ input, textarea, select, button {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  border-left: 2px solid #173f9f;
+  border-right: 2px solid #173f9f;
 }
 
 .cue-sheet-table thead {
@@ -154,11 +156,11 @@ input, textarea, select, button {
 }
 
 .cue-sheet-table__label-col {
-  width: 24%;
+  width: 13%;
 }
 
 .cue-sheet-table__script-col {
-  width: 76%;
+  width: 87%;
 }
 
 .cue-sheet-table__row {
@@ -167,35 +169,36 @@ input, textarea, select, button {
 
 .cue-sheet-table__label,
 .cue-sheet-table__script {
-  border: 1px solid #bbb;
+  border-top: 1px dotted #444;
+  border-bottom: 1px dotted #444;
   vertical-align: top;
-  padding: 0.65rem 0.7rem;
+  padding: 0.42rem 0.55rem;
 }
 
 .cue-sheet-table__label {
   background: #fafafa;
-  border-right: 1px dashed #999;
+  border-right: 1px dotted #444;
   text-align: center;
 }
 
 .cue-sheet-label-main {
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 700;
-  color: #c45c5c;
+  color: #1a1a1a;
   white-space: pre-line;
   line-height: 1.35;
 }
 
 .cue-sheet-label-sub {
   margin-top: 0.15rem;
-  font-size: 12px;
+  font-size: 9px;
   font-weight: 700;
-  color: #c45c5c;
+  color: #1a1a1a;
 }
 
 .cue-sheet-label-time {
-  margin-top: 0.45rem;
-  font-size: 11px;
+  margin-top: 0.35rem;
+  font-size: 9px;
   font-weight: 600;
   color: #666;
   font-variant-numeric: tabular-nums;
@@ -221,8 +224,8 @@ input, textarea, select, button {
 }
 
 .cue-sheet-script-text {
-  font-size: 13px;
-  line-height: 1.75;
+  font-size: 11px;
+  line-height: 1.55;
   white-space: pre-wrap;
   word-break: keep-all;
 }
@@ -238,39 +241,39 @@ input, textarea, select, button {
 }
 
 .cue-sheet-footer {
-  padding: 0.75rem;
+  padding: 0.5rem;
   text-align: center;
   font-size: 10px;
   color: #888;
-  border-top: 1px solid #ddd;
+  border-top: 2px solid #173f9f;
 }
 
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm;
+    margin: 6mm 7mm;
   }
 
   .cue-sheet {
-    font-size: 11pt;
+    font-size: 8.5pt;
   }
 
   .cue-sheet-header__title {
-    font-size: 16pt;
+    font-size: 11pt;
   }
 
   .cue-sheet-table__label,
   .cue-sheet-table__script {
-    padding: 7px 9px;
+    padding: 4px 5px;
   }
 
   .cue-sheet-script-text {
-    font-size: 11pt;
-    line-height: 1.8;
+    font-size: 8.5pt;
+    line-height: 1.5;
   }
 
   .cue-sheet-label-main {
-    font-size: 11pt;
+    font-size: 7.5pt;
   }
 
   .cue-sheet-table__row {
