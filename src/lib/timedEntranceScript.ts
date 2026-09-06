@@ -1,64 +1,133 @@
 import type { AppData } from '../data'
 import { applyScriptVars, buildScriptContext } from '../data'
 
-/** MC 보통 속도(분당 약 270자) 기준 낭독 글자 수 */
+/** 입장 낭독 — MC가 여유 있게 읽는 속도 기준(초당 약 5.8자) */
 export function estimateEntranceScriptChars(seconds: number): number {
-  return Math.max(28, Math.round(seconds * 4.5))
+  return Math.max(32, Math.round(seconds * 5.8))
 }
 
-function padToTarget(text: string, target: number, filler: string): string {
-  let result = text
-  while (result.length < target - 8) {
-    result += filler
+const ENTRANCE_CUE = {
+  groom: '신랑 입장!',
+  bride: '신부 입장!',
+} as const
+
+/**
+ * 웨딩홀 MC 실제 입장 멘트 — 순서대로 이어 붙임.
+ * 타이밍·음악·기다림 언급 없이, 큐 직전까지 자연스럽게 시간을 채움.
+ */
+const bodyParts: Record<
+  'groom' | 'bride',
+  Record<AppData['mood'], string[]>
+> = {
+  groom: {
+    formal: [
+      '다음은 신랑 입장이 있겠습니다.',
+      '오늘의 주인공, 이제 이 자리에 섭니다.',
+      '늘 성실하고 반듯했던 사람, 이제 한 여자의 남편으로 새 인생을 시작하려 합니다.',
+      '사랑하는 신부 {신부이름} 양과 함께, 오늘부터 한 가정을 이루려 합니다.',
+      '하객 여러분, 따뜻한 박수로 새로운 출발을 축복해 주시기 바랍니다.',
+    ],
+    bright: [
+      '자, 다음은 신랑 입장입니다!',
+      '오늘 이 자리의 주인공, 드디어 모습을 드러냅니다.',
+      '유쾌하고 당당한 신랑 {신랑이름} 군, 이제 한 여자의 남편이 됩니다!',
+      '하객 여러분, 크게 박수와 환호로 맞이해 주세요!',
+    ],
+    solemn: [
+      '다음은 신랑 입장 순서입니다.',
+      '고요한 마음으로, 오늘의 주인공을 맞이하겠습니다.',
+      '묵묵히 자신의 길을 걸어온 사람, 이제 부부의 길을 첫걸음 내딛으려 합니다.',
+      '신랑 {신랑이름} 군, 이 자리에 섭니다.',
+    ],
+    warm: [
+      '이제 신랑 입장이 있겠습니다.',
+      '오늘의 주인공, 이제 이 자리에 섭니다.',
+      '따뜻한 마음으로 곁을 지켜 온 사람, 이제 평생의 동반자와 함께 새 출발을 합니다.',
+      '신랑 {신랑이름} 군, 한 여자의 남편으로 첫걸음을 내딛습니다.',
+    ],
+  },
+  bride: {
+    formal: [
+      '세상에서 가장 사랑스럽고 아름다운 걸음이 시작됩니다.',
+      '오늘, 한 남자에게 인생의 가장 소중한 선물이 되어줄 사람, 그리고 오늘부로 한 가정의 든든한 반쪽이 될 사람입니다.',
+      '지금까지와는 또 다른 새로운 인생을 향해 걸어 나오는 신부에게 우리 모두의 축복과 박수를 보내주시기 바랍니다.',
+      '사랑스러운 신부 {신부이름} 양, 이 자리에 섭니다.',
+    ],
+    bright: [
+      '자, 드디어 신부 입장!',
+      '세상에서 가장 설레는 걸음이 시작됩니다!',
+      '오늘 한 남자의 인생 최고의 선물이 될 아름다운 신부 {신부이름} 양, 새로운 인생을 향해 걸어 나옵니다.',
+      '하객 여러분, 크게 박수와 환호로 맞이해 주세요!',
+    ],
+    solemn: [
+      '다음은 신부 입장 순서입니다.',
+      '세상에서 가장 고운 걸음이 시작됩니다.',
+      '한 남자의 평생 반려가 될 사람, 지금까지와는 다른 새로운 삶을 향해 걸어 나오는 신부에게 따뜻한 축복과 박수를 보내주시기 바랍니다.',
+      '신부 {신부이름} 양, 이 자리에 섭니다.',
+    ],
+    warm: [
+      '이제 신부 입장이 있겠습니다.',
+      '세상에서 가장 사랑스럽고 아름다운 걸음이 시작됩니다.',
+      '오늘, 한 남자에게 인생의 가장 소중한 선물이 될 사람, 지금까지와는 다른 새로운 삶을 향해 걸어 나오는 신부에게 우리 모두의 축복과 박수를 보내주시기 바랍니다.',
+      '사랑스러운 신부 {신부이름} 양, 이 자리에 섭니다.',
+    ],
+  },
+}
+
+/** 본문이 짧을 때만 큐 앞에 추가 */
+const bridgeFillers: Record<
+  'groom' | 'bride',
+  Record<AppData['mood'], string[]>
+> = {
+  groom: {
+    formal: ['두 사람의 만남이 오늘 아름다운 약속으로 이어집니다.'],
+    bright: ['반짝이는 미래를 향해, 지금 이 순간이 시작됩니다!'],
+    solemn: ['경건한 마음으로, 두 사람의 새 출발을 함께해 주시기 바랍니다.'],
+    warm: ['사랑하는 사람과 함께, 오늘부터 새로운 이야기가 펼쳐집니다.'],
+  },
+  bride: {
+    formal: ['오늘 이 자리에서 두 사람의 아름다운 시작을 함께해 주시기 바랍니다.'],
+    bright: ['설레는 순간, 오늘의 주인공이 무대에 섭니다!'],
+    solemn: ['고요히, 두 사람의 새 출발을 함께해 주시기 바랍니다.'],
+    warm: ['따뜻한 마음으로, 두 사람의 첫걸음을 축복해 주시기 바랍니다.'],
+  },
+}
+
+/** 초 수에 따라 붙일 문장 수 — 14초면 보통 3문장(웨딩홀 실제 분량) */
+function partCountForSeconds(seconds: number, totalParts: number): number {
+  if (seconds <= 6) return Math.min(1, totalParts)
+  if (seconds <= 10) return Math.min(2, totalParts)
+  if (seconds <= 16) return Math.min(3, totalParts)
+  if (seconds <= 22) return Math.min(4, totalParts)
+  return totalParts
+}
+
+function assembleTimedScript(
+  type: 'groom' | 'bride',
+  mood: AppData['mood'],
+  ctx: ReturnType<typeof buildScriptContext>,
+  seconds: number,
+): string {
+  const cue = ENTRANCE_CUE[type]
+  const parts = bodyParts[type][mood].map((part) => applyScriptVars(part, ctx))
+  const count = partCountForSeconds(seconds, parts.length)
+  let body = parts.slice(0, count).join(' ')
+
+  const target = estimateEntranceScriptChars(seconds)
+  const minBody = target - cue.length - 1
+  const bridges = bridgeFillers[type][mood]
+  let bridgeIdx = 0
+  while (body.length < minBody && bridgeIdx < bridges.length && count >= parts.length) {
+    body = `${body} ${bridges[bridgeIdx]}`
+    bridgeIdx += 1
   }
-  return result
-}
 
-/** 타이밍·음원 시작 언급 없이 N초 낭독을 채우는 짧은 입장 멘트 */
-const shortBases: Record<'groom' | 'bride', Record<AppData['mood'], string>> = {
-  groom: {
-    formal:
-      '다음은 신랑 입장이 있겠습니다. 하객 여러분, 정중한 박수로 맞이해 주시기 바랍니다. 신랑 입장',
-    bright: '자, 이제 신랑 입장이 있겠습니다! 하객 여러분, 힘찬 박수로 맞이해 주세요! 신랑 입장',
-    solemn:
-      '다음은 신랑 입장 순서입니다. 고요히, 따뜻한 박수로 맞이해 주시기 바랍니다. 신랑 입장',
-    warm: '이제 신랑 입장이 있겠습니다. 하객 여러분, 따뜻한 박수로 응원해 주세요. 신랑 입장',
-  },
-  bride: {
-    formal:
-      '이제 오늘의 주인공, 신부 입장이 있겠습니다. 하객 여러분, 정중한 박수 부탁드립니다. 신부 입장',
-    bright: '드디어 신부 입장! 하객 여러분, 크게 박수 쳐 주세요! 신부 입장',
-    solemn:
-      '다음은 신부 입장 순서입니다. 마음을 모아 따뜻하게 맞이해 주시기 바랍니다. 신부 입장',
-    warm: '이제 아름다운 신부님이 등장합니다. 하객 여러분, 설레는 박수로 맞이해 주세요. 신부 입장',
-  },
-}
-
-const longFillers: Record<AppData['mood'], string> = {
-  formal: ' 잠시만, 하객 여러분께서는 자리에서 편히 기다려 주시기 바랍니다.',
-  bright: ' 조금만 더 설레는 마음으로 함께해 주세요!',
-  solemn: ' 잠시 고요히, 마음을 모아 주시기 바랍니다.',
-  warm: ' 잠시만, 따뜻한 마음으로 함께해 주세요.',
-}
-
-const extraFillers: Record<'groom' | 'bride', Record<AppData['mood'], string>> = {
-  groom: {
-    formal: ' 오늘의 주인공을 향한 기대감이 점점 높아지고 있습니다.',
-    bright: ' 멋진 신랑님, 곧 눈앞에 펼쳐집니다!',
-    solemn: ' 경건한 마음으로 함께해 주시기 바랍니다.',
-    warm: ' 설레는 순간, 함께 기다려 주세요.',
-  },
-  bride: {
-    formal: ' 오늘 가장 아름다운 순간을 향해 마음을 모아 주시기 바랍니다.',
-    bright: ' 아름다운 신부님, 곧 등장합니다!',
-    solemn: ' 조용히, 따뜻한 시선으로 함께해 주세요.',
-    warm: ' 감동의 순간이 다가오고 있습니다.',
-  },
+  return `${body} ${cue}`.trim()
 }
 
 /**
  * 입장 타이밍용 MC 멘트 — 본문에 "N초 후", "음악 시작" 등 절대 포함하지 않음.
- * 타이밍은 큐시트 곡명 옆 별도 표기.
+ * 타이밍은 큐시트 곡명 옆 별도 표기. 입장 큐는 항상 맨 마지막.
  */
 export function getTimedEntranceScript(
   type: 'groom' | 'bride',
@@ -67,12 +136,5 @@ export function getTimedEntranceScript(
 ): string {
   const sec = Math.max(5, Math.round(seconds))
   const ctx = buildScriptContext(data)
-  const target = estimateEntranceScriptChars(sec)
-
-  let raw = applyScriptVars(shortBases[type][data.mood], ctx)
-
-  if (sec >= 10) raw = padToTarget(raw, target, longFillers[data.mood])
-  if (sec >= 18) raw = padToTarget(raw, target, extraFillers[type][data.mood])
-
-  return raw.trim()
+  return assembleTimedScript(type, data.mood, ctx, sec)
 }
