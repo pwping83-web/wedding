@@ -67,8 +67,7 @@ function renderRowsHtml(
       return `
       <tr>
         <td style="width:1%;white-space:nowrap;max-width:14mm;padding:2px 3px;border-top:1px dotted #444;border-bottom:1px dotted #444;border-right:1px dotted #444;background:#FFFFFF;text-align:center;vertical-align:middle;">
-          <div style="font-size:7pt;font-weight:700;line-height:1.2;color:#111;white-space:pre-line;word-break:keep-all;">${preserveLineBreaks(escapeHtml(row.labelMain))}</div>
-          ${row.labelSub ? `<div style="margin-top:1px;font-size:6.5pt;font-weight:700;color:#111;">${escapeHtml(row.labelSub)}</div>` : ''}
+          <div style="font-size:9pt;font-weight:700;line-height:1.2;color:#111;white-space:nowrap;word-break:keep-all;">${escapeHtml(row.labelMain)}</div>
         </td>
         <td style="padding:2px 5px;border-top:1px dotted #444;border-bottom:1px dotted #444;vertical-align:top;">
           ${
@@ -76,7 +75,7 @@ function renderRowsHtml(
               ? `<div style="margin:0 0 4px;padding-bottom:3px;border-bottom:1px dotted #D8D8D8;font-size:8pt;line-height:1.4;color:#7B6FA8;">${escapeHtml(row.personNote)}</div>`
               : ''
           }
-          <div style="font-size:9.5pt;line-height:1.62;color:#222;word-break:keep-all;">${formatScriptHtml(row.script, groomName, brideName)}</div>
+          <div style="font-size:11.5pt;line-height:1.62;color:#222;word-break:keep-all;">${formatScriptHtml(row.script, groomName, brideName)}</div>
         </td>
       </tr>`
     })

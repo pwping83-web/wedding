@@ -32,9 +32,9 @@ export function getCueSheetRowLabel(title: string): { main: string; sub?: string
     case '신랑신부 맞절':
       return { main: '맞절' }
     case '신랑신부 혼인서약서 낭독':
-      return { main: '혼인서약서\n낭독' }
+      return { main: '혼인서약서 낭독' }
     case '부모님과 하객분들께 인사':
-      return { main: '부모님과\n하객분들께\n인사' }
+      return { main: '부모님과 하객분들께 인사' }
     case '행진':
       return { main: '행진' }
     case '폐식사':

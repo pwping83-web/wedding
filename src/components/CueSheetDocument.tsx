@@ -37,7 +37,6 @@ function renderGrid(
           >
             <div className="cue-sheet-grid__label">
               <div className="cue-sheet-label-main">{row.labelMain}</div>
-              {row.labelSub && <div className="cue-sheet-label-sub">{row.labelSub}</div>}
             </div>
             <div className="cue-sheet-grid__script">
               {row.personNote && <p className="cue-sheet-person-line">{row.personNote}</p>}
