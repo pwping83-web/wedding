@@ -36,6 +36,10 @@ export default function Landing({ onStart }: Props) {
           AI 자동 식순 큐시트
         </h1>
 
+        <p className="text-[14px] font-semibold text-charcoal/80 mb-4">
+          (ENX 웨딩.MC)
+        </p>
+
         <p className="text-[15px] text-muted-text leading-relaxed mb-8 max-w-[300px]">
           예식 정보 · 식순 · 멘트까지
           <br />
