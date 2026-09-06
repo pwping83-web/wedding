@@ -36,17 +36,17 @@ export function getEntranceCueMeta(
   data: AppData,
   type: 'groom' | 'bride',
 ): EntranceCueMeta | null {
-  if (!ENTRANCE_AUDIO_TIMING_ENABLED) return null
+  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
+  if (!marker || marker.time <= 0) return null
 
   const audio = type === 'groom' ? data.groomAudio : data.brideAudio
-  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
-  if (!marker) return null
 
   return {
-    audioTitle: getEntranceAudioTitle(audio),
+    audioTitle:
+      ENTRANCE_AUDIO_TIMING_ENABLED && audio ? getEntranceAudioTitle(audio) : null,
     timingLabel: formatEntranceTiming(type, marker.time),
     script: getEntranceDisplayScript(type, data),
-    audioUrl: audio?.url ?? null,
+    audioUrl: ENTRANCE_AUDIO_TIMING_ENABLED ? (audio?.url ?? null) : null,
   }
 }
 
@@ -65,15 +65,14 @@ export function getEntranceDisplayScript(
   const item = data.orderItems.find((orderItem) => orderItem.title === title)
   const ctx = buildScriptContext(data)
 
-  if (!ENTRANCE_AUDIO_TIMING_ENABLED) {
-    if (item?.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
-    if (item) return getOrderItemScript(item, data.mood, data)
-    return ''
-  }
-
   if (marker?.customScript?.trim()) return applyScriptVars(marker.customScript, ctx)
   if (item?.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
-  if (marker) return getTimedEntranceScript(type, data, marker.time)
+
+  if (marker && marker.time > 0) {
+    return getTimedEntranceScript(type, data, marker.time)
+  }
+
+  if (item) return getOrderItemScript(item, data.mood, data)
   return ''
 }
 
@@ -121,17 +120,23 @@ export function buildCueSheetPlainText(data: AppData, variant: CueSheetVariant):
     lines.push('')
   }
 
-  if (variant === 'mc' && ENTRANCE_AUDIO_TIMING_ENABLED) {
-    lines.push('[ 입장 음원 · 타이밍 ]')
+  if (variant === 'mc') {
     const groomMeta = getEntranceCueMeta(data, 'groom')
     const brideMeta = getEntranceCueMeta(data, 'bride')
-    if (groomMeta) {
-      lines.push(`- 신랑: ${groomMeta.audioTitle ?? '음원 미첨부'} · ${groomMeta.timingLabel}`)
+    if (groomMeta || brideMeta) {
+      lines.push('[ 입장 타이밍 ]')
+      if (groomMeta) {
+        lines.push(
+          `- 신랑: ${groomMeta.audioTitle ? `${groomMeta.audioTitle} · ` : ''}${groomMeta.timingLabel}`,
+        )
+      }
+      if (brideMeta) {
+        lines.push(
+          `- 신부: ${brideMeta.audioTitle ? `${brideMeta.audioTitle} · ` : ''}${brideMeta.timingLabel}`,
+        )
+      }
+      lines.push('')
     }
-    if (brideMeta) {
-      lines.push(`- 신부: ${brideMeta.audioTitle ?? '음원 미첨부'} · ${brideMeta.timingLabel}`)
-    }
-    lines.push('')
   }
 
   lines.push('[ 식순 ]')

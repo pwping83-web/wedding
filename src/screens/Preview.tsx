@@ -3,7 +3,7 @@ import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, OrderItem, SetData } from '../data'
-import { roleLabels } from '../data'
+import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels, roleLabels } from '../data'
 import { ENTRANCE_AUDIO_TIMING_ENABLED, flowStep } from '../config/features'
 import {
   getEntranceCueMeta,
@@ -12,6 +12,12 @@ import {
   addMinutesLabel,
   buildOrderItemsWithTime,
 } from '../lib/cueSheetUtils'
+import {
+  ENTRANCE_TIMING_PRESETS,
+  getEntranceMarker,
+  hasEntranceTiming,
+  setEntranceTimingSeconds,
+} from '../lib/entranceTiming'
 import {
   buildEntranceGeneratePayload,
   buildOrderGeneratePayload,
@@ -25,6 +31,62 @@ interface Props {
   onNext: () => void
   onBack: () => void
   onGoOutput: () => void
+}
+
+function EntranceTimingPicker({
+  type,
+  data,
+  setData,
+}: {
+  type: 'groom' | 'bride'
+  data: AppData
+  setData: SetData
+}) {
+  const marker = getEntranceMarker(data, type)
+  const selected = marker?.time ?? null
+
+  return (
+    <div className="mb-3">
+      <p className="text-[12px] font-medium text-charcoal mb-2">입장 타이밍</p>
+      <div className="flex flex-wrap gap-1.5">
+        <label
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-[12px] font-medium cursor-pointer ${
+            selected == null
+              ? 'border-accent bg-accent-soft text-accent'
+              : 'border-border bg-surface text-muted-text'
+          }`}
+        >
+          <input
+            type="radio"
+            name={`entrance-timing-${type}`}
+            checked={selected == null}
+            onChange={() => setEntranceTimingSeconds(setData, type, null)}
+            className="sr-only"
+          />
+          사용 안 함
+        </label>
+        {ENTRANCE_TIMING_PRESETS.map((seconds) => (
+          <label
+            key={seconds}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-[12px] font-medium cursor-pointer tabular-nums ${
+              selected === seconds
+                ? 'border-accent bg-accent-soft text-accent'
+                : 'border-border bg-surface text-muted-text'
+            }`}
+          >
+            <input
+              type="radio"
+              name={`entrance-timing-${type}`}
+              checked={selected === seconds}
+              onChange={() => setEntranceTimingSeconds(setData, type, seconds)}
+              className="sr-only"
+            />
+            {seconds}초
+          </label>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
@@ -45,12 +107,13 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
 
   const generateScript = async (item: OrderItem) => {
     const entranceType = entranceTypeForTitle(item.title)
+    const useEntranceTiming = entranceType && hasEntranceTiming(data, entranceType)
     const currentScript = getItemScriptForCueSheet(item, data)
 
     setGeneratingId(item.id)
     setGenerateError('')
     try {
-      if (entranceType && ENTRANCE_AUDIO_TIMING_ENABLED) {
+      if (useEntranceTiming) {
         const script = await requestGeneratedScript(
           buildEntranceGeneratePayload(data, entranceType, currentScript),
         )
@@ -74,7 +137,7 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
         }))
       }
     } catch (error) {
-      if (entranceType && ENTRANCE_AUDIO_TIMING_ENABLED) {
+      if (useEntranceTiming && entranceType) {
         setData((prev) => {
           const key = entranceType === 'groom' ? 'groomMarkers' : 'brideMarkers'
           return {
@@ -150,9 +213,13 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
                 <span className="text-[12px] text-muted-text shrink-0">{item.duration}분</span>
               </div>
 
-              {ENTRANCE_AUDIO_TIMING_ENABLED && entranceMeta && (
+              {entranceType && (
+                <EntranceTimingPicker type={entranceType} data={data} setData={setData} />
+              )}
+
+              {entranceMeta && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  {entranceMeta.audioTitle && (
+                  {ENTRANCE_AUDIO_TIMING_ENABLED && entranceMeta.audioTitle && (
                     <span className="text-[11px] bg-accent-soft text-accent px-2 py-0.5 rounded-full truncate max-w-full">
                       {entranceMeta.audioTitle}
                     </span>
@@ -166,6 +233,12 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
               {person && (
                 <p className="text-[12px] text-muted-text mb-2">
                   {roleLabels[person.role]} {person.name}
+                </p>
+              )}
+
+              {isMarriageDeclarationTitle(item.title) && (
+                <p className="text-[11px] text-accent font-medium mb-2">
+                  {marriageDeclarationReaderLabels[data.marriageDeclarationReader]}
                 </p>
               )}
 

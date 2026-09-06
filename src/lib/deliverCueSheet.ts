@@ -31,14 +31,12 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
 
   const groomAudio = ENTRANCE_AUDIO_TIMING_ENABLED ? getEntranceAudioTitle(data.groomAudio) : '-'
   const brideAudio = ENTRANCE_AUDIO_TIMING_ENABLED ? getEntranceAudioTitle(data.brideAudio) : '-'
-  const groomTiming =
-    ENTRANCE_AUDIO_TIMING_ENABLED && data.groomMarkers[0]
-      ? `신랑 ${data.groomMarkers[0].time}초 후 입장`
-      : '-'
-  const brideTiming =
-    ENTRANCE_AUDIO_TIMING_ENABLED && data.brideMarkers[0]
-      ? `신부 ${data.brideMarkers[0].time}초 후 입장`
-      : '-'
+  const groomTiming = data.groomMarkers[0]?.time
+    ? `신랑 ${data.groomMarkers[0].time}초 후 입장`
+    : '-'
+  const brideTiming = data.brideMarkers[0]?.time
+    ? `신부 ${data.brideMarkers[0].time}초 후 입장`
+    : '-'
 
   const response = await fetch(apiUrl(), {
     method: 'POST',

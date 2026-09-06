@@ -3,11 +3,15 @@ import {
   applyScriptVars,
   buildScriptContext,
   getItemScript,
+  getMarriageDeclarationScript,
+  isMarriageDeclarationTitle,
 } from './cueScripts'
 
 export type Style = 'classic' | 'casual' | 'modern' | 'fun'
 export type Mood = 'bright' | 'solemn' | 'formal' | 'warm'
 export type PersonRole = 'mc' | 'officiant' | 'vocalist' | 'speaker'
+/** 성혼선언문 낭독자 — 기본값 사회자 */
+export type MarriageDeclarationReader = 'mc' | 'couple'
 
 export interface Marker {
   id: string
@@ -69,6 +73,8 @@ export interface AppData {
   orderItems: OrderItem[]
   persons: Person[]
   mood: Mood
+  /** 성혼선언문 낭독자 (기본: 사회자) */
+  marriageDeclarationReader: MarriageDeclarationReader
   email: string
   coupleEmail: string
 }
@@ -110,6 +116,11 @@ export const moodEmojis: Record<Mood, string> = {
   warm: '🌸',
 }
 
+export const marriageDeclarationReaderLabels: Record<MarriageDeclarationReader, string> = {
+  mc: '사회자 낭독',
+  couple: '신랑·신부 낭독',
+}
+
 export const defaultOrderItems: OrderItem[] = [
   { id: '1', title: '안내멘트(10분전)', duration: 1, scriptVariant: 0 },
   { id: '2', title: '안내멘트(5분전)', duration: 1, scriptVariant: 0 },
@@ -126,7 +137,14 @@ export const defaultOrderItems: OrderItem[] = [
   { id: '13', title: '폐식사', duration: 2, scriptVariant: 0 },
 ]
 
-export { getItemScript, itemScripts, buildScriptContext, applyScriptVars } from './cueScripts'
+export {
+  getItemScript,
+  getMarriageDeclarationScript,
+  isMarriageDeclarationTitle,
+  itemScripts,
+  buildScriptContext,
+  applyScriptVars,
+} from './cueScripts'
 
 export function getOrderItemScript(
   item: OrderItem,
@@ -135,6 +153,15 @@ export function getOrderItemScript(
 ): string {
   const ctx = buildScriptContext(data)
   if (item.customScript?.trim()) return applyScriptVars(item.customScript, ctx)
+  if (isMarriageDeclarationTitle(item.title)) {
+    return getMarriageDeclarationScript(
+      item.title,
+      mood,
+      item.scriptVariant,
+      data.marriageDeclarationReader ?? 'mc',
+      data,
+    )
+  }
   return getItemScript(item.title, mood, item.scriptVariant, data)
 }
 
@@ -282,6 +309,7 @@ export const initialData: AppData = {
   orderItems: defaultOrderItems,
   persons: withFixedMc([]),
   mood: 'warm',
+  marriageDeclarationReader: 'mc',
   email: '',
   coupleEmail: '',
 }

@@ -1,4 +1,4 @@
-import type { AppData, Mood } from './data'
+import type { AppData, MarriageDeclarationReader, Mood } from './data'
 
 export type ScriptContext = {
   groomName: string
@@ -389,6 +389,45 @@ export const itemScripts: Record<string, MoodScripts> = {
       '성혼 선언문 낭독의 시간입니다. {신랑이름} 군과 {신부이름} 양이 서로에게 전하는 평생의 약속, 따뜻한 마음으로 지켜봐 주시기 바랍니다.',
     ],
   ),
+}
+
+/** 사회자가 성혼선언문을 낭독할 때의 MC 멘트 (기본) */
+export const marriageDeclarationMcScripts: MoodScripts = s(
+  [
+    '다음은 성혼선언문 낭독 순서입니다. 사회자 {사회자이름}이 성혼선언문을 낭독하겠습니다. 신랑 {신랑이름} 군과 신부 {신부이름} 양 앞에서, 두 분이 오늘부터 부부로서 함께할 것을 선언합니다. 하객 여러분께서는 경건한 마음으로 함께해 주시기 바랍니다.',
+    '이제 성혼선언문 낭독이 있겠습니다. 사회자 {사회자이름}이 성혼선언문을 대독하겠습니다. 신랑 {신랑이름} 군과 신부 {신부이름} 양, 두 분의 앞날을 축복하는 이 순간, 조용히 함께해 주시기 바랍니다.',
+  ],
+  [
+    '자, 성혼선언문 시간! 사회자 {사회자이름}이 성혼선언문을 낭독할게요! {신랑이름} 군, {신부이름} 양, 두 분의 특별한 약속의 순간, 함께 지켜봐 주세요!',
+    '성혼선언문 낭독! {사회자이름}이 대신 읽어 드릴게요! {신랑이름} 군과 {신부이름} 양의 행복한 시작, 모두 함께 응원해 주세요!',
+  ],
+  [
+    '성혼선언문 낭독이 있겠습니다. 사회자 {사회자이름}이 성혼선언문을 낭독하겠습니다. {신랑이름} 군과 {신부이름} 양 앞에서 두 분의 부부의 성립을 선언합니다. 경건한 마음으로 함께해 주시기 바랍니다.',
+    '이제 성혼선언문을 낭독하겠습니다. 사회자 {사회자이름}이 성혼선언문을 대독합니다. {신랑이름} 군과 {신부이름} 양의 약속, 조용히 들어 주세요.',
+  ],
+  [
+    '이제 성혼선언문 낭독의 시간입니다. 사회자 {사회자이름}이 성혼선언문을 낭독하겠습니다. {신랑이름} 군과 {신부이름} 양, 두 분의 사랑이 오늘 영원한 약속으로 이어지는 순간, 따뜻한 마음으로 함께해 주세요.',
+    '성혼선언문 낭독입니다. 사회자 {사회자이름}이 성혼선언문을 대독하겠습니다. {신랑이름} 군과 {신부이름} 양의 행복한 앞날을 함께 축복해 주시기 바랍니다.',
+  ],
+)
+
+export function isMarriageDeclarationTitle(title: string): boolean {
+  const normalizedTitle = TITLE_ALIASES[title] ?? title
+  return normalizedTitle === '성혼선언문'
+}
+
+export function getMarriageDeclarationScript(
+  title: string,
+  mood: Mood,
+  variant: number,
+  reader: MarriageDeclarationReader,
+  data?: AppData,
+): string {
+  const scripts = reader === 'mc' ? marriageDeclarationMcScripts : itemScripts['성혼선언문']
+  const moodScripts = scripts[mood]
+  const raw = moodScripts[variant % moodScripts.length]
+  const ctx = data ? buildScriptContext(data) : {}
+  return applyScriptVars(raw, ctx)
 }
 
 export function getItemScript(

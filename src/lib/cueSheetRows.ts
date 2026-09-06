@@ -7,7 +7,6 @@ import {
   getItemScriptForCueSheet,
   type CueSheetVariant,
 } from './cueSheetUtils'
-import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 
 export type CueSheetDisplayRow = {
   id: string
@@ -78,10 +77,7 @@ export function buildCueSheetDisplayRows(
 
   return items.map((item) => {
     const entranceType = entranceTypeForTitle(item.title)
-    const entranceMeta =
-      ENTRANCE_AUDIO_TIMING_ENABLED && entranceType
-        ? getEntranceCueMeta(data, entranceType)
-        : null
+    const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
     const person = findPersonForItem(item, data)
 
     return {

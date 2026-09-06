@@ -2,7 +2,8 @@ import { useState } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
-import type { AppData, OrderItem, SetData } from '../data'
+import type { AppData, MarriageDeclarationReader, OrderItem, SetData } from '../data'
+import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels } from '../data'
 import { flowStep } from '../config/features'
 
 interface Props {
@@ -48,6 +49,8 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
   }
 
   const total = data.orderItems.reduce((s, i) => s + i.duration, 0)
+  const hasMarriageDeclaration = data.orderItems.some((item) => isMarriageDeclarationTitle(item.title))
+  const readerOptions: MarriageDeclarationReader[] = ['mc', 'couple']
 
   return (
     <ScreenLayout
@@ -110,6 +113,41 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
           </div>
         ))}
       </div>
+
+      {hasMarriageDeclaration && (
+        <Card className="p-4 mb-4 space-y-3">
+          <div>
+            <p className="text-[14px] font-semibold text-charcoal">성혼선언문 낭독</p>
+            <p className="text-[12px] text-muted-text mt-0.5">누가 성혼선언문을 낭독할지 선택하세요</p>
+          </div>
+          <div className="space-y-2">
+            {readerOptions.map((reader) => (
+              <label
+                key={reader}
+                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer ${
+                  data.marriageDeclarationReader === reader
+                    ? 'border-accent bg-accent-soft'
+                    : 'border-border bg-surface'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="marriageDeclarationReader"
+                  value={reader}
+                  checked={data.marriageDeclarationReader === reader}
+                  onChange={() =>
+                    setData((prev) => ({ ...prev, marriageDeclarationReader: reader }))
+                  }
+                  className="accent-accent w-4 h-4 shrink-0"
+                />
+                <span className="text-[14px] font-medium text-charcoal">
+                  {marriageDeclarationReaderLabels[reader]}
+                </span>
+              </label>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <Card className="p-3 flex gap-2">
         <input
