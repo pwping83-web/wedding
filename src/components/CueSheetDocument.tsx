@@ -2,10 +2,7 @@ import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import type { AppData } from '../data'
 import { moodLabels } from '../data'
-import {
-  getEntranceCueMeta,
-  type CueSheetVariant,
-} from '../lib/cueSheetUtils'
+import type { CueSheetVariant } from '../lib/cueSheetUtils'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
 import { computeCueSheetRowSpacing } from '../lib/cueSheetSpacing'
 import FormatMcScript from '../lib/formatMcScript'
@@ -55,8 +52,6 @@ function renderTable(
 export default function CueSheetDocument({ data, variant }: Props) {
   const rows = buildCueSheetDisplayRows(data, variant)
   const spacing = useMemo(() => computeCueSheetRowSpacing(rows), [rows])
-  const groomMeta = getEntranceCueMeta(data, 'groom')
-  const brideMeta = getEntranceCueMeta(data, 'bride')
 
   const dateStr = data.date
     ? new Date(`${data.date}T00:00:00`).toLocaleDateString('ko-KR', {
@@ -85,22 +80,6 @@ export default function CueSheetDocument({ data, variant }: Props) {
               .join(' · ')}
           </p>
         </header>
-
-        {variant === 'mc' && (groomMeta || brideMeta) && (
-          <div className="cue-sheet-audio-summary">
-            <strong>입장 음원 · 타이밍</strong>
-            {groomMeta && (
-              <span>
-                신랑 {groomMeta.audioTitle ?? '음원 없음'} · {groomMeta.timingLabel}
-              </span>
-            )}
-            {brideMeta && (
-              <span>
-                신부 {brideMeta.audioTitle ?? '음원 없음'} · {brideMeta.timingLabel}
-              </span>
-            )}
-          </div>
-        )}
 
         {renderTable(rows, data.groomName, data.brideName)}
       </section>

@@ -3,6 +3,7 @@ import { roleLabels } from '../data'
 import {
   buildOrderItemsWithTime,
   entranceTypeForTitle,
+  formatEntranceTimingInline,
   getEntranceCueMeta,
   getItemScriptForCueSheet,
   type CueSheetVariant,
@@ -68,18 +69,28 @@ function buildRowNotes(
   return lines.join('\n')
 }
 
+function buildEntranceHeaderLine(
+  data: AppData,
+  type: 'groom' | 'bride',
+  entranceMeta: NonNullable<ReturnType<typeof getEntranceCueMeta>>,
+): string | null {
+  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
+  const parts: string[] = []
+  if (entranceMeta.audioTitle) parts.push(`곡: ${entranceMeta.audioTitle}`)
+  if (marker?.time && marker.time > 0) parts.push(formatEntranceTimingInline(marker.time))
+  if (parts.length === 0) return null
+  return parts.join(' · ')
+}
+
 function buildCueSheetRowScript(item: OrderItem, data: AppData): string {
   const entranceType = entranceTypeForTitle(item.title)
   const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
   const script = getItemScriptForCueSheet(item, data)
-  if (!entranceMeta) return script
+  if (!entranceType || !entranceMeta) return script
 
-  const parts: string[] = []
-  if (entranceMeta.audioTitle) parts.push(`곡: ${entranceMeta.audioTitle}`)
-  parts.push(script)
-  if (entranceMeta.timingLabel) parts.push(entranceMeta.timingLabel)
-
-  return parts.join('\n\n')
+  const header = buildEntranceHeaderLine(data, entranceType, entranceMeta)
+  if (!header) return script
+  return `${header}\n\n${script}`
 }
 
 export function buildCueSheetDisplayRows(

@@ -25,6 +25,11 @@ export function formatEntranceTiming(type: 'groom' | 'bride', seconds: number): 
   return `${role} ${seconds}초 후 입장`
 }
 
+/** 큐시트 곡명 옆 인라인 표기 — "7초 후 입장" */
+export function formatEntranceTimingInline(seconds: number): string {
+  return `${seconds}초 후 입장`
+}
+
 export function getEntranceAudioTitle(
   audio: { fileName: string; trackTitle?: string } | null | undefined,
 ): string {
