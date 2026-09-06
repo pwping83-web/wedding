@@ -1,7 +1,8 @@
 import { Fragment, useMemo } from 'react'
 
 const EMPHASIS_PATTERN =
-  /(배경\s*음악|박\s*수|맞\s*절|박\s*전|환\s*호|음\s*악\s*주세요|큰\s*박\s*수|따뜻한\s*박\s*수)/
+  /(배경\s*음악|박\s*수|맞\s*절|박\s*전|환\s*호|음\s*악\s*주세요|큰\s*박\s*수|따뜻한\s*박\s*수|입장해\s*주|일어나\s*주|맞이해\s*주|박수로\s*맞이|박수\s*부탁)/
+
 
 function isEmphasisChunk(chunk: string): boolean {
   return EMPHASIS_PATTERN.test(chunk)

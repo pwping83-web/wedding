@@ -166,11 +166,31 @@ input, textarea, select, button {
 }
 
 .cue-sheet-table__col-label {
-  width: 13%;
+  width: 12%;
 }
 
 .cue-sheet-table__col-script {
-  width: 87%;
+  width: 63%;
+}
+
+.cue-sheet-table__col-notes {
+  width: 25%;
+}
+
+.cue-sheet-table__head {
+  border-top: 2px solid #173f9f;
+  border-bottom: 1px solid #173f9f;
+  border-right: 1px dotted #444;
+  padding: 4px 3px;
+  font-size: 9pt;
+  font-weight: 700;
+  text-align: center;
+  background: #eef2fa;
+  color: #173f9f;
+}
+
+.cue-sheet-table__head:last-child {
+  border-right: none;
 }
 
 .cue-sheet-table__row {
@@ -179,7 +199,8 @@ input, textarea, select, button {
 }
 
 .cue-sheet-table__label,
-.cue-sheet-table__script {
+.cue-sheet-table__script,
+.cue-sheet-table__notes {
   border-top: 1px dotted #444;
   vertical-align: top;
   box-sizing: border-box;
@@ -192,34 +213,41 @@ input, textarea, select, button {
   vertical-align: middle;
   font-size: 9pt;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
   white-space: nowrap;
   color: #1a1a1a;
+  background: #fafafa;
 }
 
 .cue-sheet-table__script {
   padding: 4px 6px;
+  border-right: 1px dotted #444;
   overflow-wrap: break-word;
   word-break: keep-all;
 }
 
+.cue-sheet-table__notes {
+  padding: 4px 5px;
+  font-size: 9pt;
+  line-height: 1.45;
+  color: #444;
+  white-space: pre-line;
+  background: #fcfcfc;
+}
+
+.cue-sheet-notes-line {
+  display: block;
+}
+
 .cue-sheet-table__row:last-child .cue-sheet-table__label,
-.cue-sheet-table__row:last-child .cue-sheet-table__script {
+.cue-sheet-table__row:last-child .cue-sheet-table__script,
+.cue-sheet-table__row:last-child .cue-sheet-table__notes {
   border-bottom: 1px dotted #444;
 }
 
-.cue-sheet-person-line {
-  margin: 0 0 4px;
-  padding-bottom: 3px;
-  border-bottom: 1px dotted #ddd;
-  font-size: 8pt;
-  color: #7b6fa8;
-  line-height: 1.4;
-}
-
 .cue-sheet-script-text {
-  font-size: 11.5pt;
-  line-height: 1.55;
+  font-size: 12pt;
+  line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   word-break: keep-all;
@@ -279,8 +307,12 @@ input, textarea, select, button {
   }
 
   .cue-sheet-script-text {
-    font-size: 11.5pt;
-    line-height: 1.55;
+    font-size: 12pt;
+    line-height: 1.45;
+  }
+
+  .cue-sheet-table__notes {
+    font-size: 9pt;
   }
 }
 

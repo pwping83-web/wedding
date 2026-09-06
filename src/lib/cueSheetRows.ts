@@ -1,7 +1,6 @@
 import type { AppData, OrderItem } from '../data'
-import { getPersonIntroScript, roleLabels } from '../data'
+import { roleLabels } from '../data'
 import {
-  addMinutesLabel,
   buildOrderItemsWithTime,
   entranceTypeForTitle,
   getEntranceCueMeta,
@@ -14,33 +13,30 @@ export type CueSheetDisplayRow = {
   id: string
   orderTitle: string
   labelMain: string
-  labelSub?: string
-  timeLabel: string
   script: string
-  personNote?: string
-  audioNote?: string
-  timingNote?: string
+  notes: string
+  durationMin: number
 }
 
 /** 웨딩홀 양식과 동일한 좌측 라벨 */
-export function getCueSheetRowLabel(title: string): { main: string; sub?: string } {
+export function getCueSheetRowLabel(title: string): string {
   switch (title) {
     case '신랑 입장':
-      return { main: '신랑입장' }
+      return '신랑입장'
     case '신부 입장':
-      return { main: '신부입장' }
+      return '신부입장'
     case '신랑신부 맞절':
-      return { main: '맞절' }
+      return '맞절'
     case '신랑신부 혼인서약서 낭독':
-      return { main: '혼인서약서 낭독' }
+      return '혼인서약서 낭독'
     case '부모님과 하객분들께 인사':
-      return { main: '부모님과 하객분들께 인사' }
+      return '부모님과 하객분들께 인사'
     case '행진':
-      return { main: '행진' }
+      return '행진'
     case '폐식사':
-      return { main: '폐식사' }
+      return '폐식사'
     default:
-      return { main: title }
+      return title
   }
 }
 
@@ -52,6 +48,28 @@ function findPersonForItem(item: OrderItem, data: AppData) {
   })
 }
 
+function buildRowNotes(
+  item: OrderItem,
+  variant: CueSheetVariant,
+  person: ReturnType<typeof findPersonForItem>,
+  entranceMeta: ReturnType<typeof getEntranceCueMeta>,
+): string {
+  const lines: string[] = []
+
+  if (person && variant === 'mc') {
+    lines.push(`${roleLabels[person.role]} ${person.name} (${person.relationship})`)
+  }
+  if (entranceMeta?.audioTitle) {
+    lines.push(`곡: ${entranceMeta.audioTitle}`)
+  }
+  if (entranceMeta?.timingLabel) {
+    lines.push(entranceMeta.timingLabel)
+  }
+  lines.push(`약 ${item.duration}분`)
+
+  return lines.join('\n')
+}
+
 export function buildCueSheetDisplayRows(
   data: AppData,
   variant: CueSheetVariant,
@@ -59,8 +77,6 @@ export function buildCueSheetDisplayRows(
   const items = buildOrderItemsWithTime(data)
 
   return items.map((item) => {
-    const { main, sub } = getCueSheetRowLabel(item.title)
-    const script = getItemScriptForCueSheet(item, data)
     const entranceType = entranceTypeForTitle(item.title)
     const entranceMeta =
       ENTRANCE_AUDIO_TIMING_ENABLED && entranceType
@@ -68,21 +84,13 @@ export function buildCueSheetDisplayRows(
         : null
     const person = findPersonForItem(item, data)
 
-    let personNote: string | undefined
-    if (person && variant === 'mc') {
-      personNote = `${roleLabels[person.role]} ${person.name} (${person.relationship}) — ${getPersonIntroScript(person)}`
-    }
-
     return {
       id: item.id,
       orderTitle: item.title,
-      labelMain: main,
-      labelSub: sub,
-      timeLabel: addMinutesLabel(data.time, item.startMin),
-      script,
-      personNote,
-      audioNote: entranceMeta?.audioTitle ?? undefined,
-      timingNote: entranceMeta?.timingLabel,
+      labelMain: getCueSheetRowLabel(item.title),
+      script: getItemScriptForCueSheet(item, data),
+      notes: buildRowNotes(item, variant, person, entranceMeta),
+      durationMin: item.duration,
     }
   })
 }
