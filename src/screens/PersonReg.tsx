@@ -91,10 +91,10 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
     <Card key={person.id} className="p-4">
       <div className="flex justify-between items-start mb-2">
         <div>
-          <p className="font-semibold text-[15px]">{person.name}</p>
           <p className="text-[12px] text-muted-text">
             {roleLabels[person.role]} · {person.relationship}
           </p>
+          <p className="font-semibold text-[15px] mt-0.5">{person.name}</p>
         </div>
         {removable && (
           <button
