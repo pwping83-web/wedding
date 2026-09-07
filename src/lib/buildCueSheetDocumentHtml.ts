@@ -8,6 +8,7 @@ import {
   CUE_SHEET_SCRIPT_PT,
 } from './cueSheetSpacing'
 import { formatMcScriptHtml } from './formatMcScriptHtml'
+import { renderCueSheetVenueStampHtml } from './cueSheetVenueStamp'
 
 /** 이메일 클라이언트(네이버 메일 등)에서 「인쇄」 시 앱 인쇄와 동일하게 */
 const EMAIL_PRINT_STYLES = `
@@ -32,6 +33,8 @@ const EMAIL_PRINT_STYLES = `
     background: #FFFFFF;
   }
   .wcm-cue-row { page-break-inside: avoid; break-inside: avoid; }
+  .wcm-cue-sheet-page { position: relative; }
+  .wcm-venue-stamp { position: absolute; top: 0; right: 0; }
   @media print {
     @page { size: A4 portrait; margin: 5mm 6mm; }
     html, body {
@@ -131,11 +134,13 @@ function renderPrintDocumentBody(
     rowPaddingPx,
     options,
   )
+  const venueStampHtml = renderCueSheetVenueStampHtml(data)
 
   return `
 <div class="wcm-print-root print-document">
   <article class="cue-sheet" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
-    <section class="cue-sheet-page" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
+    <section class="wcm-cue-sheet-page cue-sheet-page" style="margin:0;padding:0;background:#FFFFFF;width:100%;position:relative;">
+      ${venueStampHtml}
       ${tableHtml}
     </section>
   </article>

@@ -141,6 +141,25 @@ input, textarea, select, button {
 .cue-sheet-page {
   background: #fff;
   width: 100%;
+  position: relative;
+}
+
+.cue-sheet-venue-stamp {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  max-width: 42%;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+  font-size: 6.5pt;
+  line-height: 1.25;
+  font-weight: 500;
+  color: #9a9590;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .cue-sheet-header {
@@ -280,6 +299,11 @@ input, textarea, select, button {
   .cue-sheet-page,
   .cue-sheet-table {
     width: 100% !important;
+  }
+
+  .cue-sheet-venue-stamp {
+    font-size: 6pt;
+    color: #888;
   }
 
   .cue-sheet-header {

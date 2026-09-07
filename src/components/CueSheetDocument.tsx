@@ -5,6 +5,7 @@ import type { CueSheetVariant } from '../lib/cueSheetUtils'
 import { buildCueSheetDisplayRows, type CueSheetDisplayRow } from '../lib/cueSheetRows'
 import { computeCueSheetRowSpacing } from '../lib/cueSheetSpacing'
 import FormatMcScript from '../lib/formatMcScript'
+import { formatCueSheetVenueStamp } from '../lib/cueSheetVenueStamp'
 
 interface Props {
   data: AppData
@@ -51,6 +52,7 @@ function renderTable(
 export default function CueSheetDocument({ data, variant }: Props) {
   const rows = buildCueSheetDisplayRows(data, variant)
   const spacing = useMemo(() => computeCueSheetRowSpacing(rows), [rows])
+  const venueStamp = formatCueSheetVenueStamp(data)
 
   const spacingStyle = {
     '--cue-row-padding-y': `${spacing.rowPaddingPx}px`,
@@ -59,6 +61,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
   return (
     <article className="cue-sheet" style={spacingStyle}>
       <section className="cue-sheet-page">
+        {venueStamp && <p className="cue-sheet-venue-stamp">{venueStamp}</p>}
         {renderTable(rows, data.groomName, data.brideName)}
       </section>
     </article>
