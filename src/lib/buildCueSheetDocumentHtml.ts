@@ -9,6 +9,53 @@ import {
 } from './cueSheetSpacing'
 import { formatMcScriptHtml } from './formatMcScriptHtml'
 
+/** 이메일 클라이언트(네이버 메일 등)에서 「인쇄」 시 앱 인쇄와 동일하게 */
+const EMAIL_PRINT_STYLES = `
+<style type="text/css">
+  .wcm-print-root,
+  .wcm-print-root * { box-sizing: border-box; }
+  .wcm-print-root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: none;
+    background: #FFFFFF;
+    color: #1A1A1A;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', Arial, sans-serif;
+  }
+  .wcm-cue-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border-left: 2px solid #173F9F;
+    border-right: 2px solid #173F9F;
+    background: #FFFFFF;
+  }
+  .wcm-cue-row { page-break-inside: avoid; break-inside: avoid; }
+  @media print {
+    @page { size: A4 portrait; margin: 5mm 6mm; }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      background: #FFFFFF !important;
+    }
+    .wcm-email-hint { display: none !important; }
+    .wcm-print-root {
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .wcm-cue-table { width: 100% !important; }
+    .wcm-cue-row { page-break-inside: avoid !important; break-inside: avoid !important; }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+</style>`.trim()
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -18,10 +65,6 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;')
 }
 
-/**
- * FinalOutput `.print-document` > CueSheetDocument 과 동일한 표 HTML.
- * @media print 기준 padding·폰트·색상을 인라인으로 고정 (이메일 클라이언트용).
- */
 function renderCueSheetTableHtml(
   pageRows: CueSheetDisplayRow[],
   groomName: string,
@@ -37,11 +80,11 @@ function renderCueSheetTableHtml(
       const bottomBorder = isLast ? 'border-bottom:1px dotted #444;' : ''
 
       return `
-        <tr>
-          <td style="padding:${labelPadY}px 2px;border-top:1px dotted #444;border-right:1px dotted #444;${bottomBorder}text-align:center;vertical-align:middle;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:break-word;color:#1A1A1A;background:#FAFAFA;box-sizing:border-box;">
+        <tr class="wcm-cue-row">
+          <td style="padding:${labelPadY}px 2px;border-top:1px dotted #444;border-right:1px dotted #444;${bottomBorder}text-align:center;vertical-align:middle;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;line-height:1.35;word-break:keep-all;overflow-wrap:break-word;color:#1A1A1A;background:#FAFAFA;">
             ${escapeHtml(row.labelMain)}
           </td>
-          <td style="padding:${scriptPadY}px 5px;border-top:1px dotted #444;${bottomBorder}vertical-align:top;box-sizing:border-box;overflow-wrap:break-word;word-break:keep-all;">
+          <td style="padding:${scriptPadY}px 5px;border-top:1px dotted #444;${bottomBorder}vertical-align:top;overflow-wrap:break-word;word-break:keep-all;">
             <div style="font-size:${CUE_SHEET_SCRIPT_PT}pt;line-height:${CUE_SHEET_LINE_HEIGHT};white-space:pre-wrap;overflow-wrap:break-word;word-break:keep-all;color:#1A1A1A;">
               ${formatMcScriptHtml(row.script, groomName, brideName)}
             </div>
@@ -51,7 +94,7 @@ function renderCueSheetTableHtml(
     .join('')
 
   return `
-    <table width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;table-layout:fixed;border-left:2px solid #173F9F;border-right:2px solid #173F9F;background:#FFFFFF;">
+    <table class="wcm-cue-table cue-sheet-table" width="100%" cellpadding="0" cellspacing="0">
       <colgroup>
         <col style="width:16%;min-width:28mm;" />
         <col style="width:84%;" />
@@ -68,20 +111,25 @@ function renderCueSheetTableHtml(
     </table>`
 }
 
-/**
- * 인쇄 시 `.print-document` 안에만 나오는 큐시트 HTML.
- * CueSheetDocument(표만, 헤더 없음)와 동일 데이터·동일 레이아웃.
- */
-export function buildCueSheetDocumentHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
+function renderPrintDocumentBody(
+  data: AppData,
+  variant: CueSheetVariant,
+  options: { emailHint: boolean },
+): string {
   const groomName = data.groomName || '신랑'
   const brideName = data.brideName || '신부'
   const rows = buildCueSheetDisplayRows(data, variant)
   const { rowPaddingPx } = computeCueSheetRowSpacing(rows)
   const tableHtml = renderCueSheetTableHtml(rows, groomName, brideName, rowPaddingPx)
 
+  const hint = options.emailHint
+    ? `<p class="wcm-email-hint" style="margin:0 0 10px;font-size:11px;color:#8A8580;text-align:center;">메일 상단 <strong>인쇄</strong> 버튼 → A4 큐시트 출력 (앱 인쇄와 동일)</p>`
+    : ''
+
   return `
-<div class="print-document" style="margin:0;padding:0;width:100%;max-width:none;background:#FFFFFF;">
-  <article class="cue-sheet" style="margin:0;padding:0;background:#FFFFFF;color:#1A1A1A;width:100%;font-family:'Apple SD Gothic Neo','Malgun Gothic',Arial,sans-serif;">
+<div class="wcm-print-root print-document">
+  ${hint}
+  <article class="cue-sheet" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
     <section class="cue-sheet-page" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
       ${tableHtml}
     </section>
@@ -89,7 +137,18 @@ export function buildCueSheetDocumentHtml(data: AppData, variant: CueSheetVarian
 </div>`.trim()
 }
 
-/** buildCueSheetDocumentHtml 과 동일 — 이메일 본문용 */
+/** 앱 인쇄 `.print-document` 영역 HTML */
+export function buildCueSheetDocumentHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
+  return renderPrintDocumentBody(data, variant, { emailHint: false })
+}
+
+/**
+ * 이메일 본문용 — 표 + @media print (네이버 메일 등 메일 내 인쇄)
+ */
+export function buildCueSheetEmailHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
+  return `${EMAIL_PRINT_STYLES}\n${renderPrintDocumentBody(data, variant, { emailHint: true })}`
+}
+
 export function buildCueSheetPrintHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
   return buildCueSheetDocumentHtml(data, variant)
 }

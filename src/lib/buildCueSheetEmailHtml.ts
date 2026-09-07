@@ -1,5 +1,5 @@
 import type { AppData } from '../data'
-import { buildCueSheetPrintHtml } from './buildCueSheetDocumentHtml'
+import { buildCueSheetEmailHtml as buildEmailHtml } from './buildCueSheetDocumentHtml'
 
 function formatDateLabel(date: string): string {
   if (!date) return ''
@@ -18,7 +18,7 @@ export function buildCueSheetEmailSubject(data: AppData): string {
   return `[ENX 웨딩 · MC] ${groom} · ${bride}${date ? ` — ${date}` : ''}`
 }
 
-/** 인쇄 `.print-document` 영역과 동일한 HTML */
+/** 이메일 열기 → 메일 내 「인쇄」 시 A4 큐시트 출력 */
 export function buildCueSheetEmailHtml(data: AppData): string {
-  return buildCueSheetPrintHtml(data, 'mc')
+  return buildEmailHtml(data, 'mc')
 }
