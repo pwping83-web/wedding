@@ -1,5 +1,5 @@
 import type { AppData } from '../data'
-import { buildCueSheetDocumentHtml } from './buildCueSheetDocumentHtml'
+import { buildCueSheetPrintHtml } from './buildCueSheetDocumentHtml'
 
 function formatDateLabel(date: string): string {
   if (!date) return ''
@@ -18,7 +18,7 @@ export function buildCueSheetEmailSubject(data: AppData): string {
   return `[ENX 웨딩 · MC] ${groom} · ${bride}${date ? ` — ${date}` : ''}`
 }
 
-/** 인쇄용 CueSheetDocument 와 동일한 HTML */
+/** 인쇄 `.print-document` 영역과 동일한 HTML */
 export function buildCueSheetEmailHtml(data: AppData): string {
-  return buildCueSheetDocumentHtml(data, 'mc')
+  return buildCueSheetPrintHtml(data, 'mc')
 }
