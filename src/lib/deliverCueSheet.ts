@@ -26,6 +26,13 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
       subject,
       cueSheet,
       printHtml,
+      meta: {
+        groomName: data.groomName,
+        brideName: data.brideName,
+        weddingDate: data.date,
+        weddingTime: data.time,
+        venue: data.venue,
+      },
     }),
   })
 

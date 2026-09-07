@@ -7,6 +7,7 @@ import {
   sendCueSheetEmail,
   type SendCueSheetPayload,
 } from './lib/sendCueSheetEmail'
+import { saveDeliveryRecord } from './lib/deliveryStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,6 +49,23 @@ export default async function handler(request: Request): Promise<Response> {
 
     const emailConfig = getEmailConfig(process.env as Record<string, string | undefined>)
     await sendCueSheetEmail(emailConfig, payload, request)
+
+    if (payload.meta) {
+      try {
+        await saveDeliveryRecord({
+          subject: payload.subject,
+          groomName: payload.meta.groomName,
+          brideName: payload.meta.brideName,
+          weddingDate: payload.meta.weddingDate,
+          weddingTime: payload.meta.weddingTime,
+          venue: payload.meta.venue,
+          mcEmail: payload.mcEmail,
+          printHtml: payload.printHtml,
+        })
+      } catch (archiveError) {
+        console.error('cue sheet archive failed', archiveError)
+      }
+    }
 
     return Response.json({ ok: true }, { headers: corsHeaders })
   } catch (error) {

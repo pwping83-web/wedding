@@ -9,6 +9,13 @@ export type SendCueSheetPayload = {
   subject: string
   cueSheet: string
   printHtml: string
+  meta?: {
+    groomName: string
+    brideName: string
+    weddingDate: string
+    weddingTime: string
+    venue: string
+  }
 }
 
 type EmailConfig = {

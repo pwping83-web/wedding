@@ -31,3 +31,13 @@ EmailJS 템플릿 설정 (template_8dglgra)
 
 [예전 템플릿]
   template.legacy.html — 참고용, 사용하지 않음
+
+[관리자 페이지 / 전송 기록]
+  - 랜딩 화면 우측 상단 투명 점 → 관리자
+  - Vercel 환경 변수:
+      ADMIN_PASSWORD=kkus2011!!
+      ADMIN_SESSION_SECRET=(임의 긴 문자열)
+      SUPABASE_URL=(프로젝트 URL)
+      SUPABASE_SERVICE_ROLE_KEY=(service_role 키)
+  - Supabase SQL Editor → supabase/cue_sheet_deliveries.sql 실행
+  - 로컬 개발: .env.local 에 ADMIN_PASSWORD 설정 (저장은 .data/cue-deliveries.json)

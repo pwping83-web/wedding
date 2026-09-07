@@ -11,8 +11,9 @@ import PersonReg from './screens/PersonReg'
 import AtmosphereSelect from './screens/AtmosphereSelect'
 import Preview from './screens/Preview'
 import FinalOutput from './screens/FinalOutput'
+import Admin from './screens/Admin'
 
-type Screen = 'landing' | 'basic' | 'entrance' | 'order' | 'persons' | 'atmosphere' | 'preview' | 'output'
+type Screen = 'landing' | 'basic' | 'entrance' | 'order' | 'persons' | 'atmosphere' | 'preview' | 'output' | 'admin'
 
 const SCREENS: Screen[] = ENTRANCE_AUDIO_TIMING_ENABLED
   ? ['landing', 'basic', 'entrance', 'order', 'persons', 'atmosphere', 'preview', 'output']
@@ -36,7 +37,9 @@ export default function App() {
 
   return (
     <MobileShell className={screen === 'landing' ? 'mobile-shell--landing' : ''}>
-      {screen === 'landing' && <Landing {...props} onStart={() => setScreen('basic')} />}
+      {screen === 'landing' && (
+        <Landing {...props} onStart={() => setScreen('basic')} onAdmin={() => setScreen('admin')} />
+      )}
       {screen === 'basic' && <BasicInfo {...props} />}
       {ENTRANCE_AUDIO_TIMING_ENABLED && screen === 'entrance' && <EntranceSetup {...props} />}
       {screen === 'order' && <OrderEditor {...props} />}
@@ -44,6 +47,7 @@ export default function App() {
       {screen === 'atmosphere' && <AtmosphereSelect {...props} />}
       {screen === 'preview' && <Preview {...props} onGoOutput={() => setScreen('output')} />}
       {screen === 'output' && <FinalOutput {...props} />}
+      {screen === 'admin' && <Admin onBack={() => setScreen('landing')} />}
     </MobileShell>
   )
 }

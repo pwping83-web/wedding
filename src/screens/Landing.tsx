@@ -8,13 +8,21 @@ interface Props {
   onNext: () => void
   onBack: () => void
   onStart: () => void
+  onAdmin: () => void
 }
 
 const features = ['5단계 간편 입력', 'AI 멘트 자동 생성', '사회자 이메일 전달 · 인쇄']
 
-export default function Landing({ onStart }: Props) {
+export default function Landing({ onStart, onAdmin }: Props) {
   return (
-    <div className="landing-bg min-h-[100dvh] flex flex-col px-5 pt-10 pb-10 text-center">
+    <div className="landing-bg min-h-[100dvh] flex flex-col px-5 pt-10 pb-10 text-center relative">
+      <button
+        type="button"
+        onClick={onAdmin}
+        aria-hidden="true"
+        tabIndex={-1}
+        className="absolute top-3 right-3 z-50 h-2.5 w-2.5 rounded-full border-0 p-0 opacity-[0.07] bg-charcoal"
+      />
       <LandingFloralTop />
       <LandingFloralCorner />
       <LandingFloralCorner flip />
