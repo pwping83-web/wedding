@@ -1,25 +1,11 @@
 import type { AppData } from '../data'
-import { moodLabels } from '../data'
-import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
 import { buildCueSheetEmailHtml, buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
-import { getEntranceTrackTitle, isEntranceTimingEnabled } from './entranceTiming'
-import { getEntranceAudioTitle } from './cueSheetUtils'
 
 export const MC_EMAIL = 'tseizou@naver.com'
 
 function apiUrl() {
   const base = import.meta.env.BASE_URL || '/'
   return `${base}api/send-cue-sheet`.replace(/([^:]\/)\/+/g, '$1')
-}
-
-function formatDateLabel(date: string): string {
-  if (!date) return '날짜 미정'
-  return new Date(`${date}T00:00:00`).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
-  })
 }
 
 type DeliveryPayload = {
@@ -30,42 +16,13 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
   const cueSheet = buildCueSheetEmailHtml(data)
   const subject = buildCueSheetEmailSubject(data)
 
-  const groomAudio = isEntranceTimingEnabled(data, 'groom')
-    ? getEntranceTrackTitle(data, 'groom') || '-'
-    : ENTRANCE_AUDIO_TIMING_ENABLED
-      ? getEntranceAudioTitle(data.groomAudio)
-      : '-'
-  const brideAudio = isEntranceTimingEnabled(data, 'bride')
-    ? getEntranceTrackTitle(data, 'bride') || '-'
-    : ENTRANCE_AUDIO_TIMING_ENABLED
-      ? getEntranceAudioTitle(data.brideAudio)
-      : '-'
-  const groomTiming =
-    isEntranceTimingEnabled(data, 'groom') && data.groomMarkers[0]?.time
-      ? `신랑 ${data.groomMarkers[0].time}초 후 입장`
-      : '-'
-  const brideTiming =
-    isEntranceTimingEnabled(data, 'bride') && data.brideMarkers[0]?.time
-      ? `신부 ${data.brideMarkers[0].time}초 후 입장`
-      : '-'
-
   const response = await fetch(apiUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       mcEmail: MC_EMAIL,
       subject,
-      groomName: data.groomName || '신랑',
-      brideName: data.brideName || '신부',
-      ceremonyDate: formatDateLabel(data.date),
-      ceremonyTime: data.time || '시간 미정',
-      venue: data.venue || '장소 미정',
-      moodLabel: moodLabels[data.mood],
       cueSheet,
-      groomAudio,
-      brideAudio,
-      groomTiming,
-      brideTiming,
     }),
   })
 

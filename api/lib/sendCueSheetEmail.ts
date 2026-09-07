@@ -1,17 +1,7 @@
 export type SendCueSheetPayload = {
   mcEmail: string
   subject: string
-  groomName: string
-  brideName: string
-  ceremonyDate: string
-  ceremonyTime: string
-  venue: string
-  moodLabel: string
   cueSheet: string
-  groomAudio: string
-  brideAudio: string
-  groomTiming: string
-  brideTiming: string
 }
 
 type EmailConfig = {
@@ -45,16 +35,6 @@ function buildTemplateParams(payload: SendCueSheetPayload): Record<string, strin
   const otherFields: Record<string, string> = {
     to_email: payload.mcEmail,
     subject: payload.subject,
-    groom_name: payload.groomName,
-    bride_name: payload.brideName,
-    ceremony_date: payload.ceremonyDate,
-    ceremony_time: payload.ceremonyTime,
-    venue: payload.venue,
-    mood_label: payload.moodLabel,
-    groom_audio: payload.groomAudio,
-    bride_audio: payload.brideAudio,
-    groom_timing: payload.groomTiming,
-    bride_timing: payload.brideTiming,
   }
 
   const otherBytes = byteLength(JSON.stringify(otherFields))
