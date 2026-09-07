@@ -40,3 +40,11 @@ export async function getLocalDeliveryRecord(id: string): Promise<DeliveryRecord
   const records = await readRecords()
   return records.find((record) => record.id === id) ?? null
 }
+
+export async function deleteLocalDeliveryRecord(id: string): Promise<boolean> {
+  const records = await readRecords()
+  const next = records.filter((record) => record.id !== id)
+  if (next.length === records.length) return false
+  await writeRecords(next)
+  return true
+}

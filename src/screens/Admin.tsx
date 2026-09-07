@@ -3,6 +3,7 @@ import Btn from '../components/mobile/Btn'
 import {
   adminLogin,
   clearAdminToken,
+  deleteDelivery,
   fetchDeliveries,
   fetchDelivery,
   getAdminToken,
@@ -50,6 +51,7 @@ export default function Admin({ onBack }: Props) {
   const [loadingList, setLoadingList] = useState(false)
   const [listError, setListError] = useState('')
   const [openingId, setOpeningId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const loadDeliveries = useCallback(async () => {
     setLoadingList(true)
@@ -104,6 +106,23 @@ export default function Admin({ onBack }: Props) {
       setListError(error instanceof Error ? error.message : '큐시트를 열지 못했습니다.')
     } finally {
       setOpeningId(null)
+    }
+  }
+
+  const handleDeleteDelivery = async (delivery: DeliverySummary) => {
+    const label = `${delivery.groomName || '신랑'} · ${delivery.brideName || '신부'}`
+    const confirmed = window.confirm(`「${label}」 전송 기록을 삭제할까요?\n삭제 후에는 복구할 수 없습니다.`)
+    if (!confirmed) return
+
+    setDeletingId(delivery.id)
+    setListError('')
+    try {
+      await deleteDelivery(delivery.id)
+      setDeliveries((prev) => prev.filter((item) => item.id !== delivery.id))
+    } catch (error) {
+      setListError(error instanceof Error ? error.message : '기록을 삭제하지 못했습니다.')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -194,13 +213,24 @@ export default function Admin({ onBack }: Props) {
               <p className="text-[12px] text-muted-text mb-3">
                 전송 {formatSentAt(delivery.createdAt)} · {delivery.mcEmail}
               </p>
-              <Btn
-                variant="secondary"
-                onClick={() => void handleOpenDelivery(delivery.id)}
-                disabled={openingId === delivery.id}
-              >
-                {openingId === delivery.id ? '여는 중…' : '보기 · 인쇄'}
-              </Btn>
+              <div className="flex gap-2">
+                <Btn
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => void handleOpenDelivery(delivery.id)}
+                  disabled={openingId === delivery.id || deletingId === delivery.id}
+                >
+                  {openingId === delivery.id ? '여는 중…' : '보기 · 인쇄'}
+                </Btn>
+                <Btn
+                  variant="danger"
+                  className="flex-1"
+                  onClick={() => void handleDeleteDelivery(delivery)}
+                  disabled={openingId === delivery.id || deletingId === delivery.id}
+                >
+                  {deletingId === delivery.id ? '삭제 중…' : '삭제'}
+                </Btn>
+              </div>
             </li>
           ))}
         </ul>

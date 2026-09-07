@@ -2,10 +2,6 @@ import { useEffect, useState } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import Field from '../components/mobile/Field'
-import ChipSelectWithCustom, {
-  isChipValueValid,
-  resolveChipValue,
-} from '../components/mobile/ChipSelectWithCustom'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, Person, PersonRole, SetData } from '../data'
 import { FIXED_MC, getPersonIntroScript, roleLabels, withFixedMc } from '../data'
@@ -19,15 +15,12 @@ interface Props {
   onBack: () => void
 }
 
-const RELS = ['고등학교 동창', '대학교 동창', '직장 동료', '군대 전우', '친구', '가족', '외부']
-
 const ADDABLE_ROLES: PersonRole[] = ['vocalist', 'speaker']
 
 export default function PersonReg({ data, setData, onNext, onBack }: Props) {
   const [name, setName] = useState('')
   const [role, setRole] = useState<PersonRole>('vocalist')
-  const [relationshipPreset, setRelationshipPreset] = useState('')
-  const [customRelationship, setCustomRelationship] = useState('')
+  const [relationship, setRelationship] = useState('')
   const [generating, setGenerating] = useState<string | null>(null)
 
   useEffect(() => {
@@ -41,8 +34,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
   const mcPerson = data.persons.find((person) => person.role === 'mc') ?? FIXED_MC
   const guestPersons = data.persons.filter((person) => person.role !== 'mc')
 
-  const relationship = resolveChipValue(relationshipPreset, customRelationship)
-  const canAdd = name.trim() && isChipValueValid(relationshipPreset, customRelationship)
+  const canAdd = name.trim().length > 0 && relationship.trim().length > 0
 
   const addPerson = () => {
     if (!canAdd) return
@@ -50,13 +42,12 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
       id: Date.now().toString(),
       name: name.trim(),
       role,
-      relationship,
+      relationship: relationship.trim(),
       introVariant: 0,
     }
     setData((prev) => ({ ...prev, persons: withFixedMc([...prev.persons, person]) }))
     setName('')
-    setRelationshipPreset('')
-    setCustomRelationship('')
+    setRelationship('')
   }
 
   const generateIntro = async (id: string) => {
@@ -168,15 +159,11 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
             ))}
           </div>
         </div>
-        <ChipSelectWithCustom
+        <Field
           label="신랑/신부와의 관계"
-          options={RELS}
-          value={relationshipPreset}
-          onChange={setRelationshipPreset}
-          customValue={customRelationship}
-          onCustomChange={setCustomRelationship}
-          customPlaceholder="관계를 입력하세요 (예: 대학원 동기, 사촌)"
-          hint="목록에 없으면 직접 입력을 선택하세요"
+          placeholder="대학교 동창, 사촌 등"
+          value={relationship}
+          onChange={(e) => setRelationship(e.target.value)}
         />
         <Btn onClick={addPerson} disabled={!canAdd}>
           추가

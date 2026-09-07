@@ -81,6 +81,10 @@ export async function fetchDelivery(id: string): Promise<DeliveryDetail> {
   return result.delivery
 }
 
+export async function deleteDelivery(id: string): Promise<void> {
+  await adminFetch(`api/admin/delivery?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+
 export function openDeliveryPrintWindow(printHtml: string): void {
   const popup = window.open('', '_blank')
   if (!popup) {

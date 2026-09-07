@@ -118,3 +118,24 @@ export async function listDeliveryRecords(): Promise<DeliveryRecord[]> {
   const rows = (await response.json()) as Record<string, unknown>[]
   return rows.map(mapRow)
 }
+
+export async function deleteDeliveryRecord(id: string): Promise<boolean> {
+  const config = getSupabaseConfig()
+  if (!config) return false
+
+  const query = new URLSearchParams({ id: `eq.${id}` })
+  const response = await fetch(`${config.url}/rest/v1/cue_sheet_deliveries?${query}`, {
+    method: 'DELETE',
+    headers: {
+      ...supabaseHeaders(config),
+      Prefer: 'return=minimal',
+    },
+  })
+
+  if (!response.ok) {
+    const detail = await response.text()
+    throw new Error(detail || '전송 기록 삭제에 실패했습니다.')
+  }
+
+  return true
+}

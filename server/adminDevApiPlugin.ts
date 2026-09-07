@@ -10,6 +10,7 @@ import {
 import type { SaveDeliveryInput } from '../api/lib/deliveryStore'
 import { getEmailConfig, sendCueSheetEmail, type SendCueSheetPayload } from './sendCueSheetEmail'
 import {
+  deleteLocalDeliveryRecord,
   getLocalDeliveryRecord,
   listLocalDeliveryRecords,
   saveLocalDeliveryRecord,
@@ -34,7 +35,7 @@ function jsonResponse(response: ServerResponse, status: number, body: unknown) {
 function corsPreflight(response: ServerResponse) {
   response.statusCode = 204
   response.setHeader('Access-Control-Allow-Origin', '*')
-  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   response.end()
 }
@@ -176,11 +177,6 @@ export function adminDevApiPlugin(): Plugin {
             return
           }
 
-          if (req.method !== 'GET') {
-            jsonResponse(response, 405, { error: 'Method not allowed' })
-            return
-          }
-
           const token = getAuthToken(req)
           if (!(await verifyAdminSessionToken(token))) {
             jsonResponse(response, 401, { error: '로그인이 필요합니다.' })
@@ -193,18 +189,39 @@ export function adminDevApiPlugin(): Plugin {
             return
           }
 
-          try {
-            const delivery = await getLocalDeliveryRecord(id)
-            if (!delivery) {
-              jsonResponse(response, 404, { error: '기록을 찾을 수 없습니다.' })
-              return
+          if (req.method === 'GET') {
+            try {
+              const delivery = await getLocalDeliveryRecord(id)
+              if (!delivery) {
+                jsonResponse(response, 404, { error: '기록을 찾을 수 없습니다.' })
+                return
+              }
+              jsonResponse(response, 200, { delivery })
+            } catch (error) {
+              jsonResponse(response, 500, {
+                error: error instanceof Error ? error.message : '기록을 불러오지 못했습니다.',
+              })
             }
-            jsonResponse(response, 200, { delivery })
-          } catch (error) {
-            jsonResponse(response, 500, {
-              error: error instanceof Error ? error.message : '기록을 불러오지 못했습니다.',
-            })
+            return
           }
+
+          if (req.method === 'DELETE') {
+            try {
+              const deleted = await deleteLocalDeliveryRecord(id)
+              if (!deleted) {
+                jsonResponse(response, 404, { error: '기록을 찾을 수 없습니다.' })
+                return
+              }
+              jsonResponse(response, 200, { ok: true })
+            } catch (error) {
+              jsonResponse(response, 500, {
+                error: error instanceof Error ? error.message : '기록을 삭제하지 못했습니다.',
+              })
+            }
+            return
+          }
+
+          jsonResponse(response, 405, { error: 'Method not allowed' })
           return
         }
 
