@@ -72,7 +72,7 @@ function getSiteOrigin(request?: Request): string {
   }
   const vercel = process.env.VERCEL_URL
   if (vercel) return `https://${vercel}`
-  return 'https://wedding-rcxo.vercel.app'
+  return 'https://wedding-rcxa.vercel.app'
 }
 
 export async function prepareCueSheetEmailHtml(
