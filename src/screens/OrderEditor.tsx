@@ -3,7 +3,12 @@ import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, MarriageDeclarationReader, OrderItem, SetData } from '../data'
-import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels, normalizeMarriageDeclarationReader } from '../data'
+import {
+  isCustomOrderItem,
+  isMarriageDeclarationTitle,
+  marriageDeclarationReaderLabels,
+  normalizeMarriageDeclarationReader,
+} from '../data'
 import { flowStep } from '../config/features'
 
 interface Props {
@@ -14,26 +19,18 @@ interface Props {
 }
 
 export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
-  const [dragId, setDragId] = useState<string | null>(null)
   const [newTitle, setNewTitle] = useState('')
 
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    setDragId(id)
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault()
-    if (!dragId || dragId === targetId) return
+  const moveItem = (id: string, direction: 'up' | 'down') => {
     setData((prev) => {
       const items = [...prev.orderItems]
-      const fromIdx = items.findIndex((i) => i.id === dragId)
-      const toIdx = items.findIndex((i) => i.id === targetId)
-      const [removed] = items.splice(fromIdx, 1)
-      items.splice(toIdx, 0, removed)
+      const index = items.findIndex((item) => item.id === id)
+      if (index < 0) return prev
+      const targetIndex = direction === 'up' ? index - 1 : index + 1
+      if (targetIndex < 0 || targetIndex >= items.length) return prev
+      ;[items[index], items[targetIndex]] = [items[targetIndex], items[index]]
       return { ...prev, orderItems: items }
     })
-    setDragId(null)
   }
 
   const addItem = () => {
@@ -65,37 +62,71 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
       footer={<Btn onClick={onNext}>다음</Btn>}
     >
       <div className="space-y-2 mb-4">
-        {data.orderItems.map((item, index) => (
-          <div
-            key={item.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, item.id)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, item.id)}
-            onDragEnd={() => setDragId(null)}
-            className={`flex items-center gap-3 p-3.5 bg-surface rounded-xl border ${
-              dragId === item.id ? 'opacity-50 border-accent' : 'border-border'
-            }`}
-          >
-            <span className="text-[12px] text-muted-text w-5 tabular-nums">{index + 1}</span>
-            <span className="flex-1 text-[14px] font-medium text-charcoal truncate">
-              {item.title}
-            </span>
-            <button
-              type="button"
-              onClick={() =>
-                setData((prev) => ({
-                  ...prev,
-                  orderItems: prev.orderItems.filter((i) => i.id !== item.id),
-                }))
-              }
-              className="text-muted-text text-sm px-1"
+        {data.orderItems.map((item, index) => {
+          const isCustom = isCustomOrderItem(item)
+          return (
+            <div
+              key={item.id}
+              className="flex items-center gap-2 p-3.5 bg-surface rounded-xl border border-border"
             >
-              ×
-            </button>
-          </div>
-        ))}
+              <span className="text-[12px] text-muted-text w-5 tabular-nums shrink-0">
+                {index + 1}
+              </span>
+              <span className="flex-1 text-[14px] font-medium text-charcoal truncate min-w-0">
+                {item.title}
+              </span>
+              {isCustom && (
+                <div className="flex flex-col shrink-0">
+                  <button
+                    type="button"
+                    aria-label="위로 이동"
+                    disabled={index === 0}
+                    onClick={() => moveItem(item.id, 'up')}
+                    className="text-[11px] leading-none px-1.5 py-0.5 text-muted-text disabled:opacity-25 hover:text-charcoal"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="아래로 이동"
+                    disabled={index === data.orderItems.length - 1}
+                    onClick={() => moveItem(item.id, 'down')}
+                    className="text-[11px] leading-none px-1.5 py-0.5 text-muted-text disabled:opacity-25 hover:text-charcoal"
+                  >
+                    ▼
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() =>
+                  setData((prev) => ({
+                    ...prev,
+                    orderItems: prev.orderItems.filter((i) => i.id !== item.id),
+                  }))
+                }
+                className="text-muted-text text-sm px-1 shrink-0"
+              >
+                ×
+              </button>
+            </div>
+          )
+        })}
       </div>
+
+      <Card className="p-3 flex gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="항목 추가"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addItem()}
+          className="flex-1 h-10 px-3 bg-transparent text-[14px] outline-none"
+        />
+        <Btn full={false} variant="secondary" onClick={addItem} disabled={!newTitle.trim()}>
+          추가
+        </Btn>
+      </Card>
 
       {hasMarriageDeclaration && (
         <Card className="p-4 mb-4 space-y-3">
@@ -157,20 +188,6 @@ export default function OrderEditor({ data, setData, onNext, onBack }: Props) {
           )}
         </Card>
       )}
-
-      <Card className="p-3 flex gap-2">
-        <input
-          type="text"
-          placeholder="항목 추가"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && addItem()}
-          className="flex-1 h-10 px-3 bg-transparent text-[14px] outline-none"
-        />
-        <Btn full={false} variant="secondary" onClick={addItem} disabled={!newTitle.trim()}>
-          추가
-        </Btn>
-      </Card>
     </ScreenLayout>
   )
 }

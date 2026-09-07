@@ -148,6 +148,13 @@ export const defaultOrderItems: OrderItem[] = [
   { id: '13', title: '폐식사', duration: 2, scriptVariant: 0 },
 ]
 
+const defaultOrderItemIds = new Set(defaultOrderItems.map((item) => item.id))
+
+/** 사용자가 직접 추가한 식순 항목인지 (기본 13단계 제외) */
+export function isCustomOrderItem(item: OrderItem): boolean {
+  return !defaultOrderItemIds.has(item.id)
+}
+
 export {
   getItemScript,
   getMarriageDeclarationScript,

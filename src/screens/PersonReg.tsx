@@ -34,20 +34,30 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
   const mcPerson = data.persons.find((person) => person.role === 'mc') ?? FIXED_MC
   const guestPersons = data.persons.filter((person) => person.role !== 'mc')
 
-  const canAdd = name.trim().length > 0 && relationship.trim().length > 0
+  const canAdd = name.trim().length > 0
 
-  const addPerson = () => {
-    if (!canAdd) return
+  const savePendingPerson = () => {
+    if (!canAdd) return false
     const person: Person = {
       id: Date.now().toString(),
       name: name.trim(),
       role,
-      relationship: relationship.trim(),
+      relationship: relationship.trim() || '지인',
       introVariant: 0,
     }
     setData((prev) => ({ ...prev, persons: withFixedMc([...prev.persons, person]) }))
     setName('')
     setRelationship('')
+    return true
+  }
+
+  const addPerson = () => {
+    savePendingPerson()
+  }
+
+  const handleNext = () => {
+    savePendingPerson()
+    onNext()
   }
 
   const generateIntro = async (id: string) => {
@@ -129,7 +139,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
       onBack={onBack}
       footer={
         <div className="space-y-2">
-          <Btn onClick={onNext}>다음</Btn>
+          <Btn onClick={handleNext}>다음</Btn>
           <Btn variant="ghost" onClick={onNext}>
             건너뛰기
           </Btn>
@@ -161,7 +171,7 @@ export default function PersonReg({ data, setData, onNext, onBack }: Props) {
         </div>
         <Field
           label="신랑/신부와의 관계"
-          placeholder="대학교 동창, 사촌 등"
+          placeholder="대학교 동창, 사촌 등 (선택)"
           value={relationship}
           onChange={(e) => setRelationship(e.target.value)}
         />
