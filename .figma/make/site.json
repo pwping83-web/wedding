@@ -1,7 +1,9 @@
 {
-  "description": "Automatically generate and customize wedding ceremony timelines and MC cue sheets with editable scripts and printable PDFs for seamless event coordination.",
+  "title": "(ENX 웨딩 · MC) 예식 큐시트",
+  "description": "예식 정보 · 식순 · 사회자 멘트까지 한 번에 만드는 AI 자동 식순 큐시트. 인쇄 및 사회자 이메일 전달을 지원합니다.",
+  "language": "ko",
   "robots": {
-    "index": false
+    "index": true
   },
   "accessibility": {
     "addBypassLinks": false,
