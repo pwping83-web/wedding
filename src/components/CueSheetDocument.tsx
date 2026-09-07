@@ -16,6 +16,7 @@ function renderTable(
   pageRows: CueSheetDisplayRow[],
   groomName: string,
   brideName: string,
+  venueStamp: string,
 ) {
   return (
     <table className="cue-sheet-table">
@@ -26,7 +27,10 @@ function renderTable(
       <thead>
         <tr>
           <th className="cue-sheet-table__head">구분</th>
-          <th className="cue-sheet-table__head">사회자 멘트</th>
+          <th className="cue-sheet-table__head cue-sheet-table__head--script">
+            사회자 멘트
+            {venueStamp && <span className="cue-sheet-venue-stamp">{venueStamp}</span>}
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -61,8 +65,7 @@ export default function CueSheetDocument({ data, variant }: Props) {
   return (
     <article className="cue-sheet" style={spacingStyle}>
       <section className="cue-sheet-page">
-        {venueStamp && <p className="cue-sheet-venue-stamp">{venueStamp}</p>}
-        {renderTable(rows, data.groomName, data.brideName)}
+        {renderTable(rows, data.groomName, data.brideName, venueStamp)}
       </section>
     </article>
   )

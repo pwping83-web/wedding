@@ -33,8 +33,8 @@ const EMAIL_PRINT_STYLES = `
     background: #FFFFFF;
   }
   .wcm-cue-row { page-break-inside: avoid; break-inside: avoid; }
-  .wcm-cue-sheet-page { position: relative; }
-  .wcm-venue-stamp { position: absolute; top: 0; right: 0; }
+  .wcm-cue-head-script { position: relative; padding-right: 8px !important; }
+  .wcm-venue-stamp { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); }
   @media print {
     @page { size: A4 portrait; margin: 5mm 6mm; }
     html, body {
@@ -75,6 +75,7 @@ function renderCueSheetTableHtml(
   brideName: string,
   rowPaddingPx: number,
   options?: { omitBlankLines?: boolean },
+  venueStampHtml = '',
 ): string {
   const labelPadY = rowPaddingPx
   const scriptPadY = rowPaddingPx
@@ -109,7 +110,7 @@ function renderCueSheetTableHtml(
       <thead>
         <tr>
           <th style="padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;border-right:1px dotted #444;background:#EEF2FA;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;text-align:center;color:#173F9F;">구분</th>
-          <th style="padding:4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;background:#EEF2FA;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;text-align:center;color:#173F9F;">사회자 멘트</th>
+          <th class="wcm-cue-head-script" style="padding:4px 8px 4px 3px;border-top:2px solid #173F9F;border-bottom:1px solid #173F9F;background:#EEF2FA;font-size:${CUE_SHEET_LABEL_PT}pt;font-weight:700;text-align:center;color:#173F9F;position:relative;">사회자 멘트${venueStampHtml}</th>
         </tr>
       </thead>
       <tbody>
@@ -127,20 +128,20 @@ function renderPrintDocumentBody(
   const brideName = data.brideName || '신부'
   const rows = buildCueSheetDisplayRows(data, variant)
   const { rowPaddingPx } = computeCueSheetRowSpacing(rows)
+  const venueStampHtml = renderCueSheetVenueStampHtml(data)
   const tableHtml = renderCueSheetTableHtml(
     rows,
     groomName,
     brideName,
     rowPaddingPx,
     options,
+    venueStampHtml,
   )
-  const venueStampHtml = renderCueSheetVenueStampHtml(data)
 
   return `
 <div class="wcm-print-root print-document">
   <article class="cue-sheet" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
-    <section class="wcm-cue-sheet-page cue-sheet-page" style="margin:0;padding:0;background:#FFFFFF;width:100%;position:relative;">
-      ${venueStampHtml}
+    <section class="wcm-cue-sheet-page cue-sheet-page" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
       ${tableHtml}
     </section>
   </article>

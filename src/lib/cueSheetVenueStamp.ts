@@ -9,13 +9,13 @@ export function formatCueSheetVenueStamp(data: Pick<AppData, 'venue' | 'time'>):
 }
 
 const STAMP_INLINE_STYLE =
-  'position:absolute;top:0;right:0;max-width:42%;margin:0;padding:0;text-align:right;font-size:6pt;line-height:1.25;font-weight:500;color:#9A9590;word-break:keep-all;overflow-wrap:break-word;pointer-events:none;'
+  'position:absolute;top:50%;right:6px;transform:translateY(-50%);max-width:38%;margin:0;padding:0;text-align:right;font-size:6pt;line-height:1.3;font-weight:500;color:#9A9590;word-break:keep-all;overflow-wrap:break-word;pointer-events:none;'
 
 export function renderCueSheetVenueStampHtml(data: Pick<AppData, 'venue' | 'time'>): string {
   const text = formatCueSheetVenueStamp(data)
   if (!text) return ''
 
-  return `<p class="wcm-venue-stamp cue-sheet-venue-stamp" style="${STAMP_INLINE_STYLE}">${escapeHtml(text)}</p>`
+  return `<span class="wcm-venue-stamp cue-sheet-venue-stamp" style="${STAMP_INLINE_STYLE}">${escapeHtml(text)}</span>`
 }
 
 function escapeHtml(value: string): string {
