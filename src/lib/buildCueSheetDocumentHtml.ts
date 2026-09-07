@@ -41,6 +41,7 @@ const EMAIL_PRINT_STYLES = `
       background: #FFFFFF !important;
     }
     .wcm-email-hint { display: none !important; }
+    .wcm-email-print-btn { display: none !important; }
     .wcm-print-root {
       width: 100% !important;
       max-width: none !important;
@@ -111,24 +112,15 @@ function renderCueSheetTableHtml(
     </table>`
 }
 
-function renderPrintDocumentBody(
-  data: AppData,
-  variant: CueSheetVariant,
-  options: { emailHint: boolean },
-): string {
+function renderPrintDocumentBody(data: AppData, variant: CueSheetVariant): string {
   const groomName = data.groomName || '신랑'
   const brideName = data.brideName || '신부'
   const rows = buildCueSheetDisplayRows(data, variant)
   const { rowPaddingPx } = computeCueSheetRowSpacing(rows)
   const tableHtml = renderCueSheetTableHtml(rows, groomName, brideName, rowPaddingPx)
 
-  const hint = options.emailHint
-    ? `<p class="wcm-email-hint" style="margin:0 0 10px;font-size:11px;color:#8A8580;text-align:center;">메일 상단 <strong>인쇄</strong> 버튼 → A4 큐시트 출력 (앱 인쇄와 동일)</p>`
-    : ''
-
   return `
 <div class="wcm-print-root print-document">
-  ${hint}
   <article class="cue-sheet" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
     <section class="cue-sheet-page" style="margin:0;padding:0;background:#FFFFFF;width:100%;">
       ${tableHtml}
@@ -139,14 +131,12 @@ function renderPrintDocumentBody(
 
 /** 앱 인쇄 `.print-document` 영역 HTML */
 export function buildCueSheetDocumentHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
-  return renderPrintDocumentBody(data, variant, { emailHint: false })
+  return renderPrintDocumentBody(data, variant)
 }
 
-/**
- * 이메일 본문용 — 표 + @media print (네이버 메일 등 메일 내 인쇄)
- */
+/** 이메일 본문용 — 표 + @media print (인쇄 버튼은 API에서 링크 삽입) */
 export function buildCueSheetEmailHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
-  return `${EMAIL_PRINT_STYLES}\n${renderPrintDocumentBody(data, variant, { emailHint: true })}`
+  return `${EMAIL_PRINT_STYLES}\n${renderPrintDocumentBody(data, variant)}`
 }
 
 export function buildCueSheetPrintHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {

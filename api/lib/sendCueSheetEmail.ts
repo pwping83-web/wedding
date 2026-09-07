@@ -1,7 +1,14 @@
+import {
+  encodePrintHtmlToken,
+  MAX_PRINT_TOKEN_CHARS,
+} from './printToken'
+import { injectEmailPrintButton } from './emailPrintButtonHtml'
+
 export type SendCueSheetPayload = {
   mcEmail: string
   subject: string
   cueSheet: string
+  printHtml: string
 }
 
 type EmailConfig = {
@@ -31,7 +38,10 @@ function trimCueSheetForEmail(text: string, maxBytes: number): string {
   return trimmed.trimEnd() + suffix
 }
 
-function buildTemplateParams(payload: SendCueSheetPayload): Record<string, string> {
+function buildTemplateParams(
+  payload: SendCueSheetPayload,
+  cueSheetHtml: string,
+): Record<string, string> {
   const otherFields: Record<string, string> = {
     to_email: payload.mcEmail,
     subject: payload.subject,
@@ -39,12 +49,41 @@ function buildTemplateParams(payload: SendCueSheetPayload): Record<string, strin
 
   const otherBytes = byteLength(JSON.stringify(otherFields))
   const cueSheetBudget = EMAILJS_MAX_PARAMS_BYTES - PARAMS_HEADROOM_BYTES - otherBytes
-  const mcCueSheet = trimCueSheetForEmail(payload.cueSheet, Math.max(8 * 1024, cueSheetBudget))
+  const mcCueSheet = trimCueSheetForEmail(cueSheetHtml, Math.max(8 * 1024, cueSheetBudget))
 
   return {
     ...otherFields,
     mc_cue_sheet: mcCueSheet,
   }
+}
+
+function getSiteOrigin(request?: Request): string {
+  if (request) {
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host')
+    const proto = request.headers.get('x-forwarded-proto') || 'https'
+    if (host) return `${proto}://${host}`
+  }
+  const vercel = process.env.VERCEL_URL
+  if (vercel) return `https://${vercel}`
+  return 'https://wedding-rcxo.vercel.app'
+}
+
+export async function prepareCueSheetEmailHtml(
+  payload: SendCueSheetPayload,
+  request?: Request,
+): Promise<string> {
+  let printUrl = ''
+  const printHtml = payload.printHtml?.trim()
+
+  if (printHtml) {
+    const token = await encodePrintHtmlToken(printHtml)
+    if (token.length <= MAX_PRINT_TOKEN_CHARS) {
+      const origin = getSiteOrigin(request)
+      printUrl = `${origin}/api/print-cue-sheet?t=${encodeURIComponent(token)}`
+    }
+  }
+
+  return injectEmailPrintButton(payload.cueSheet, printUrl)
 }
 
 export function getEmailConfig(env: Record<string, string | undefined>): EmailConfig {
@@ -73,8 +112,10 @@ export function getEmailConfig(env: Record<string, string | undefined>): EmailCo
 export async function sendCueSheetEmail(
   config: EmailConfig,
   payload: SendCueSheetPayload,
+  request?: Request,
 ): Promise<void> {
-  const templateParams = buildTemplateParams(payload)
+  const cueSheetHtml = await prepareCueSheetEmailHtml(payload, request)
+  const templateParams = buildTemplateParams(payload, cueSheetHtml)
 
   if (byteLength(JSON.stringify(templateParams)) > EMAILJS_MAX_PARAMS_BYTES) {
     throw new Error('큐시트 내용이 너무 깁니다. 식순을 줄이거나 인쇄 기능을 이용해 주세요.')

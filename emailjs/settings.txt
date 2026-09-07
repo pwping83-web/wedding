@@ -27,7 +27,7 @@ EmailJS 템플릿 설정 (template_8dglgra)
 [Preview 테스트용 샘플]
   to_email       : tseizou@naver.com
   subject        : [ENX 웨딩 · MC] 홍길동 · 김미영 — 2026년 9월 10일
-  mc_cue_sheet   : (앱에서 생성한 큐시트 HTML 표 — Preview 에서 전송 테스트)
+  mc_cue_sheet   : (앱 전송 시 표 + 파란 「인쇄」 버튼 자동 포함)
 
 [예전 템플릿]
   template.legacy.html — 참고용, 사용하지 않음

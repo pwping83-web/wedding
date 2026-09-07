@@ -1,5 +1,6 @@
 import type { AppData } from '../data'
 import { buildCueSheetEmailHtml, buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
+import { buildCueSheetPrintHtml } from './buildCueSheetDocumentHtml'
 
 export const MC_EMAIL = 'tseizou@naver.com'
 
@@ -14,6 +15,7 @@ type DeliveryPayload = {
 
 export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<void> {
   const cueSheet = buildCueSheetEmailHtml(data)
+  const printHtml = buildCueSheetPrintHtml(data)
   const subject = buildCueSheetEmailSubject(data)
 
   const response = await fetch(apiUrl(), {
@@ -23,6 +25,7 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
       mcEmail: MC_EMAIL,
       subject,
       cueSheet,
+      printHtml,
     }),
   })
 

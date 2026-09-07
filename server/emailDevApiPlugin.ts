@@ -50,8 +50,25 @@ export function emailDevApiPlugin(): Plugin {
             return
           }
 
+          if (!payload.cueSheet?.trim()) {
+            response.statusCode = 400
+            response.setHeader('Content-Type', 'application/json')
+            response.end(JSON.stringify({ error: '큐시트 내용이 비어 있습니다.' }))
+            return
+          }
+
+          if (!payload.printHtml?.trim()) {
+            response.statusCode = 400
+            response.setHeader('Content-Type', 'application/json')
+            response.end(JSON.stringify({ error: '인쇄용 큐시트가 비어 있습니다.' }))
+            return
+          }
+
+          const host = req.headers.host || 'localhost:8443'
+          const fakeRequest = new Request(`http://${host}/`)
+
           const emailConfig = getEmailConfig(env)
-          await sendCueSheetEmail(emailConfig, payload)
+          await sendCueSheetEmail(emailConfig, payload, fakeRequest)
           response.statusCode = 200
           response.setHeader('Content-Type', 'application/json')
           response.end(JSON.stringify({ ok: true }))

@@ -39,8 +39,15 @@ export default async function handler(request: Request): Promise<Response> {
       )
     }
 
+    if (!payload.printHtml?.trim()) {
+      return Response.json(
+        { error: '인쇄용 큐시트가 비어 있습니다.' },
+        { status: 400, headers: corsHeaders },
+      )
+    }
+
     const emailConfig = getEmailConfig(process.env as Record<string, string | undefined>)
-    await sendCueSheetEmail(emailConfig, payload)
+    await sendCueSheetEmail(emailConfig, payload, request)
 
     return Response.json({ ok: true }, { headers: corsHeaders })
   } catch (error) {
