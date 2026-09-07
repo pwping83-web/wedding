@@ -39,5 +39,6 @@ EmailJS 템플릿 설정 (template_8dglgra)
       ADMIN_SESSION_SECRET=(임의 긴 문자열)
       SUPABASE_URL=(프로젝트 URL)
       SUPABASE_SERVICE_ROLE_KEY=(service_role 키)
-  - Supabase SQL Editor → supabase/cue_sheet_deliveries.sql 실행
-  - 로컬 개발: .env.local 에 ADMIN_PASSWORD 설정 (저장은 .data/cue-deliveries.json)
+  - Supabase SQL Editor → supabase/cue_sheet_deliveries.sql 실행 (완료됨)
+  - 프로젝트: gvabjquazbnkfxelsrnz (ap-northeast-2)
+  - 로컬 개발: .env.local (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ACCESS_TOKEN)
