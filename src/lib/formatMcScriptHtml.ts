@@ -66,13 +66,15 @@ export function formatMcScriptHtml(
   text: string,
   groomName = '',
   brideName = '',
+  options?: { omitBlankLines?: boolean },
 ): string {
   const names = [...new Set([groomName.trim(), brideName.trim()].filter(Boolean))].sort(
     (a, b) => b.length - a.length,
   )
 
-  return text
-    .split('\n')
-    .map((line) => formatSegmentHtml(line, names))
-    .join('<br/>')
+  const lines = options?.omitBlankLines
+    ? text.split('\n').filter((line) => line.trim().length > 0)
+    : text.split('\n')
+
+  return lines.map((line) => formatSegmentHtml(line, names)).join('<br/>')
 }

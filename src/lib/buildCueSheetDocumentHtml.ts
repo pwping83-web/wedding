@@ -71,9 +71,12 @@ function renderCueSheetTableHtml(
   groomName: string,
   brideName: string,
   rowPaddingPx: number,
+  options?: { omitBlankLines?: boolean },
 ): string {
   const labelPadY = rowPaddingPx
   const scriptPadY = rowPaddingPx
+  const omitBlankLines = options?.omitBlankLines ?? false
+  const scriptWhiteSpace = omitBlankLines ? 'normal' : 'pre-wrap'
 
   const rows = pageRows
     .map((row, index) => {
@@ -86,8 +89,8 @@ function renderCueSheetTableHtml(
             ${escapeHtml(row.labelMain)}
           </td>
           <td style="padding:${scriptPadY}px 5px;border-top:1px dotted #444;${bottomBorder}vertical-align:top;overflow-wrap:break-word;word-break:keep-all;">
-            <div style="font-size:${CUE_SHEET_SCRIPT_PT}pt;line-height:${CUE_SHEET_LINE_HEIGHT};white-space:pre-wrap;overflow-wrap:break-word;word-break:keep-all;color:#1A1A1A;">
-              ${formatMcScriptHtml(row.script, groomName, brideName)}
+            <div style="font-size:${CUE_SHEET_SCRIPT_PT}pt;line-height:${CUE_SHEET_LINE_HEIGHT};white-space:${scriptWhiteSpace};overflow-wrap:break-word;word-break:keep-all;color:#1A1A1A;">
+              ${formatMcScriptHtml(row.script, groomName, brideName, { omitBlankLines })}
             </div>
           </td>
         </tr>`
@@ -112,12 +115,22 @@ function renderCueSheetTableHtml(
     </table>`
 }
 
-function renderPrintDocumentBody(data: AppData, variant: CueSheetVariant): string {
+function renderPrintDocumentBody(
+  data: AppData,
+  variant: CueSheetVariant,
+  options?: { omitBlankLines?: boolean },
+): string {
   const groomName = data.groomName || '신랑'
   const brideName = data.brideName || '신부'
   const rows = buildCueSheetDisplayRows(data, variant)
   const { rowPaddingPx } = computeCueSheetRowSpacing(rows)
-  const tableHtml = renderCueSheetTableHtml(rows, groomName, brideName, rowPaddingPx)
+  const tableHtml = renderCueSheetTableHtml(
+    rows,
+    groomName,
+    brideName,
+    rowPaddingPx,
+    options,
+  )
 
   return `
 <div class="wcm-print-root print-document">
@@ -136,9 +149,10 @@ export function buildCueSheetDocumentHtml(data: AppData, variant: CueSheetVarian
 
 /** 이메일 본문용 — 표 + @media print (인쇄 버튼은 API에서 링크 삽입) */
 export function buildCueSheetEmailHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
-  return `${EMAIL_PRINT_STYLES}\n${renderPrintDocumentBody(data, variant)}`
+  return `${EMAIL_PRINT_STYLES}\n${renderPrintDocumentBody(data, variant, { omitBlankLines: true })}`
 }
 
+/** 이메일 「인쇄」 버튼 → 브라우저 인쇄 페이지 */
 export function buildCueSheetPrintHtml(data: AppData, variant: CueSheetVariant = 'mc'): string {
-  return buildCueSheetDocumentHtml(data, variant)
+  return renderPrintDocumentBody(data, variant, { omitBlankLines: true })
 }
