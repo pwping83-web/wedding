@@ -5,6 +5,7 @@ import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, SetData, Style } from '../data'
 import { styleLabels } from '../data'
+import { resolveSavedCueSheetDraft } from '../lib/cueSheetDraft'
 
 interface Props {
   data: AppData
@@ -22,10 +23,45 @@ const STYLE_HINT: Record<Style, string> = {
 
 export default function BasicInfo({ data, setData, onNext, onBack }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [loadError, setLoadError] = useState('')
+  const [loadMessage, setLoadMessage] = useState('')
+  const [loadingDraft, setLoadingDraft] = useState(false)
 
   const update = <K extends keyof AppData>(key: K, value: AppData[K]) => {
     setData((prev) => ({ ...prev, [key]: value }))
     if (errors[key]) setErrors((e) => ({ ...e, [key]: '' }))
+    if (key === 'groomName' || key === 'brideName') {
+      setLoadError('')
+      setLoadMessage('')
+    }
+  }
+
+  const handleLoadDraft = async () => {
+    const groomName = data.groomName.trim()
+    const brideName = data.brideName.trim()
+    if (!groomName || !brideName) {
+      setLoadError('신랑·신부 이름을 먼저 입력해 주세요.')
+      setLoadMessage('')
+      return
+    }
+
+    setLoadingDraft(true)
+    setLoadError('')
+    setLoadMessage('')
+    try {
+      const saved = await resolveSavedCueSheetDraft(groomName, brideName)
+      if (!saved) {
+        setLoadError('저장된 식순을 찾지 못했습니다.')
+        return
+      }
+
+      setData(saved.data)
+      setLoadMessage('저장된 식순을 불러왔습니다. 이어서 수정해 주세요.')
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : '저장된 식순을 불러오지 못했습니다.')
+    } finally {
+      setLoadingDraft(false)
+    }
   }
 
   const validate = () => {
@@ -65,6 +101,25 @@ export default function BasicInfo({ data, setData, onNext, onBack }: Props) {
           onChange={(e) => update('brideName', e.target.value)}
           error={errors.brideName}
         />
+
+        <Card className="p-4 space-y-3">
+          <div>
+            <p className="text-[14px] font-semibold text-charcoal">저장된 식순 불러오기</p>
+            <p className="text-[12px] text-muted-text mt-1 leading-relaxed">
+              이전에 입력했던 신랑·신부 이름을 적고 불러오면, 저장된 식순과 멘트가 그대로 복원됩니다.
+            </p>
+          </div>
+          <Btn
+            variant="secondary"
+            onClick={() => void handleLoadDraft()}
+            disabled={loadingDraft || !data.groomName.trim() || !data.brideName.trim()}
+          >
+            {loadingDraft ? '불러오는 중…' : '저장된 식순 불러오기'}
+          </Btn>
+          {loadMessage && <p className="text-[12px] text-success text-center">{loadMessage}</p>}
+          {loadError && <p className="text-[12px] text-danger text-center">{loadError}</p>}
+        </Card>
+
         <Field
           label="예식 날짜"
           required

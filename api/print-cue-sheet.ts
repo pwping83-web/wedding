@@ -19,16 +19,18 @@ const PRINT_PAGE_STYLES = `
     top: 0;
     z-index: 10;
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
     background: #F5F5F5;
     border-bottom: 1px solid #E0E0E0;
   }
   .wcm-print-toolbar button {
     border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
+    border-radius: 10px;
+    padding: 12px 20px;
+    width: min(100%, 360px);
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
@@ -58,7 +60,8 @@ function renderPrintPage(documentHtml: string): string {
 </head>
 <body>
   <div class="wcm-print-toolbar no-print">
-    <button type="button" class="primary" onclick="window.print()">인쇄</button>
+    <button type="button" class="primary" onclick="window.print()">인쇄 · PDF 로 저장</button>
+    <p style="margin:0;font-size:12px;color:#666;text-align:center;">인쇄 화면에서 「PDF로 저장」 또는 「파일에 저장」을 선택하세요.</p>
   </div>
   ${documentHtml}
   <script>

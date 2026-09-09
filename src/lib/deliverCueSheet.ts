@@ -26,6 +26,7 @@ export async function deliverCueSheetToMc({ data }: DeliveryPayload): Promise<vo
       subject,
       cueSheet,
       printHtml,
+      appData: data,
       meta: {
         groomName: data.groomName,
         brideName: data.brideName,

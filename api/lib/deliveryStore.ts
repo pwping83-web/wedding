@@ -20,6 +20,7 @@ export type SaveDeliveryInput = {
   venue: string
   mcEmail: string
   printHtml: string
+  appData?: unknown
 }
 
 type SupabaseConfig = {
@@ -76,6 +77,7 @@ export async function saveDeliveryRecord(input: SaveDeliveryInput): Promise<Deli
     venue: input.venue,
     mc_email: input.mcEmail,
     print_html: input.printHtml,
+    ...(input.appData ? { app_data: input.appData } : {}),
   }
 
   const response = await fetch(`${config.url}/rest/v1/cue_sheet_deliveries`, {

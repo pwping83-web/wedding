@@ -1,8 +1,9 @@
 import MobileShell from './components/mobile/MobileShell'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { initialData } from './data'
 import type { AppData } from './data'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from './config/features'
+import { persistCueSheetDraftToServer, saveCueSheetDraft } from './lib/cueSheetDraft'
 import Landing from './screens/Landing'
 import BasicInfo from './screens/BasicInfo'
 import EntranceSetup from './screens/EntranceSetup'
@@ -22,6 +23,24 @@ const SCREENS: Screen[] = ENTRANCE_AUDIO_TIMING_ENABLED
 export default function App() {
   const [screen, setScreen] = useState<Screen>('landing')
   const [data, setData] = useState<AppData>(initialData)
+  const saveTimerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!data.groomName.trim() || !data.brideName.trim()) return
+
+    saveCueSheetDraft(data)
+
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = window.setTimeout(() => {
+      void persistCueSheetDraftToServer(data).catch(() => {
+        // 서버 저장 실패 시 브라우저 저장본은 유지됩니다.
+      })
+    }, 1200)
+
+    return () => {
+      if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current)
+    }
+  }, [data])
 
   const goNext = () => {
     const idx = SCREENS.indexOf(screen)

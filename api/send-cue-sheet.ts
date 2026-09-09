@@ -8,6 +8,7 @@ import {
   type SendCueSheetPayload,
 } from './lib/sendCueSheetEmail'
 import { saveDeliveryRecord } from './lib/deliveryStore'
+import { upsertCueSheetDraft } from './lib/draftStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,6 +53,14 @@ export default async function handler(request: Request): Promise<Response> {
 
     if (payload.meta) {
       try {
+        if (payload.appData) {
+          await upsertCueSheetDraft(
+            payload.meta.groomName,
+            payload.meta.brideName,
+            payload.appData,
+          )
+        }
+
         await saveDeliveryRecord({
           subject: payload.subject,
           groomName: payload.meta.groomName,
@@ -61,6 +70,7 @@ export default async function handler(request: Request): Promise<Response> {
           venue: payload.meta.venue,
           mcEmail: payload.mcEmail,
           printHtml: payload.printHtml,
+          appData: payload.appData,
         })
       } catch (archiveError) {
         console.error('cue sheet archive failed', archiveError)

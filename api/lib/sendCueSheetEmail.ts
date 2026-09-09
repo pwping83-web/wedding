@@ -9,6 +9,7 @@ export type SendCueSheetPayload = {
   subject: string
   cueSheet: string
   printHtml: string
+  appData?: unknown
   meta?: {
     groomName: string
     brideName: string
