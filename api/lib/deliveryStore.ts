@@ -119,6 +119,33 @@ export async function listDeliveryRecords(): Promise<DeliveryRecord[]> {
   return rows.map(mapRow)
 }
 
+export async function updateDeliveryPrintHtml(
+  id: string,
+  printHtml: string,
+): Promise<DeliveryRecord | null> {
+  const config = getSupabaseConfig()
+  if (!config) return null
+
+  const query = new URLSearchParams({ id: `eq.${id}` })
+  const response = await fetch(`${config.url}/rest/v1/cue_sheet_deliveries?${query}`, {
+    method: 'PATCH',
+    headers: {
+      ...supabaseHeaders(config),
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify({ print_html: printHtml }),
+  })
+
+  if (!response.ok) {
+    const detail = await response.text()
+    throw new Error(detail || '전송 기록 수정에 실패했습니다.')
+  }
+
+  const rows = (await response.json()) as Record<string, unknown>[]
+  const row = rows[0]
+  return row ? mapRow(row) : null
+}
+
 export async function deleteDeliveryRecord(id: string): Promise<boolean> {
   const config = getSupabaseConfig()
   if (!config) return false
