@@ -3,6 +3,8 @@ import { buildCueSheetEmailHtml, buildCueSheetEmailSubject } from './buildCueShe
 import { buildCueSheetPrintHtml } from './buildCueSheetDocumentHtml'
 
 export const MC_EMAIL = 'tseizou@naver.com'
+export const MC_PHONE = '010-4639-2673'
+export const MC_PHONE_DISPLAY = '010 4639 2673'
 
 function apiUrl() {
   const base = import.meta.env.BASE_URL || '/'

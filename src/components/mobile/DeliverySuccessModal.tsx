@@ -1,5 +1,5 @@
 import Btn from './Btn'
-import { MC_EMAIL } from '../../lib/deliverCueSheet'
+import { MC_EMAIL, MC_PHONE, MC_PHONE_DISPLAY } from '../../lib/deliverCueSheet'
 import GuidanceStrike from './GuidanceStrike'
 import {
   cueSheetDownloadAndShareNote,
@@ -55,7 +55,13 @@ export default function DeliverySuccessModal({ open, onClose, groomName, brideNa
             사회자 메일로 전송되었습니다.
           </p>
 
-          <p className="text-[13px] text-muted-text mb-4">{MC_EMAIL}</p>
+          <p className="text-[13px] text-muted-text mb-1">{MC_EMAIL}</p>
+          <p className="text-[11px] text-muted-text/90 mb-4">
+            사회자 연락처{' '}
+            <a href={`tel:${MC_PHONE}`} className="tabular-nums underline-offset-2 hover:underline">
+              {MC_PHONE_DISPLAY}
+            </a>
+          </p>
 
           <div className="text-left space-y-1 mb-5 px-1">
             <GuidanceStrike>{cueSheetDownloadAndShareNote}</GuidanceStrike>
