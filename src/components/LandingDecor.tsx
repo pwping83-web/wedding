@@ -88,41 +88,62 @@ export function LandingMcLogo() {
   return (
     <svg
       className="landing-mc-logo"
-      viewBox="0 0 240 150"
+      viewBox="0 0 200 132"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-label="MC 웨딩 로고"
       role="img"
     >
       <defs>
-        <filter id="simpleMcShadow" x="0" y="0" width="240" height="150" filterUnits="userSpaceOnUse">
-          <feDropShadow dx="0" dy="12" stdDeviation="16" floodColor="#1A1A1A" floodOpacity="0.08" />
+        <filter id="mcMonogramShadow" x="0" y="0" width="200" height="132" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" floodColor="#1A1A1A" floodOpacity="0.2" />
         </filter>
       </defs>
 
-      <rect x="26" y="24" width="188" height="102" rx="24" fill="rgba(255,255,255,0.82)" filter="url(#simpleMcShadow)" />
+      <rect
+        x="8"
+        y="8"
+        width="184"
+        height="116"
+        rx="2"
+        fill="#1A1A1A"
+        filter="url(#mcMonogramShadow)"
+      />
+
+      <g fill="#FFFFFF" fontFamily="Georgia, 'Times New Roman', Times, serif" fontWeight="700">
+        <text x="68" y="86" fontSize="56" textAnchor="middle">
+          M
+        </text>
+        <text x="108" y="86" fontSize="56" textAnchor="middle" letterSpacing="-2">
+          C
+        </text>
+      </g>
 
       <text
-        x="120"
-        y="101"
+        x="100"
+        y="108"
         textAnchor="middle"
-        fill="#1A1A1A"
-        fontFamily="Arial Black, Impact, Inter, sans-serif"
-        fontSize="88"
-        fontWeight="900"
-        letterSpacing="-16"
+        fill="#FFFFFF"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize="7.5"
+        fontWeight="600"
+        letterSpacing="2.8"
       >
-        MC
+        ENX WEDDING
       </text>
+
+      <line x1="52" y1="114" x2="78" y2="114" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="0.6" />
+      <line x1="122" y1="114" x2="148" y2="114" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="0.6" />
       <text
-        x="120"
-        y="119"
+        x="100"
+        y="122"
         textAnchor="middle"
-        fill="#8A8580"
+        fill="#FFFFFF"
+        fillOpacity="0.75"
         fontFamily="Inter, Arial, sans-serif"
-        fontSize="9"
-        fontWeight="700"
-        letterSpacing="3"
+        fontSize="5.5"
+        fontWeight="500"
+        letterSpacing="1.6"
       >
         WEDDING MC
       </text>
