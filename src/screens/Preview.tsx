@@ -28,6 +28,12 @@ import {
   requestGeneratedScript,
 } from '../lib/generateScript'
 import { isSpeechSupported, speakText, stopSpeaking } from '../lib/speechSynthesis'
+import GuidanceStrike from '../components/mobile/GuidanceStrike'
+import {
+  entranceTimingScopeNote,
+  marchDressAssistNote,
+  marchNoTimingNote,
+} from '../lib/coupleGuidanceCopy'
 
 interface Props {
   data: AppData
@@ -285,6 +291,10 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
         </p>
       )}
 
+      <div className="mb-3 px-1 space-y-1">
+        <GuidanceStrike>{entranceTimingScopeNote}</GuidanceStrike>
+      </div>
+
       <div className="space-y-3">
         {items.map((item, index) => {
           const entranceType = entranceTypeForTitle(item.title)
@@ -312,6 +322,13 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
 
               {entranceType && (
                 <EntranceTimingToggle type={entranceType} data={data} setData={setData} />
+              )}
+
+              {item.title === '행진' && (
+                <div className="mb-3 space-y-1">
+                  <GuidanceStrike>{marchNoTimingNote}</GuidanceStrike>
+                  <GuidanceStrike>{marchDressAssistNote}</GuidanceStrike>
+                </div>
               )}
 
               {entranceMeta && (

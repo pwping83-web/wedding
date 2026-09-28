@@ -1,5 +1,10 @@
 import Btn from './Btn'
 import { MC_EMAIL } from '../../lib/deliverCueSheet'
+import GuidanceStrike from './GuidanceStrike'
+import {
+  cueSheetDownloadAndShareNote,
+  cueSheetSameSheetMeetingNote,
+} from '../../lib/coupleGuidanceCopy'
 
 interface Props {
   open: boolean
@@ -50,7 +55,12 @@ export default function DeliverySuccessModal({ open, onClose, groomName, brideNa
             사회자 메일로 전송되었습니다.
           </p>
 
-          <p className="text-[13px] text-muted-text mb-6">{MC_EMAIL}</p>
+          <p className="text-[13px] text-muted-text mb-4">{MC_EMAIL}</p>
+
+          <div className="text-left space-y-1 mb-5 px-1">
+            <GuidanceStrike>{cueSheetDownloadAndShareNote}</GuidanceStrike>
+            <GuidanceStrike>{cueSheetSameSheetMeetingNote}</GuidanceStrike>
+          </div>
 
           <Btn onClick={onClose}>확인</Btn>
         </div>

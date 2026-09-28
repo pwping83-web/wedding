@@ -6,6 +6,11 @@ import CueSheetDocument from '../components/CueSheetDocument'
 import { deliverCueSheetToMc } from '../lib/deliverCueSheet'
 import { openCueSheetPrintPage } from '../lib/openCueSheetPrintPage'
 import type { AppData, SetData } from '../data'
+import GuidanceStrike from '../components/mobile/GuidanceStrike'
+import {
+  cueSheetDownloadAndShareNote,
+  cueSheetSameSheetMeetingNote,
+} from '../lib/coupleGuidanceCopy'
 
 interface Props {
   data: AppData
@@ -51,6 +56,10 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
         contentClassName="pb-36 print:px-0 print:pt-0 print:pb-0"
         footer={
           <div className="space-y-2">
+            <div className="space-y-1 px-1 pb-1">
+              <GuidanceStrike>{cueSheetDownloadAndShareNote}</GuidanceStrike>
+              <GuidanceStrike>{cueSheetSameSheetMeetingNote}</GuidanceStrike>
+            </div>
             <Btn onClick={handlePrint}>인쇄 · PDF 로 저장</Btn>
             <Btn variant="secondary" onClick={handleDeliver} disabled={delivering || showSuccessModal}>
               {delivering ? '전송 중…' : '사회자에게 전송'}
