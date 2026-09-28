@@ -85,68 +85,16 @@ export function LandingRingsIcon() {
 }
 
 export function LandingMcLogo() {
+  const logoSrc = `${import.meta.env.BASE_URL}mc-logo.png`
+
   return (
-    <svg
+    <img
+      src={logoSrc}
+      alt="MC 웨딩 로고"
       className="landing-mc-logo"
-      viewBox="0 0 200 132"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="MC 웨딩 로고"
-      role="img"
-    >
-      <defs>
-        <filter id="mcMonogramShadow" x="0" y="0" width="200" height="132" filterUnits="userSpaceOnUse">
-          <feDropShadow dx="0" dy="8" stdDeviation="10" floodColor="#1A1A1A" floodOpacity="0.2" />
-        </filter>
-      </defs>
-
-      <rect
-        x="8"
-        y="8"
-        width="184"
-        height="116"
-        rx="2"
-        fill="#1A1A1A"
-        filter="url(#mcMonogramShadow)"
-      />
-
-      <g fill="#FFFFFF" fontFamily="Georgia, 'Times New Roman', Times, serif" fontWeight="700">
-        <text x="68" y="86" fontSize="56" textAnchor="middle">
-          M
-        </text>
-        <text x="108" y="86" fontSize="56" textAnchor="middle" letterSpacing="-2">
-          C
-        </text>
-      </g>
-
-      <text
-        x="100"
-        y="108"
-        textAnchor="middle"
-        fill="#FFFFFF"
-        fontFamily="Georgia, 'Times New Roman', serif"
-        fontSize="7.5"
-        fontWeight="600"
-        letterSpacing="2.8"
-      >
-        ENX WEDDING
-      </text>
-
-      <line x1="52" y1="114" x2="78" y2="114" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="0.6" />
-      <line x1="122" y1="114" x2="148" y2="114" stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="0.6" />
-      <text
-        x="100"
-        y="122"
-        textAnchor="middle"
-        fill="#FFFFFF"
-        fillOpacity="0.75"
-        fontFamily="Inter, Arial, sans-serif"
-        fontSize="5.5"
-        fontWeight="500"
-        letterSpacing="1.6"
-      >
-        WEDDING MC
-      </text>
-    </svg>
+      width={168}
+      height={168}
+      decoding="async"
+    />
   )
 }

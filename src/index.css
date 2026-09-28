@@ -421,10 +421,11 @@ input, textarea, select, button {
 }
 
 .landing-mc-logo {
-  width: 11rem;
-  height: 7.25rem;
+  display: block;
+  width: 8.5rem;
+  height: auto;
   margin: 0 auto 1.1rem;
-  overflow: visible;
+  object-fit: contain;
 }
 
 .text-rose-gold {
