@@ -1,5 +1,5 @@
 import Btn from '../components/mobile/Btn'
-import { LandingFloralCorner, LandingFloralTop, LandingRingsIcon } from '../components/LandingDecor'
+import { LandingFloralCorner, LandingFloralTop, LandingMcLogo } from '../components/LandingDecor'
 import type { AppData, SetData } from '../data'
 
 interface Props {
@@ -34,7 +34,7 @@ export default function Landing({ onStart, onAdmin }: Props) {
       </div>
 
       <div className="landing-content flex-1 flex flex-col items-center justify-center">
-        <LandingRingsIcon />
+        <LandingMcLogo />
 
         <p className="text-[13px] font-medium text-rose-gold mb-4 tracking-[0.12em] uppercase">
           Wedding Cue Sheet

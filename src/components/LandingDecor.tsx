@@ -83,3 +83,91 @@ export function LandingRingsIcon() {
     </svg>
   )
 }
+
+export function LandingMcLogo() {
+  return (
+    <svg
+      className="landing-mc-logo"
+      viewBox="0 0 180 180"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="MC 웨딩 로고"
+      role="img"
+    >
+      <defs>
+        <linearGradient id="mcLogoGold" x1="36" y1="30" x2="145" y2="150" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#E8CF9E" />
+          <stop offset="0.45" stopColor="#B99054" />
+          <stop offset="1" stopColor="#F5E1B3" />
+        </linearGradient>
+        <linearGradient id="mcLogoInk" x1="54" y1="56" x2="132" y2="128" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#44413C" />
+          <stop offset="1" stopColor="#151515" />
+        </linearGradient>
+        <filter id="mcLogoShadow" x="0" y="0" width="180" height="180" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="0" dy="12" stdDeviation="14" floodColor="#B8847E" floodOpacity="0.16" />
+        </filter>
+      </defs>
+
+      <g filter="url(#mcLogoShadow)">
+        <circle cx="90" cy="90" r="70" fill="rgba(255,255,255,0.72)" />
+        <circle cx="90" cy="90" r="65" stroke="url(#mcLogoGold)" strokeWidth="1.7" />
+        <circle cx="90" cy="90" r="55" stroke="#E8B4B0" strokeWidth="0.8" strokeOpacity="0.45" strokeDasharray="2.5 6" />
+      </g>
+
+      <path
+        d="M42 103c13-28 31-43 48-43 20 0 25 24 46 24 8 0 15-3 21-10"
+        stroke="url(#mcLogoGold)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity="0.65"
+      />
+      <path
+        d="M50 116c10-9 24-13 39-9 18 5 30 3 43-8"
+        stroke="url(#mcLogoGold)"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+
+      <path
+        d="M45 92c8-21 22-35 39-42M40 103c14 0 27-3 39-10M135 50c-6 17-18 31-35 40M143 74c-11 5-23 6-35 3"
+        stroke="#8FAA83"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        opacity="0.55"
+      />
+      <path
+        d="M59 73c-7-2-12-1-17 4M69 60c-5-6-10-8-16-7M121 63c8-2 14-1 19 4M112 77c6 6 12 8 19 7"
+        stroke="#8FAA83"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+
+      <text
+        x="88"
+        y="104"
+        textAnchor="middle"
+        fill="url(#mcLogoInk)"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize="58"
+        fontStyle="italic"
+        letterSpacing="-12"
+      >
+        MC
+      </text>
+      <text
+        x="90"
+        y="123"
+        textAnchor="middle"
+        fill="#B99054"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontSize="10"
+        letterSpacing="2.6"
+      >
+        WEDDING MC
+      </text>
+    </svg>
+  )
+}
