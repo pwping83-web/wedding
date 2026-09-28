@@ -1,10 +1,7 @@
 import Btn from './Btn'
 import { MC_EMAIL, MC_PHONE, MC_PHONE_DISPLAY } from '../../lib/deliverCueSheet'
-import GuidanceStrike from './GuidanceStrike'
-import {
-  cueSheetDownloadAndShareNote,
-  cueSheetSameSheetMeetingNote,
-} from '../../lib/coupleGuidanceCopy'
+import GuidanceNote from './GuidanceNote'
+import { cueSheetShareNote } from '../../lib/coupleGuidanceCopy'
 
 interface Props {
   open: boolean
@@ -63,9 +60,8 @@ export default function DeliverySuccessModal({ open, onClose, groomName, brideNa
             </a>
           </p>
 
-          <div className="text-left space-y-1 mb-5 px-1">
-            <GuidanceStrike>{cueSheetDownloadAndShareNote}</GuidanceStrike>
-            <GuidanceStrike>{cueSheetSameSheetMeetingNote}</GuidanceStrike>
+          <div className="text-left mb-5 px-1">
+            <GuidanceNote>{cueSheetShareNote}</GuidanceNote>
           </div>
 
           <Btn onClick={onClose}>확인</Btn>
