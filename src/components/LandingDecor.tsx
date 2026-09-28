@@ -92,9 +92,10 @@ export function LandingMcLogo() {
       src={logoSrc}
       alt="MC 웨딩 로고"
       className="landing-mc-logo"
-      width={168}
-      height={168}
+      width={170}
+      height={185}
       decoding="async"
+      fetchPriority="high"
     />
   )
 }
