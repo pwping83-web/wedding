@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import Field from '../components/mobile/Field'
@@ -15,6 +15,10 @@ import { loadMcInquiryPrefill } from '../lib/mcInquiryPrefill'
 import { goToMarketing } from '../lib/marketingRoutes'
 import { isVideoAccessUnlocked } from '../lib/videoAccess'
 import { loadVideoEditorDraft, saveVideoEditorDraft } from '../lib/videoEditorDraft'
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+}
 
 const POINT_PHOTO_HINTS: Record<string, string> = {
   P01: '두 사람이 함께 나온 대표 사진',
@@ -45,11 +49,17 @@ export default function VideoEditorPage() {
   const groomDefault = prefill?.groomName ?? ''
   const brideDefault = prefill?.brideName ?? ''
 
+  const flowInputRef = useRef<HTMLInputElement>(null)
+
   const [values, setValues] = useState<VideoFormValues>(() => {
     const draft = loadVideoEditorDraft()
-    if (draft) return { ...buildDefaultVideoFormValues(groomDefault, brideDefault), ...draft }
+    if (draft?.values) {
+      return { ...buildDefaultVideoFormValues(groomDefault, brideDefault), ...draft.values }
+    }
     return buildDefaultVideoFormValues(groomDefault, brideDefault)
   })
+  const [contactEmail, setContactEmail] = useState(() => loadVideoEditorDraft()?.contactEmail ?? '')
+  const [emailError, setEmailError] = useState('')
   const [pointPhotos, setPointPhotos] = useState<PointPhoto[]>(initialPointPhotos)
   const [flowFiles, setFlowFiles] = useState<File[]>([])
   const [showGuide, setShowGuide] = useState(false)
@@ -85,9 +95,19 @@ export default function VideoEditorPage() {
   }
 
   function handleSaveDraft() {
-    saveVideoEditorDraft(values)
-    setSavedHint('글귀를 이 기기에 임시 저장했습니다.')
+    saveVideoEditorDraft(values, contactEmail)
+    setSavedHint('글귀·이메일을 이 기기에 임시 저장했습니다.')
     window.setTimeout(() => setSavedHint(''), 2500)
+  }
+
+  function openUploadGuide() {
+    if (!isValidEmail(contactEmail)) {
+      setEmailError('완성·샘플 영상을 받을 이메일을 입력해 주세요.')
+      return
+    }
+    setEmailError('')
+    saveVideoEditorDraft(values, contactEmail)
+    setShowGuide(true)
   }
 
   function handleDownloadJson() {
@@ -114,10 +134,10 @@ export default function VideoEditorPage() {
       title="식전영상 제작"
       subtitle="글귀 수정 · 사진 선택"
       onBack={() => goToMarketing('video')}
-      contentClassName="pb-8"
+      contentClassName="pb-52"
       footer={
         <div className="space-y-3">
-          <Btn onClick={() => setShowGuide(true)}>사진 보내는 방법</Btn>
+          <Btn onClick={openUploadGuide}>사진 보내는 방법</Btn>
           <Btn variant="secondary" onClick={handleSaveDraft}>
             글귀 임시 저장
           </Btn>
@@ -125,6 +145,26 @@ export default function VideoEditorPage() {
       }
     >
       <div className="space-y-8">
+        <section className="landing-card space-y-3">
+          <h2 className="text-[15px] font-semibold text-charcoal">완성·샘플 영상 받을 이메일</h2>
+          <p className="text-[12px] text-muted-text leading-relaxed">
+            제작이 끝나면 이 주소로 식전영상 샘플·완성본 안내를 보내 드립니다.
+          </p>
+          <Field
+            label="이메일"
+            required
+            type="email"
+            autoComplete="email"
+            placeholder="example@email.com"
+            value={contactEmail}
+            error={emailError}
+            onChange={(e) => {
+              setContactEmail(e.target.value)
+              if (emailError) setEmailError('')
+            }}
+          />
+        </section>
+
         <section className="space-y-4">
           <h2 className="text-[15px] font-semibold text-charcoal">영상 글귀</h2>
           <p className="text-[12px] text-muted-text leading-relaxed">
@@ -226,24 +266,27 @@ export default function VideoEditorPage() {
           <p className="text-[12px] text-muted-text text-center">선택됨 {pointCount}/11</p>
         </section>
 
-        <section className="space-y-3">
+        <section className="space-y-3 pb-6">
           <h2 className="text-[15px] font-semibold text-charcoal">흐름 사진 (F01~F49)</h2>
           <p className="text-[12px] text-muted-text leading-relaxed">
             지나가는 사진을 시간 순서대로 골라 주세요. 49장보다 적으면 앞에서부터 반복됩니다.
           </p>
-          <label className="landing-card block">
-            <span className="text-[13px] font-medium text-charcoal mb-2 block">여러 장 선택</span>
+          <div className="landing-card space-y-3">
             <input
+              ref={flowInputRef}
               type="file"
               accept="image/*,video/*"
               multiple
-              className="block w-full text-[13px] text-muted-text file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-muted-bg file:text-charcoal"
+              className="sr-only"
               onChange={(e) => setFlowFiles(Array.from(e.target.files ?? []))}
             />
-          </label>
-          {flowCount > 0 && (
-            <p className="text-[12px] text-muted-text text-center">{flowCount}개 파일 선택됨</p>
-          )}
+            <Btn variant="secondary" type="button" onClick={() => flowInputRef.current?.click()}>
+              흐름 사진 여러 장 선택
+            </Btn>
+            {flowCount > 0 && (
+              <p className="text-[13px] text-charcoal text-center">{flowCount}개 파일 선택됨</p>
+            )}
+          </div>
         </section>
       </div>
 
@@ -261,11 +304,15 @@ export default function VideoEditorPage() {
           />
           <div className="relative w-full max-w-[360px] landing-card max-h-[min(80vh,520px)] overflow-y-auto p-5 space-y-4">
             <h3 className="text-[17px] font-semibold text-charcoal">사진 보내는 방법</h3>
+            <p className="text-[13px] text-charcoal">
+              <span className="font-medium">수신 이메일:</span> {contactEmail.trim()}
+            </p>
             <pre className="text-[12px] text-charcoal/90 whitespace-pre-wrap leading-relaxed font-sans">
               {uploadGuide}
             </pre>
             <p className="text-[12px] text-muted-text">
-              이 페이지에서 고른 사진은 기기에만 남습니다. 안내에 따라 메일로 보내 주세요.
+              이 페이지에서 고른 사진은 기기에만 남습니다. 안내에 따라 사진을 보내 주시면 위 이메일로
+              영상을 안내해 드립니다.
             </p>
             <Btn onClick={() => setShowGuide(false)}>확인</Btn>
           </div>
