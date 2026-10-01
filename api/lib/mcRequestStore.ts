@@ -70,6 +70,18 @@ export async function insertMcRequest(input: McRequestInsert): Promise<McRequest
 
   if (!response.ok) {
     const text = await response.text()
+    try {
+      const err = JSON.parse(text) as { code?: string; message?: string }
+      if (err.code === 'PGRST205' || err.message?.includes('mc_requests')) {
+        throw new Error(
+          'Supabase에 mc_requests 테이블이 없습니다. 프로젝트 supabase/mc_requests.sql 파일 내용을 Supabase 대시보드 → SQL Editor에서 한 번 실행해 주세요.',
+        )
+      }
+    } catch (parseError) {
+      if (parseError instanceof Error && parseError.message.includes('mc_requests')) {
+        throw parseError
+      }
+    }
     throw new Error(text || '상담 신청 저장에 실패했습니다.')
   }
 

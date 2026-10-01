@@ -33,6 +33,18 @@ export type DeliveryDetail = DeliverySummary & {
   printHtml: string
 }
 
+export type VideoTextSummary = {
+  id: string
+  createdAt: string
+  contactEmail: string
+  groomName: string
+  brideName: string
+}
+
+export type VideoTextDetail = VideoTextSummary & {
+  textPayload: Record<string, string>
+}
+
 async function adminFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getAdminToken()
   const headers = new Headers(init?.headers)
@@ -83,6 +95,20 @@ export async function fetchDelivery(id: string): Promise<DeliveryDetail> {
 
 export async function deleteDelivery(id: string): Promise<void> {
   await adminFetch(`api/admin/delivery?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+
+export async function fetchVideoTexts(): Promise<{
+  items: VideoTextSummary[]
+  archiveConfigured: boolean
+}> {
+  return adminFetch('api/admin/video-texts')
+}
+
+export async function fetchVideoText(id: string): Promise<VideoTextDetail> {
+  const result = await adminFetch<{ item: VideoTextDetail }>(
+    `api/admin/video-text?id=${encodeURIComponent(id)}`,
+  )
+  return result.item
 }
 
 export function openDeliveryPrintWindow(printHtml: string): void {

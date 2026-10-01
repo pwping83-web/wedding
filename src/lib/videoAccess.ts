@@ -39,3 +39,13 @@ export function clearVideoAccess() {
     /* ignore */
   }
 }
+
+export function getStoredVideoAccessCode(): string | null {
+  try {
+    const stored = sessionStorage.getItem(SESSION_KEY)
+    if (!stored || !isValidVideoAccessCode(stored)) return null
+    return normalizeVideoAccessCode(stored)
+  } catch {
+    return null
+  }
+}

@@ -21,6 +21,8 @@ create index if not exists mc_requests_created_at_idx
 
 alter table public.mc_requests enable row level security;
 
+drop policy if exists "mc_requests_anon_insert" on public.mc_requests;
+
 -- 익명: 개인정보 동의한 insert만
 create policy "mc_requests_anon_insert"
   on public.mc_requests

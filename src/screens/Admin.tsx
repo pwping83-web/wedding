@@ -6,10 +6,14 @@ import {
   deleteDelivery,
   fetchDeliveries,
   fetchDelivery,
+  fetchVideoText,
+  fetchVideoTexts,
   getAdminToken,
   openDeliveryPrintWindow,
   type DeliverySummary,
+  type VideoTextSummary,
 } from '../lib/adminApi'
+import { formatVideoTextForDisplay } from '../lib/formatVideoTextForDisplay'
 
 interface Props {
   onBack: () => void
@@ -53,6 +57,12 @@ export default function Admin({ onBack }: Props) {
   const [openingId, setOpeningId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
+  const [section, setSection] = useState<'deliveries' | 'video-text'>('deliveries')
+  const [videoTexts, setVideoTexts] = useState<VideoTextSummary[]>([])
+  const [videoArchiveConfigured, setVideoArchiveConfigured] = useState(true)
+  const [loadingVideoTexts, setLoadingVideoTexts] = useState(false)
+  const [openingVideoId, setOpeningVideoId] = useState<string | null>(null)
+
   const loadDeliveries = useCallback(async () => {
     setLoadingList(true)
     setListError('')
@@ -71,11 +81,30 @@ export default function Admin({ onBack }: Props) {
     }
   }, [])
 
+  const loadVideoTexts = useCallback(async () => {
+    setLoadingVideoTexts(true)
+    setListError('')
+    try {
+      const result = await fetchVideoTexts()
+      setVideoTexts(result.items)
+      setVideoArchiveConfigured(result.archiveConfigured)
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('로그인')) {
+        clearAdminToken()
+        setAuthenticated(false)
+      }
+      setListError(error instanceof Error ? error.message : '글귀 목록을 불러오지 못했습니다.')
+    } finally {
+      setLoadingVideoTexts(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (authenticated) {
       void loadDeliveries()
+      void loadVideoTexts()
     }
-  }, [authenticated, loadDeliveries])
+  }, [authenticated, loadDeliveries, loadVideoTexts])
 
   const handleLogin = async () => {
     setLoggingIn(true)
@@ -106,6 +135,22 @@ export default function Admin({ onBack }: Props) {
       setListError(error instanceof Error ? error.message : '큐시트를 열지 못했습니다.')
     } finally {
       setOpeningId(null)
+    }
+  }
+
+  const handleOpenVideoText = async (id: string) => {
+    setOpeningVideoId(id)
+    setListError('')
+    try {
+      const item = await fetchVideoText(id)
+      const body = formatVideoTextForDisplay(item.textPayload)
+      window.alert(
+        `[식전영상 글귀]\n${item.groomName} · ${item.brideName}\n${item.contactEmail}\n\n${body}`,
+      )
+    } catch (error) {
+      setListError(error instanceof Error ? error.message : '글귀를 불러오지 못했습니다.')
+    } finally {
+      setOpeningVideoId(null)
     }
   }
 
@@ -168,8 +213,8 @@ export default function Admin({ onBack }: Props) {
           <button type="button" onClick={onBack} className="text-[14px] text-muted-text mb-3 block">
             ← 돌아가기
           </button>
-          <h1 className="text-[22px] font-semibold text-charcoal">전송 기록</h1>
-          <p className="text-[13px] text-muted-text mt-1">사회자에게 보낸 큐시트</p>
+          <h1 className="text-[22px] font-semibold text-charcoal">관리자</h1>
+          <p className="text-[13px] text-muted-text mt-1">큐시트 · 식전영상 글귀</p>
         </div>
         <button
           type="button"
@@ -180,61 +225,115 @@ export default function Admin({ onBack }: Props) {
         </button>
       </div>
 
-      {!archiveConfigured && (
+      <div className="flex gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => setSection('deliveries')}
+          className={`flex-1 h-10 rounded-xl text-[14px] font-medium ${section === 'deliveries' ? 'bg-charcoal text-white' : 'bg-white border border-border text-charcoal'}`}
+        >
+          큐시트
+        </button>
+        <button
+          type="button"
+          onClick={() => setSection('video-text')}
+          className={`flex-1 h-10 rounded-xl text-[14px] font-medium ${section === 'video-text' ? 'bg-charcoal text-white' : 'bg-white border border-border text-charcoal'}`}
+        >
+          식전영상 글귀
+        </button>
+      </div>
+
+      {section === 'deliveries' && !archiveConfigured && (
         <p className="text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
           Supabase 저장 설정이 없습니다. Vercel 환경 변수(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)와
           테이블 생성이 필요합니다.
         </p>
       )}
 
+      {section === 'video-text' && !videoArchiveConfigured && (
+        <p className="text-[13px] text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+          video_text_submissions 테이블이 필요합니다. supabase/video_text_submissions.sql을 실행해
+          주세요.
+        </p>
+      )}
+
       {listError && <p className="text-[13px] text-danger mb-4">{listError}</p>}
 
-      {loadingList ? (
-        <p className="text-[14px] text-muted-text">불러오는 중…</p>
-      ) : deliveries.length === 0 ? (
-        <p className="text-[14px] text-muted-text">아직 전송된 큐시트가 없습니다.</p>
-      ) : (
-        <ul className="space-y-3">
-          {deliveries.map((delivery) => (
-            <li
-              key={delivery.id}
-              className="rounded-2xl border border-border bg-white p-4 shadow-sm"
-            >
-              <p className="text-[15px] font-semibold text-charcoal mb-1">
-                {delivery.groomName || '신랑'} · {delivery.brideName || '신부'}
-              </p>
-              <p className="text-[13px] text-muted-text mb-1">
-                {formatWeddingDate(delivery.weddingDate)}
-                {delivery.weddingTime ? ` ${delivery.weddingTime}` : ''}
-              </p>
-              {delivery.venue && (
-                <p className="text-[13px] text-muted-text mb-2">{delivery.venue}</p>
-              )}
-              <p className="text-[12px] text-muted-text mb-3">
-                전송 {formatSentAt(delivery.createdAt)} · {delivery.mcEmail}
-              </p>
-              <div className="flex gap-2">
+      {section === 'deliveries' &&
+        (loadingList ? (
+          <p className="text-[14px] text-muted-text">불러오는 중…</p>
+        ) : deliveries.length === 0 ? (
+          <p className="text-[14px] text-muted-text">아직 전송된 큐시트가 없습니다.</p>
+        ) : (
+          <ul className="space-y-3">
+            {deliveries.map((delivery) => (
+              <li
+                key={delivery.id}
+                className="rounded-2xl border border-border bg-white p-4 shadow-sm"
+              >
+                <p className="text-[15px] font-semibold text-charcoal mb-1">
+                  {delivery.groomName || '신랑'} · {delivery.brideName || '신부'}
+                </p>
+                <p className="text-[13px] text-muted-text mb-1">
+                  {formatWeddingDate(delivery.weddingDate)}
+                  {delivery.weddingTime ? ` ${delivery.weddingTime}` : ''}
+                </p>
+                {delivery.venue && (
+                  <p className="text-[13px] text-muted-text mb-2">{delivery.venue}</p>
+                )}
+                <p className="text-[12px] text-muted-text mb-3">
+                  전송 {formatSentAt(delivery.createdAt)} · {delivery.mcEmail}
+                </p>
+                <div className="flex gap-2">
+                  <Btn
+                    variant="secondary"
+                    className="flex-1"
+                    onClick={() => void handleOpenDelivery(delivery.id)}
+                    disabled={openingId === delivery.id || deletingId === delivery.id}
+                  >
+                    {openingId === delivery.id ? '여는 중…' : '보기 · 인쇄'}
+                  </Btn>
+                  <Btn
+                    variant="danger"
+                    className="flex-1"
+                    onClick={() => void handleDeleteDelivery(delivery)}
+                    disabled={openingId === delivery.id || deletingId === delivery.id}
+                  >
+                    {deletingId === delivery.id ? '삭제 중…' : '삭제'}
+                  </Btn>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ))}
+
+      {section === 'video-text' &&
+        (loadingVideoTexts ? (
+          <p className="text-[14px] text-muted-text">불러오는 중…</p>
+        ) : videoTexts.length === 0 ? (
+          <p className="text-[14px] text-muted-text">저장된 식전영상 글귀가 없습니다.</p>
+        ) : (
+          <ul className="space-y-3">
+            {videoTexts.map((item) => (
+              <li
+                key={item.id}
+                className="rounded-2xl border border-border bg-white p-4 shadow-sm"
+              >
+                <p className="text-[15px] font-semibold text-charcoal mb-1">
+                  {item.groomName || '신랑'} · {item.brideName || '신부'}
+                </p>
+                <p className="text-[13px] text-muted-text mb-1">{item.contactEmail}</p>
+                <p className="text-[12px] text-muted-text mb-3">저장 {formatSentAt(item.createdAt)}</p>
                 <Btn
                   variant="secondary"
-                  className="flex-1"
-                  onClick={() => void handleOpenDelivery(delivery.id)}
-                  disabled={openingId === delivery.id || deletingId === delivery.id}
+                  onClick={() => void handleOpenVideoText(item.id)}
+                  disabled={openingVideoId === item.id}
                 >
-                  {openingId === delivery.id ? '여는 중…' : '보기 · 인쇄'}
+                  {openingVideoId === item.id ? '불러오는 중…' : '글귀 보기'}
                 </Btn>
-                <Btn
-                  variant="danger"
-                  className="flex-1"
-                  onClick={() => void handleDeleteDelivery(delivery)}
-                  disabled={openingId === delivery.id || deletingId === delivery.id}
-                >
-                  {deletingId === delivery.id ? '삭제 중…' : '삭제'}
-                </Btn>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+              </li>
+            ))}
+          </ul>
+        ))}
     </div>
   )
 }

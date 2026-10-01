@@ -7,6 +7,7 @@ import siteConfiguration from './.figma/make/site.json'
 import { adminDevApiPlugin } from './server/adminDevApiPlugin'
 import { groqDevApiPlugin } from './server/groqDevApiPlugin'
 import { mcRequestDevApiPlugin } from './server/mcRequestDevApiPlugin'
+import { videoTextDevApiPlugin } from './server/videoTextDevApiPlugin'
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -34,6 +35,7 @@ export default defineConfig(({ mode }) => {
       groqDevApiPlugin(),
       adminDevApiPlugin(),
       mcRequestDevApiPlugin(),
+      videoTextDevApiPlugin(),
     ],
     resolve: {
       alias: {
