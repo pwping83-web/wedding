@@ -1,6 +1,6 @@
 import Btn from './mobile/Btn'
 import YouTubeLiteEmbed from './YouTubeLiteEmbed'
-import { MC_PRICE_TEXT, MC_VIDEO_ID } from '../config/marketing'
+import { MC_PRICE_TEXT, MC_THUMB_URL, MC_VIDEO_ID } from '../config/marketing'
 import {
   outputMcCardBody,
   outputMcCardSub,
@@ -23,13 +23,17 @@ export default function McConversionCard({ data }: Props) {
   return (
     <div className="no-print mt-4 p-4 rounded-2xl border border-rose-gold/30 bg-gradient-to-b from-white/90 to-blush/30 shadow-sm text-left space-y-4">
       <div>
-        <h2 className="text-[16px] font-semibold text-charcoal leading-snug">{outputMcCardTitle}</h2>
-        <p className="text-[13px] text-charcoal/85 leading-relaxed mt-2">{outputMcCardBody}</p>
+        <h2 className="text-[16px] font-semibold text-charcoal leading-snug [word-break:keep-all]">
+          {outputMcCardTitle}
+        </h2>
+        <p className="text-[13px] text-charcoal/85 leading-relaxed mt-2 [word-break:keep-all]">
+          {outputMcCardBody}
+        </p>
         <p className="text-[14px] font-semibold text-accent mt-2">{MC_PRICE_TEXT}</p>
         <p className="text-[12px] text-muted-text mt-2 leading-relaxed">{outputMcCardSub}</p>
       </div>
 
-      <YouTubeLiteEmbed videoId={MC_VIDEO_ID} title="MC 진행 영상" />
+      <YouTubeLiteEmbed videoId={MC_VIDEO_ID} title="MC 진행 영상" thumbUrl={MC_THUMB_URL} />
 
       <div className="space-y-2">
         <Btn onClick={handleMcInquiry}>MC 상담 신청</Btn>

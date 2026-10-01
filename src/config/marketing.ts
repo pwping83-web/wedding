@@ -8,6 +8,10 @@ export const MC_VIDEO_ID = 'RFbaB4_rDmE'
 /** 식전영상 샘플 (일부공개 업로드 권장) */
 export const SAMPLE_VIDEO_ID = 'NuWvnTwHQ-s'
 
+/** 직접 만든 썸네일 URL (비어 있으면 유튜브 hqdefault 사용) */
+export const MC_THUMB_URL = ''
+export const SAMPLE_THUMB_URL = '/sample-thumb.jpg'
+
 /** 식순 완성·/mc 페이지에 표시할 가격 문구 */
 export const MC_PRICE_TEXT = '수도권 15만 원'
 

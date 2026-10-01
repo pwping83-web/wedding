@@ -14,10 +14,14 @@ interface Props {
 
 const features = ['5단계 간편 입력', 'AI 멘트 자동 생성', '사회자 이메일 전달 · 인쇄']
 
+function scrollToMarketingSections() {
+  document.getElementById('landing-marketing')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 export default function Landing({ onStart, onAdmin }: Props) {
   return (
     <div className="landing-bg min-h-[100dvh] text-center relative">
-      <section className="min-h-[100dvh] flex flex-col px-5 pt-10 pb-10 relative">
+      <section className="min-h-[calc(100dvh-3.25rem)] flex flex-col px-5 pt-10 pb-6 relative">
       <button
         type="button"
         onClick={onAdmin}
@@ -68,8 +72,15 @@ export default function Landing({ onStart, onAdmin }: Props) {
         </div>
       </div>
 
-      <div className="landing-content w-full">
+      <div className="landing-content w-full max-w-[300px] mx-auto">
         <Btn onClick={onStart}>시작하기</Btn>
+        <button
+          type="button"
+          onClick={scrollToMarketingSections}
+          className="mt-3 w-full text-[12px] text-muted-text leading-relaxed [word-break:keep-all] underline-offset-2 hover:text-charcoal hover:underline"
+        >
+          ↓ MC 진행 영상 · 식전영상 무료 제작
+        </button>
       </div>
       </section>
 

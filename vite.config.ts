@@ -6,6 +6,7 @@ import path from 'node:path'
 import siteConfiguration from './.figma/make/site.json'
 import { adminDevApiPlugin } from './server/adminDevApiPlugin'
 import { groqDevApiPlugin } from './server/groqDevApiPlugin'
+import { mcRequestDevApiPlugin } from './server/mcRequestDevApiPlugin'
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -32,6 +33,7 @@ export default defineConfig(({ mode }) => {
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
       groqDevApiPlugin(),
       adminDevApiPlugin(),
+      mcRequestDevApiPlugin(),
     ],
     resolve: {
       alias: {

@@ -1,7 +1,9 @@
 /** MC 전환·랜딩·완성 화면 문구 (비방·통계 표현 없음) */
 
-export const landingMcSectionTitle = '이 사이트를 만든 MC가 직접 진행합니다'
 export const landingVideoSectionTitle = 'MC 신청 시 식전영상 무료 제작'
+
+export const landingMcBenefitLine = '식순 작성부터 리허설·본식 진행까지'
+export const landingVideoBenefitLine = 'MC 신청 고객 무료 · 사진만 보내주시면 끝'
 
 export const outputMcCardTitle = '이 식순 그대로, 직접 진행해 드릴까요?'
 export const outputMcCardBody =

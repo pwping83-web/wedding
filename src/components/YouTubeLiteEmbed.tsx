@@ -4,9 +4,11 @@ import { youtubeThumbnailUrl } from '../config/marketing'
 interface Props {
   videoId: string
   title: string
+  /** config MC_THUMB_URL / SAMPLE_THUMB_URL 등 */
+  thumbUrl?: string
 }
 
-export default function YouTubeLiteEmbed({ videoId, title }: Props) {
+export default function YouTubeLiteEmbed({ videoId, title, thumbUrl = '' }: Props) {
   const [active, setActive] = useState(false)
 
   if (!videoId.trim()) {
@@ -17,19 +19,21 @@ export default function YouTubeLiteEmbed({ videoId, title }: Props) {
     )
   }
 
+  const thumb =
+    thumbUrl.trim() || youtubeThumbnailUrl(videoId, 'hq')
+
   if (!active) {
-    const thumb = youtubeThumbnailUrl(videoId)
     return (
       <button
         type="button"
         onClick={() => setActive(true)}
-        className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/80 shadow-sm"
+        className="relative w-full aspect-video rounded-xl overflow-hidden border border-border/80 shadow-sm bg-charcoal"
         aria-label={`${title} 재생`}
       >
         <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-        <span className="absolute inset-0 bg-charcoal/25" aria-hidden="true" />
+        <span className="absolute inset-0 bg-charcoal/15" aria-hidden="true" />
         <span
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/95 text-charcoal text-lg flex items-center justify-center shadow-md"
+          className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-white/95 text-charcoal text-base flex items-center justify-center shadow-md"
           aria-hidden="true"
         >
           ▶
