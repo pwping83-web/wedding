@@ -1,14 +1,10 @@
+import type { McInquiryPrefill } from './mcInquiryPrefill'
+
 export type McRequestFormPayload = {
-  groomName: string
-  brideName: string
-  ceremonyDate: string
-  ceremonyTime: string
-  venue: string
   phone: string
-  email: string
   message: string
-  wantsPreweddingVideo: boolean
   privacyAgreed: boolean
+  prefill: McInquiryPrefill | null
 }
 
 function apiUrl() {
@@ -17,10 +13,21 @@ function apiUrl() {
 }
 
 export async function submitMcRequest(payload: McRequestFormPayload): Promise<{ id: string }> {
+  const prefill = payload.prefill
   const response = await fetch(apiUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      phone: payload.phone,
+      message: payload.message,
+      privacyAgreed: payload.privacyAgreed,
+      groomName: prefill?.groomName ?? '',
+      brideName: prefill?.brideName ?? '',
+      ceremonyDate: prefill?.date ?? '',
+      ceremonyTime: prefill?.time ?? '',
+      venue: prefill?.venue ?? '',
+      wantsPreweddingVideo: true,
+    }),
   })
 
   const data = (await response.json()) as { ok?: boolean; id?: string; error?: string }

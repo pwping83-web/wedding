@@ -11,6 +11,9 @@ export const outputMcCardBody =
 export const outputMcCardSub =
   '이미 MC를 구하셨나요? 식순 작성부터 진행까지 한 번에 맡기실 수 있어요.'
 
+export const mcPageRegionLine = '수도권 진행'
+export const mcPagePackageLine = '사회 + 식전영상 패키지'
+
 export const mcPageBenefitTitle = 'MC 신청 고객 식전영상 무료 제작'
 
 export const videoPageLead = '사진만 보내주시면 40초 식전영상을 만들어 드려요'

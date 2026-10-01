@@ -18,9 +18,6 @@ export const MC_PRICE_TEXT = '수도권 15만 원'
 /** 사진·문의 수신 · 알림 수신 운영자 메일 */
 export const OWNER_EMAIL = 'tseizou@naver.com'
 
-/** 샘플 영상 안내 (랜딩·/video) */
-export const SAMPLE_VIDEO_DISCLAIMER = '샘플 영상 · AI로 생성한 가상 인물입니다'
-
 export function youtubeWatchUrl(videoId: string): string {
   return videoId ? `https://www.youtube.com/watch?v=${videoId}` : ''
 }

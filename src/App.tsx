@@ -14,6 +14,7 @@ import FinalOutput from './screens/FinalOutput'
 import Admin from './screens/Admin'
 import McPage from './screens/McPage'
 import VideoPage from './screens/VideoPage'
+import VideoEditorPage from './screens/VideoEditorPage'
 import { readMarketingRoute } from './lib/marketingRoutes'
 
 type Screen = 'landing' | 'basic' | 'entrance' | 'order' | 'persons' | 'atmosphere' | 'preview' | 'output' | 'admin'
@@ -31,6 +32,14 @@ export default function App() {
     return (
       <MobileShell>
         <McPage />
+      </MobileShell>
+    )
+  }
+
+  if (marketingRoute === 'video-edit') {
+    return (
+      <MobileShell>
+        <VideoEditorPage />
       </MobileShell>
     )
   }

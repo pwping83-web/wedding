@@ -25,21 +25,18 @@ function normalizePayload(raw: Record<string, unknown>): McRequestInsert {
   const wantsPreweddingVideo = Boolean(raw.wantsPreweddingVideo)
   const privacyAgreed = Boolean(raw.privacyAgreed)
 
-  if (!groomName) throw new Error('신랑 이름을 입력해 주세요.')
-  if (!brideName) throw new Error('신부 이름을 입력해 주세요.')
-  if (!venue) throw new Error('예식장을 입력해 주세요.')
   if (!phone) throw new Error('연락처를 입력해 주세요.')
-  if (!email) throw new Error('이메일을 입력해 주세요.')
+  if (!message) throw new Error('문의 내용을 입력해 주세요.')
   if (!privacyAgreed) throw new Error('개인정보 수집·이용에 동의해 주세요.')
 
   return {
-    groomName,
-    brideName,
+    groomName: groomName || '미입력',
+    brideName: brideName || '미입력',
     ceremonyDate,
     ceremonyTime,
-    venue,
+    venue: venue || '미입력',
     phone,
-    email,
+    email: email || '미입력',
     message,
     wantsPreweddingVideo,
     privacyAgreed,

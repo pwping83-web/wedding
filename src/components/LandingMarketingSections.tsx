@@ -1,13 +1,6 @@
 import Btn from './mobile/Btn'
 import YouTubeLiteEmbed from './YouTubeLiteEmbed'
-import {
-  MC_PRICE_TEXT,
-  MC_THUMB_URL,
-  MC_VIDEO_ID,
-  SAMPLE_THUMB_URL,
-  SAMPLE_VIDEO_DISCLAIMER,
-  SAMPLE_VIDEO_ID,
-} from '../config/marketing'
+import { MC_THUMB_URL, MC_VIDEO_ID, SAMPLE_THUMB_URL, SAMPLE_VIDEO_ID } from '../config/marketing'
 import {
   landingMcBenefitLine,
   landingVideoBenefitLine,
@@ -36,7 +29,7 @@ export default function LandingMarketingSections() {
           thumbUrl={MC_THUMB_URL}
         />
         <p className="text-[13px] text-charcoal/90 text-center leading-relaxed [word-break:keep-all]">
-          {landingMcBenefitLine} · {MC_PRICE_TEXT}
+          {landingMcBenefitLine}
         </p>
         <Btn variant="secondary" onClick={() => goToMarketing('mc')}>
           MC 소개 보기
@@ -52,9 +45,6 @@ export default function LandingMarketingSections() {
         />
         <p className="text-[13px] text-charcoal/90 text-center leading-relaxed [word-break:keep-all]">
           {landingVideoBenefitLine}
-        </p>
-        <p className="text-[11px] text-muted-text text-center leading-relaxed [word-break:keep-all]">
-          {SAMPLE_VIDEO_DISCLAIMER}
         </p>
         <Btn variant="secondary" onClick={() => goToMarketing('video')}>
           자세히 보기

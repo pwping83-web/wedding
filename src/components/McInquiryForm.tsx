@@ -6,22 +6,34 @@ import { submitMcRequest } from '../lib/submitMcRequest'
 
 type Props = {
   prefill: McInquiryPrefill | null
-  onSuccess: (result: { wantsPreweddingVideo: boolean }) => void
+  onSuccess: () => void
 }
 
 const PRIVACY_NOTICE =
-  '수집 항목: 이름, 예식 일시·장소, 연락처, 이메일, 문의 내용 · 이용 목적: MC 상담 및 식전영상 안내 · 보유: 상담 종료 후 1년 이내 파기'
+  '수집 항목: 연락처, 문의 내용 · 이용 목적: MC 상담 안내 · 보유: 상담 종료 후 1년 이내 파기'
+
+function buildMessageWithPrefill(message: string, prefill: McInquiryPrefill | null): string {
+  const body = message.trim()
+  if (!prefill) return body
+
+  const lines: string[] = []
+  if (prefill.groomName || prefill.brideName) {
+    lines.push(`커플: ${[prefill.groomName, prefill.brideName].filter(Boolean).join(' · ')}`)
+  }
+  if (prefill.date || prefill.time) {
+    lines.push(`예식: ${[prefill.date, prefill.time].filter(Boolean).join(' ')}`)
+  }
+  if (prefill.venue) lines.push(`예식장: ${prefill.venue}`)
+
+  if (lines.length === 0) return body
+
+  const appendix = ['', '[식순에서 불러온 참고 정보]', ...lines].join('\n')
+  return body ? `${body}${appendix}` : appendix.trim()
+}
 
 export default function McInquiryForm({ prefill, onSuccess }: Props) {
-  const [groomName, setGroomName] = useState(prefill?.groomName ?? '')
-  const [brideName, setBrideName] = useState(prefill?.brideName ?? '')
-  const [ceremonyDate, setCeremonyDate] = useState(prefill?.date ?? '')
-  const [ceremonyTime, setCeremonyTime] = useState(prefill?.time ?? '')
-  const [venue, setVenue] = useState(prefill?.venue ?? '')
   const [phone, setPhone] = useState('')
-  const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
-  const [wantsPreweddingVideo, setWantsPreweddingVideo] = useState(false)
   const [privacyAgreed, setPrivacyAgreed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -32,18 +44,12 @@ export default function McInquiryForm({ prefill, onSuccess }: Props) {
     setSubmitting(true)
     try {
       await submitMcRequest({
-        groomName,
-        brideName,
-        ceremonyDate,
-        ceremonyTime,
-        venue,
         phone,
-        email,
-        message,
-        wantsPreweddingVideo,
+        message: buildMessageWithPrefill(message, prefill),
         privacyAgreed,
+        prefill,
       })
-      onSuccess({ wantsPreweddingVideo })
+      onSuccess()
     } catch (err) {
       setError(err instanceof Error ? err.message : '상담 신청에 실패했습니다.')
     } finally {
@@ -55,39 +61,19 @@ export default function McInquiryForm({ prefill, onSuccess }: Props) {
     <form className="space-y-4" onSubmit={handleSubmit}>
       <p className="text-[15px] font-semibold text-charcoal">MC 상담 신청</p>
 
-      <Field
-        label="신랑 이름"
-        required
-        value={groomName}
-        onChange={(e) => setGroomName(e.target.value)}
-        autoComplete="name"
-      />
-      <Field
-        label="신부 이름"
-        required
-        value={brideName}
-        onChange={(e) => setBrideName(e.target.value)}
-        autoComplete="name"
-      />
-      <Field
-        label="예식 날짜"
-        type="date"
-        value={ceremonyDate}
-        onChange={(e) => setCeremonyDate(e.target.value)}
-      />
-      <Field
-        label="예식 시간"
-        type="time"
-        value={ceremonyTime}
-        onChange={(e) => setCeremonyTime(e.target.value)}
-      />
-      <Field
-        label="예식장"
-        required
-        value={venue}
-        onChange={(e) => setVenue(e.target.value)}
-        placeholder="예식장 이름"
-      />
+      <div className="space-y-1.5">
+        <label className="block text-[13px] font-medium text-charcoal">
+          문의 내용<span className="text-danger ml-0.5">*</span>
+        </label>
+        <textarea
+          className="w-full min-h-[120px] px-4 py-3 bg-surface border border-border rounded-xl text-[15px] text-charcoal outline-none placeholder:text-muted-text/50 focus:border-accent focus:ring-2 focus:ring-accent/15 resize-y"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="희망 진행 방식, 궁금한 점 등"
+          required
+        />
+      </div>
+
       <Field
         label="연락처"
         required
@@ -98,34 +84,6 @@ export default function McInquiryForm({ prefill, onSuccess }: Props) {
         placeholder="010-0000-0000"
         autoComplete="tel"
       />
-      <Field
-        label="이메일"
-        required
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        autoComplete="email"
-      />
-
-      <div className="space-y-1.5">
-        <label className="block text-[13px] font-medium text-charcoal">문의 내용</label>
-        <textarea
-          className="w-full min-h-[100px] px-4 py-3 bg-surface border border-border rounded-xl text-[15px] text-charcoal outline-none placeholder:text-muted-text/50 focus:border-accent focus:ring-2 focus:ring-accent/15 resize-y"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="희망 진행 방식, 궁금한 점 등"
-        />
-      </div>
-
-      <label className="flex items-start gap-3 p-3 rounded-xl border border-border bg-surface cursor-pointer">
-        <input
-          type="checkbox"
-          className="mt-1 h-4 w-4 shrink-0 accent-accent"
-          checked={wantsPreweddingVideo}
-          onChange={(e) => setWantsPreweddingVideo(e.target.checked)}
-        />
-        <span className="text-[14px] text-charcoal leading-snug">식전영상 무료 제작도 함께 신청합니다</span>
-      </label>
 
       <div className="space-y-2 p-3 rounded-xl border border-border bg-muted-bg/50">
         <label className="flex items-start gap-3 cursor-pointer">
@@ -151,7 +109,7 @@ export default function McInquiryForm({ prefill, onSuccess }: Props) {
       )}
 
       <Btn type="submit" disabled={submitting || !privacyAgreed}>
-        {submitting ? '접수 중…' : '상담 신청하기'}
+        {submitting ? '전송 중…' : '상담 신청하기'}
       </Btn>
     </form>
   )

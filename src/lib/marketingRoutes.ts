@@ -1,4 +1,4 @@
-export type MarketingRoute = 'mc' | 'video'
+export type MarketingRoute = 'mc' | 'video' | 'video-edit'
 
 export function normalizeAppPathname(pathname: string): string {
   let path = pathname
@@ -16,6 +16,7 @@ export function normalizeAppPathname(pathname: string): string {
 export function readMarketingRoute(): MarketingRoute | null {
   const path = normalizeAppPathname(window.location.pathname)
   if (path === '/mc') return 'mc'
+  if (path === '/video/edit') return 'video-edit'
   if (path === '/video') return 'video'
   return null
 }
@@ -23,6 +24,9 @@ export function readMarketingRoute(): MarketingRoute | null {
 export function marketingHref(segment: MarketingRoute | 'home'): string {
   const base = import.meta.env.BASE_URL || '/'
   if (segment === 'home') return base
+  if (segment === 'video-edit') {
+    return `${base}video/edit`.replace(/([^:]\/)\/+/g, '$1')
+  }
   return `${base}${segment}`.replace(/([^:]\/)\/+/g, '$1')
 }
 

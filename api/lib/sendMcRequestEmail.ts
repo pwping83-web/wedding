@@ -16,13 +16,7 @@ function buildMcRequestEmailText(record: McRequestRecord): string {
   const lines = [
     '[MC 상담 신청]',
     '',
-    `신랑: ${record.groomName}`,
-    `신부: ${record.brideName}`,
-    `예식일: ${record.ceremonyDate || '-'} ${record.ceremonyTime || ''}`.trim(),
-    `예식장: ${record.venue}`,
     `연락처: ${record.phone}`,
-    `이메일: ${record.email}`,
-    `식전영상 신청: ${record.wantsPreweddingVideo ? '예' : '아니오'}`,
     '',
     '문의 내용:',
     record.message || '(없음)',
@@ -38,7 +32,7 @@ export async function sendMcRequestNotificationEmail(
   record: McRequestRecord,
   notifyTo: string,
 ): Promise<void> {
-  const subject = `[MC 상담] ${record.groomName} · ${record.brideName}`
+  const subject = `[MC 상담] ${record.phone}`
   const text = buildMcRequestEmailText(record)
 
   const response = await fetch('https://api.resend.com/emails', {
