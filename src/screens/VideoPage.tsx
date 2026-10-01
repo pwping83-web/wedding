@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed'
@@ -5,10 +6,12 @@ import VideoAccessGate from '../components/VideoAccessGate'
 import { SAMPLE_THUMB_URL, SAMPLE_VIDEO_ID } from '../config/marketing'
 import { videoPageLead, videoPageSub } from '../config/marketingCopy'
 import { goToMarketing } from '../lib/marketingRoutes'
-import { isVideoAccessUnlocked } from '../lib/videoAccess'
+import { clearVideoAccess } from '../lib/videoAccess'
 
 export default function VideoPage() {
-  const alreadyUnlocked = isVideoAccessUnlocked()
+  useEffect(() => {
+    clearVideoAccess()
+  }, [])
 
   return (
     <ScreenLayout
@@ -18,10 +21,7 @@ export default function VideoPage() {
       contentClassName="pb-8"
       footer={
         <div className="space-y-3">
-          {alreadyUnlocked && (
-            <Btn onClick={() => goToMarketing('video-edit')}>글귀·사진 입력 계속하기</Btn>
-          )}
-          <Btn variant={alreadyUnlocked ? 'secondary' : 'primary'} onClick={() => goToMarketing('mc')}>
+          <Btn variant="secondary" onClick={() => goToMarketing('mc')}>
             MC 상담 신청하기
           </Btn>
           <button
