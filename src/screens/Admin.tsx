@@ -11,9 +11,10 @@ import {
   getAdminToken,
   openDeliveryPrintWindow,
   type DeliverySummary,
+  type VideoTextDetail,
   type VideoTextSummary,
 } from '../lib/adminApi'
-import { formatVideoTextForDisplay } from '../lib/formatVideoTextForDisplay'
+import AdminVideoTextDetailModal from '../components/AdminVideoTextDetailModal'
 
 interface Props {
   onBack: () => void
@@ -62,6 +63,7 @@ export default function Admin({ onBack }: Props) {
   const [videoArchiveConfigured, setVideoArchiveConfigured] = useState(true)
   const [loadingVideoTexts, setLoadingVideoTexts] = useState(false)
   const [openingVideoId, setOpeningVideoId] = useState<string | null>(null)
+  const [selectedVideoText, setSelectedVideoText] = useState<VideoTextDetail | null>(null)
 
   const loadDeliveries = useCallback(async () => {
     setLoadingList(true)
@@ -143,12 +145,9 @@ export default function Admin({ onBack }: Props) {
     setListError('')
     try {
       const item = await fetchVideoText(id)
-      const body = formatVideoTextForDisplay(item.textPayload)
-      window.alert(
-        `[식전영상 글귀]\n${item.groomName} · ${item.brideName}\n${item.contactEmail}\n\n${body}`,
-      )
+      setSelectedVideoText(item)
     } catch (error) {
-      setListError(error instanceof Error ? error.message : '글귀를 불러오지 못했습니다.')
+      setListError(error instanceof Error ? error.message : '글귀를 불러지 못했습니다.')
     } finally {
       setOpeningVideoId(null)
     }
@@ -334,6 +333,11 @@ export default function Admin({ onBack }: Props) {
             ))}
           </ul>
         ))}
+
+      <AdminVideoTextDetailModal
+        item={selectedVideoText}
+        onClose={() => setSelectedVideoText(null)}
+      />
     </div>
   )
 }
