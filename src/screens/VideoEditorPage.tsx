@@ -64,7 +64,7 @@ export default function VideoEditorPage() {
   const groomName = values.P01_groom?.trim() || groomDefault || '신랑'
   const brideName = values.P01_bride?.trim() || brideDefault || '신부'
   const orderNumber = `V${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`
-  const uploadGuide = buildPhotoUploadInstructions(orderNumber, groomName, brideName, contactEmail.trim())
+  const uploadGuide = buildPhotoUploadInstructions(groomName, brideName)
 
   async function handleSaveText() {
     setFormError('')
@@ -255,9 +255,9 @@ export default function VideoEditorPage() {
           />
           <div className="relative w-full max-w-[360px] landing-card max-h-[min(80vh,520px)] overflow-y-auto p-5 space-y-4">
             <h3 className="text-[17px] font-semibold text-charcoal">사진 보내는 방법</h3>
-            <pre className="text-[12px] text-charcoal/90 whitespace-pre-wrap leading-relaxed font-sans">
+            <p className="text-[14px] text-charcoal/90 whitespace-pre-wrap leading-relaxed">
               {uploadGuide}
-            </pre>
+            </p>
             <Btn onClick={() => setShowGuide(false)}>확인</Btn>
           </div>
         </div>
