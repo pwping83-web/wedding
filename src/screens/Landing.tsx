@@ -1,4 +1,5 @@
 import Btn from '../components/mobile/Btn'
+import LandingMarketingSections from '../components/LandingMarketingSections'
 import { LandingFloralCorner, LandingFloralTop, LandingMcLogo } from '../components/LandingDecor'
 import type { AppData, SetData } from '../data'
 
@@ -15,7 +16,8 @@ const features = ['5단계 간편 입력', 'AI 멘트 자동 생성', '사회자
 
 export default function Landing({ onStart, onAdmin }: Props) {
   return (
-    <div className="landing-bg min-h-[100dvh] flex flex-col px-5 pt-10 pb-10 text-center relative">
+    <div className="landing-bg min-h-[100dvh] text-center relative">
+      <section className="min-h-[100dvh] flex flex-col px-5 pt-10 pb-10 relative">
       <button
         type="button"
         onClick={onAdmin}
@@ -69,6 +71,9 @@ export default function Landing({ onStart, onAdmin }: Props) {
       <div className="landing-content w-full">
         <Btn onClick={onStart}>시작하기</Btn>
       </div>
+      </section>
+
+      <LandingMarketingSections />
     </div>
   )
 }

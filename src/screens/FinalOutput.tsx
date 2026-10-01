@@ -7,6 +7,7 @@ import { deliverCueSheetToMc } from '../lib/deliverCueSheet'
 import { openCueSheetPrintPage } from '../lib/openCueSheetPrintPage'
 import type { AppData, SetData } from '../data'
 import GuidanceNote from '../components/mobile/GuidanceNote'
+import McConversionCard from '../components/McConversionCard'
 import { cueSheetShareNote } from '../lib/coupleGuidanceCopy'
 
 interface Props {
@@ -62,6 +63,7 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
             </Btn>
             {printError && <p className="text-[12px] text-danger text-center">{printError}</p>}
             {deliverError && <p className="text-[12px] text-danger text-center">{deliverError}</p>}
+            <McConversionCard data={data} />
           </div>
         }
       >

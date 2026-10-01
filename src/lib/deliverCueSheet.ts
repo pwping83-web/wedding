@@ -1,8 +1,9 @@
 import type { AppData } from '../data'
+import { OWNER_EMAIL } from '../config/marketing'
 import { buildCueSheetEmailHtml, buildCueSheetEmailSubject } from './buildCueSheetEmailHtml'
 import { buildCueSheetPrintHtml } from './buildCueSheetDocumentHtml'
 
-export const MC_EMAIL = 'tseizou@naver.com'
+export const MC_EMAIL = OWNER_EMAIL
 export const MC_PHONE = '010-4639-2673'
 export const MC_PHONE_DISPLAY = '010 4639 2673'
 

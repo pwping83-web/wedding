@@ -465,6 +465,8 @@ input, textarea, select, button {
 
 .mobile-shell--landing {
   background: transparent;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .delivery-success-modal {

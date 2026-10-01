@@ -12,6 +12,9 @@ import AtmosphereSelect from './screens/AtmosphereSelect'
 import Preview from './screens/Preview'
 import FinalOutput from './screens/FinalOutput'
 import Admin from './screens/Admin'
+import McPage from './screens/McPage'
+import VideoPage from './screens/VideoPage'
+import { readMarketingRoute } from './lib/marketingRoutes'
 
 type Screen = 'landing' | 'basic' | 'entrance' | 'order' | 'persons' | 'atmosphere' | 'preview' | 'output' | 'admin'
 
@@ -20,8 +23,25 @@ const SCREENS: Screen[] = ENTRANCE_AUDIO_TIMING_ENABLED
   : ['landing', 'basic', 'order', 'persons', 'atmosphere', 'preview', 'output']
 
 export default function App() {
+  const marketingRoute = readMarketingRoute()
   const [screen, setScreen] = useState<Screen>('landing')
   const [data, setData] = useState<AppData>(initialData)
+
+  if (marketingRoute === 'mc') {
+    return (
+      <MobileShell>
+        <McPage />
+      </MobileShell>
+    )
+  }
+
+  if (marketingRoute === 'video') {
+    return (
+      <MobileShell>
+        <VideoPage />
+      </MobileShell>
+    )
+  }
 
   const goNext = () => {
     const idx = SCREENS.indexOf(screen)
