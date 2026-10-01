@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { loadEnv } from 'vite'
 import { insertMcRequest, type McRequestInsert } from '../api/lib/mcRequestStore'
-import { getResendConfig, sendMcRequestNotificationEmail } from '../api/lib/sendMcRequestEmail'
+import { sendMcRequestNotification } from '../api/lib/sendMcRequestEmail'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -77,14 +77,10 @@ export function mcRequestDevApiPlugin(): Plugin {
           const payload = normalizePayload(raw)
           const record = await insertMcRequest(payload)
 
-          const resend = getResendConfig(env)
-          const notifyTo = env.OWNER_EMAIL?.trim() || env.MC_NOTIFY_EMAIL?.trim() || 'tseizou@naver.com'
-          if (resend) {
-            try {
-              await sendMcRequestNotificationEmail(resend, record, notifyTo)
-            } catch (mailError) {
-              console.error('mc request notify email failed', mailError)
-            }
+          try {
+            await sendMcRequestNotification(env, record)
+          } catch (mailError) {
+            console.error('mc request notify email failed', mailError)
           }
 
           response.statusCode = 200

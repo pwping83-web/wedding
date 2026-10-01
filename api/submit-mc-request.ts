@@ -3,7 +3,7 @@ export const config = {
 }
 
 import { insertMcRequest, type McRequestInsert } from './lib/mcRequestStore'
-import { getResendConfig, sendMcRequestNotificationEmail } from './lib/sendMcRequestEmail'
+import { sendMcRequestNotification } from './lib/sendMcRequestEmail'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -67,16 +67,10 @@ export default async function handler(request: Request): Promise<Response> {
     const payload = normalizePayload((await request.json()) as SubmitPayload)
     const record = await insertMcRequest(payload)
 
-    const resend = getResendConfig(process.env as Record<string, string | undefined>)
-    const notifyTo =
-      process.env.OWNER_EMAIL?.trim() || process.env.MC_NOTIFY_EMAIL?.trim() || 'tseizou@naver.com'
-
-    if (resend) {
-      try {
-        await sendMcRequestNotificationEmail(resend, record, notifyTo)
-      } catch (mailError) {
-        console.error('mc request notify email failed', mailError)
-      }
+    try {
+      await sendMcRequestNotification(process.env as Record<string, string | undefined>, record)
+    } catch (mailError) {
+      console.error('mc request notify email failed', mailError)
     }
 
     return Response.json({ ok: true, id: record.id }, { headers: corsHeaders })

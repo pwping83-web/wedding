@@ -129,6 +129,21 @@ export async function sendCueSheetEmail(
     throw new Error('큐시트 내용이 너무 깁니다. 식순을 줄이거나 인쇄 기능을 이용해 주세요.')
   }
 
+  await sendEmailJsTemplate(config, templateParams)
+}
+
+
+export type EmailJsTemplateParams = Record<string, string>
+
+export async function sendEmailJsTemplate(
+  config: EmailConfig,
+  templateParams: EmailJsTemplateParams,
+  templateIdOverride?: string,
+): Promise<void> {
+  if (byteLength(JSON.stringify(templateParams)) > EMAILJS_MAX_PARAMS_BYTES) {
+    throw new Error('이메일 본문이 너무 깁니다.')
+  }
+
   const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -137,7 +152,7 @@ export async function sendCueSheetEmail(
       user_id: config.publicKey,
       accessToken: config.privateKey,
       service_id: config.serviceId,
-      template_id: config.templateId,
+      template_id: templateIdOverride || config.templateId,
       template_params: templateParams,
     }),
   })
