@@ -1,3 +1,5 @@
+import { sampleThumbUrl } from './marketingAssets'
+
 /**
  * MC · 식전영상 마케팅 설정 — 값만 바꿔서 배포하면 됩니다.
  */
@@ -10,7 +12,8 @@ export const SAMPLE_VIDEO_ID = 'NuWvnTwHQ-s'
 
 /** 직접 만든 썸네일 URL (비어 있으면 유튜브 hqdefault 사용) */
 export const MC_THUMB_URL = ''
-export const SAMPLE_THUMB_URL = '/sample-thumb.jpg'
+/** 식전영상 샘플 표지 (번들 — GitHub Pages / Figma base 경로 문제 방지) */
+export const SAMPLE_THUMB_URL = sampleThumbUrl
 
 /** 식순 완성·/mc 페이지에 표시할 가격 문구 */
 export const MC_PRICE_TEXT = '수도권 15만 원'

@@ -1,3 +1,5 @@
+import { mcLogoUrl } from '../config/marketingAssets'
+
 export function LandingFloralTop() {
   return (
     <svg
@@ -85,11 +87,9 @@ export function LandingRingsIcon() {
 }
 
 export function LandingMcLogo() {
-  const logoSrc = `${import.meta.env.BASE_URL}mc-logo.png`
-
   return (
     <img
-      src={logoSrc}
+      src={mcLogoUrl}
       alt="MC 웨딩 로고"
       className="landing-mc-logo"
       width={170}
