@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import Btn from '../components/mobile/Btn'
+import { notifySiteVisitLanding } from '../lib/notifySiteVisit'
 import LandingMarketingSections from '../components/LandingMarketingSections'
 import { LandingFloralCorner, LandingFloralTop, LandingMcLogo } from '../components/LandingDecor'
 import type { AppData, SetData } from '../data'
@@ -19,6 +21,10 @@ function scrollToMarketingSections() {
 }
 
 export default function Landing({ onStart, onAdmin }: Props) {
+  useEffect(() => {
+    notifySiteVisitLanding()
+  }, [])
+
   return (
     <div className="landing-bg min-h-[100dvh] text-center relative">
       <section className="min-h-[calc(100dvh-3.25rem)] flex flex-col px-5 pt-10 pb-6 relative">
