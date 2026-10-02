@@ -8,7 +8,9 @@
     "dev": "vite --host localhost --open",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "figma:refine-prompt": "node --experimental-strip-types scripts/print-figma-refinement-prompt.ts",
+    "figma:refine-landing-prompt": "node --experimental-strip-types scripts/print-figma-landing-refinement-prompt.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.114.0",

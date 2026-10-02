@@ -42,8 +42,8 @@ export default function Landing({ onStart, onAdmin }: Props) {
       <div className="landing-content flex-1 flex flex-col items-center justify-center">
         <LandingMcLogo />
 
-        <p className="text-[13px] font-medium text-rose-gold mb-4 tracking-[0.12em] uppercase">
-          Wedding Cue Sheet
+        <p className="text-[13px] font-medium text-rose-gold mb-4 tracking-[0.08em]">
+          예식 큐시트
         </p>
 
         <h1 className="text-[28px] font-semibold text-charcoal leading-[1.3] tracking-tight mb-4 max-w-[300px]">
