@@ -1,4 +1,5 @@
-import { mcLogoUrl } from '../config/marketingAssets'
+import { useState } from 'react'
+import { mcLogoFallbackUrl, mcLogoUrl } from '../config/marketingAssets'
 
 export function LandingFloralTop() {
   return (
@@ -87,15 +88,22 @@ export function LandingRingsIcon() {
 }
 
 export function LandingMcLogo() {
+  const [src, setSrc] = useState(mcLogoUrl)
+
   return (
-    <img
-      src={mcLogoUrl}
-      alt="MC 웨딩 로고"
-      className="landing-mc-logo"
-      width={170}
-      height={185}
-      decoding="async"
-      fetchPriority="high"
-    />
+    <div className="landing-mc-logo-wrap">
+      <img
+        src={src}
+        alt="MC 웨딩 로고"
+        className="landing-mc-logo"
+        width={200}
+        height={120}
+        decoding="async"
+        fetchPriority="high"
+        onError={() => {
+          if (src !== mcLogoFallbackUrl) setSrc(mcLogoFallbackUrl)
+        }}
+      />
+    </div>
   )
 }
