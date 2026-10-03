@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import Btn from '../components/mobile/Btn'
 import { notifySiteVisitLanding } from '../lib/notifySiteVisit'
+import { SEO_TITLE } from '../config/siteSeo'
 import LandingMarketingSections from '../components/LandingMarketingSections'
 import { LandingFloralCorner, LandingFloralTop, LandingMcLogo } from '../components/LandingDecor'
 import type { AppData, SetData } from '../data'
@@ -22,7 +23,12 @@ function scrollToMarketingSections() {
 
 export default function Landing({ onStart, onAdmin }: Props) {
   useEffect(() => {
+    const prev = document.title
+    document.title = SEO_TITLE
     notifySiteVisitLanding()
+    return () => {
+      document.title = prev
+    }
   }, [])
 
   return (

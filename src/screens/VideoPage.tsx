@@ -7,10 +7,16 @@ import { SAMPLE_THUMB_URL, SAMPLE_VIDEO_ID } from '../config/marketing'
 import { videoPageLead, videoPageSub } from '../config/marketingCopy'
 import { goToMarketing } from '../lib/marketingRoutes'
 import { clearVideoAccess } from '../lib/videoAccess'
+import { SEO_TITLE } from '../config/siteSeo'
 
 export default function VideoPage() {
   useEffect(() => {
     clearVideoAccess()
+    const prev = document.title
+    document.title = `식전영상 무료 제작 | ${SEO_TITLE.split('|')[0].trim()}`
+    return () => {
+      document.title = prev
+    }
   }, [])
 
   return (

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { SEO_TITLE } from '../config/siteSeo'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
 import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed'
@@ -12,6 +13,14 @@ import { goToMarketing } from '../lib/marketingRoutes'
 export default function McPage() {
   const prefill = useMemo(() => loadMcInquiryPrefill(), [])
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+
+  useEffect(() => {
+    const prev = document.title
+    document.title = `ENX 웨딩 MC 본식 진행 · 상담 | ${SEO_TITLE.split('|')[0].trim()}`
+    return () => {
+      document.title = prev
+    }
+  }, [])
 
   return (
     <ScreenLayout

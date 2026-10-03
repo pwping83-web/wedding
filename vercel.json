@@ -24,7 +24,7 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     {
-      "source": "/((?!api/|assets/|robots\\.txt|.*\\.(?:png|jpe?g|gif|svg|ico|webp)).*)",
+      "source": "/((?!api/|assets/|robots\\.txt|sitemap\\.xml|.*\\.(?:png|jpe?g|gif|svg|ico|webp|xml)).*)",
       "destination": "/index.html"
     }
   ]

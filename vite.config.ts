@@ -7,6 +7,7 @@ import siteConfiguration from './.figma/make/site.json'
 import { adminDevApiPlugin } from './server/adminDevApiPlugin'
 import { groqDevApiPlugin } from './server/groqDevApiPlugin'
 import { mcRequestDevApiPlugin } from './server/mcRequestDevApiPlugin'
+import { seoPlugin } from './server/seoPlugin'
 import { siteVisitDevApiPlugin } from './server/siteVisitDevApiPlugin'
 import { videoTextDevApiPlugin } from './server/videoTextDevApiPlugin'
 
@@ -33,6 +34,7 @@ export default defineConfig(({ mode }) => {
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
       figmaMakeKitPlugin({ storiesGlob: '/src/**/*.stories.{ts,tsx,js,jsx}' }),
+      seoPlugin(),
       groqDevApiPlugin(),
       adminDevApiPlugin(),
       mcRequestDevApiPlugin(),
