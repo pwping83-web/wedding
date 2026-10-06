@@ -48,3 +48,15 @@ export async function deleteLocalDeliveryRecord(id: string): Promise<boolean> {
   await writeRecords(next)
   return true
 }
+
+export async function updateLocalDeliveryPrintHtml(
+  id: string,
+  printHtml: string,
+): Promise<DeliveryRecord | null> {
+  const records = await readRecords()
+  const index = records.findIndex((record) => record.id === id)
+  if (index < 0) return null
+  records[index] = { ...records[index], printHtml }
+  await writeRecords(records)
+  return records[index]
+}

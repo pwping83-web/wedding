@@ -14,6 +14,7 @@ import {
   getLocalDeliveryRecord,
   listLocalDeliveryRecords,
   saveLocalDeliveryRecord,
+  updateLocalDeliveryPrintHtml,
 } from './deliveryStoreLocal'
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -35,7 +36,7 @@ function jsonResponse(response: ServerResponse, status: number, body: unknown) {
 function corsPreflight(response: ServerResponse) {
   response.statusCode = 204
   response.setHeader('Access-Control-Allow-Origin', '*')
-  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   response.end()
 }
@@ -200,6 +201,29 @@ export function adminDevApiPlugin(): Plugin {
             } catch (error) {
               jsonResponse(response, 500, {
                 error: error instanceof Error ? error.message : '기록을 불러오지 못했습니다.',
+              })
+            }
+            return
+          }
+
+          if (req.method === 'PATCH') {
+            try {
+              const raw = await readBody(req)
+              const body = JSON.parse(raw) as { printHtml?: string }
+              const printHtml = body.printHtml?.trim()
+              if (!printHtml) {
+                jsonResponse(response, 400, { error: 'printHtml이 필요합니다.' })
+                return
+              }
+              const delivery = await updateLocalDeliveryPrintHtml(id, printHtml)
+              if (!delivery) {
+                jsonResponse(response, 404, { error: '기록을 찾을 수 없습니다.' })
+                return
+              }
+              jsonResponse(response, 200, { delivery })
+            } catch (error) {
+              jsonResponse(response, 500, {
+                error: error instanceof Error ? error.message : '기록을 수정하지 못했습니다.',
               })
             }
             return

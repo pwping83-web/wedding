@@ -9,11 +9,14 @@ import {
   fetchVideoText,
   fetchVideoTexts,
   getAdminToken,
-  openDeliveryPrintWindow,
+  openDeliveryHtmlWindow,
+  updateDeliveryPrintHtml,
+  type DeliveryDetail,
   type DeliverySummary,
   type VideoTextDetail,
   type VideoTextSummary,
 } from '../lib/adminApi'
+import AdminDeliveryModal from '../components/AdminDeliveryModal'
 import AdminVideoTextDetailModal from '../components/AdminVideoTextDetailModal'
 
 interface Props {
@@ -55,8 +58,13 @@ export default function Admin({ onBack }: Props) {
   const [archiveConfigured, setArchiveConfigured] = useState(true)
   const [loadingList, setLoadingList] = useState(false)
   const [listError, setListError] = useState('')
-  const [openingId, setOpeningId] = useState<string | null>(null)
+  const [loadingDeliveryId, setLoadingDeliveryId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deliveryModal, setDeliveryModal] = useState<{
+    mode: 'view' | 'edit'
+    delivery: DeliveryDetail
+  } | null>(null)
+  const [savingDelivery, setSavingDelivery] = useState(false)
 
   const [section, setSection] = useState<'deliveries' | 'video-text'>('deliveries')
   const [videoTexts, setVideoTexts] = useState<VideoTextSummary[]>([])
@@ -128,15 +136,34 @@ export default function Admin({ onBack }: Props) {
     setDeliveries([])
   }
 
-  const handleOpenDelivery = async (id: string) => {
-    setOpeningId(id)
+  const runDeliveryAction = async (id: string, action: 'view' | 'print' | 'edit') => {
+    setLoadingDeliveryId(id)
+    setListError('')
     try {
       const delivery = await fetchDelivery(id)
-      openDeliveryPrintWindow(delivery.printHtml)
+      if (action === 'print') {
+        openDeliveryHtmlWindow(delivery.printHtml, { printOnLoad: true })
+        return
+      }
+      setDeliveryModal({ mode: action, delivery })
     } catch (error) {
-      setListError(error instanceof Error ? error.message : '큐시트를 열지 못했습니다.')
+      setListError(error instanceof Error ? error.message : '큐시트를 불러오지 못했습니다.')
     } finally {
-      setOpeningId(null)
+      setLoadingDeliveryId(null)
+    }
+  }
+
+  const handleSaveDeliveryEdit = async (printHtml: string) => {
+    if (!deliveryModal) return
+    setSavingDelivery(true)
+    setListError('')
+    try {
+      await updateDeliveryPrintHtml(deliveryModal.delivery.id, printHtml)
+      setDeliveryModal(null)
+    } catch (error) {
+      setListError(error instanceof Error ? error.message : '큐시트를 저장하지 못했습니다.')
+    } finally {
+      setSavingDelivery(false)
     }
   }
 
@@ -282,24 +309,42 @@ export default function Admin({ onBack }: Props) {
                 <p className="text-[12px] text-muted-text mb-3">
                   전송 {formatSentAt(delivery.createdAt)} · {delivery.mcEmail}
                 </p>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-2 mb-2">
                   <Btn
                     variant="secondary"
-                    className="flex-1"
-                    onClick={() => void handleOpenDelivery(delivery.id)}
-                    disabled={openingId === delivery.id || deletingId === delivery.id}
+                    full={false}
+                    className="!text-[13px] !h-11 !px-2"
+                    onClick={() => void runDeliveryAction(delivery.id, 'view')}
+                    disabled={loadingDeliveryId === delivery.id || deletingId === delivery.id}
                   >
-                    {openingId === delivery.id ? '여는 중…' : '보기 · 인쇄'}
+                    {loadingDeliveryId === delivery.id ? '…' : '보기'}
                   </Btn>
                   <Btn
-                    variant="danger"
-                    className="flex-1"
-                    onClick={() => void handleDeleteDelivery(delivery)}
-                    disabled={openingId === delivery.id || deletingId === delivery.id}
+                    variant="secondary"
+                    full={false}
+                    className="!text-[13px] !h-11 !px-2"
+                    onClick={() => void runDeliveryAction(delivery.id, 'print')}
+                    disabled={loadingDeliveryId === delivery.id || deletingId === delivery.id}
                   >
-                    {deletingId === delivery.id ? '삭제 중…' : '삭제'}
+                    인쇄
+                  </Btn>
+                  <Btn
+                    variant="secondary"
+                    full={false}
+                    className="!text-[13px] !h-11 !px-2"
+                    onClick={() => void runDeliveryAction(delivery.id, 'edit')}
+                    disabled={loadingDeliveryId === delivery.id || deletingId === delivery.id}
+                  >
+                    수정하기
                   </Btn>
                 </div>
+                <Btn
+                  variant="danger"
+                  onClick={() => void handleDeleteDelivery(delivery)}
+                  disabled={loadingDeliveryId === delivery.id || deletingId === delivery.id}
+                >
+                  {deletingId === delivery.id ? '삭제 중…' : '삭제'}
+                </Btn>
               </li>
             ))}
           </ul>
@@ -327,12 +372,20 @@ export default function Admin({ onBack }: Props) {
                   onClick={() => void handleOpenVideoText(item.id)}
                   disabled={openingVideoId === item.id}
                 >
-                  {openingVideoId === item.id ? '불러오는 중…' : '글귀 보기'}
+                  {openingVideoId === item.id ? '불러오는 중…' : '보기'}
                 </Btn>
               </li>
             ))}
           </ul>
         ))}
+
+      <AdminDeliveryModal
+        mode={deliveryModal?.mode ?? null}
+        delivery={deliveryModal?.delivery ?? null}
+        saving={savingDelivery}
+        onClose={() => setDeliveryModal(null)}
+        onSave={handleSaveDeliveryEdit}
+      />
 
       <AdminVideoTextDetailModal
         item={selectedVideoText}

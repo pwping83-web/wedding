@@ -114,8 +114,13 @@ export default function AdminVideoTextDetailModal({ item, onClose }: Props) {
           </div>
         </div>
 
-        <div className="shrink-0 px-5 py-4 border-t border-border bg-white">
-          <Btn onClick={onClose}>닫기</Btn>
+        <div className="shrink-0 px-5 py-4 border-t border-border bg-white grid grid-cols-2 gap-2">
+          <Btn variant="secondary" full={false} className="w-full" onClick={() => window.print()}>
+            인쇄
+          </Btn>
+          <Btn full={false} className="w-full" onClick={onClose}>
+            닫기
+          </Btn>
         </div>
       </div>
     </div>

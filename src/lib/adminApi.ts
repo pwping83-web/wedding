@@ -111,26 +111,55 @@ export async function fetchVideoText(id: string): Promise<VideoTextDetail> {
   return result.item
 }
 
-export function openDeliveryPrintWindow(printHtml: string): void {
+export function buildDeliveryPreviewDocument(printHtml: string): string {
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>웨딩 큐시트</title>
+  <style>
+    @page { size: A4 portrait; margin: 5mm 6mm; }
+    html, body { margin: 0; padding: 8px; background: #fff; }
+  </style>
+</head>
+<body>${printHtml}</body>
+</html>`
+}
+
+export function openDeliveryHtmlWindow(
+  printHtml: string,
+  options: { printOnLoad?: boolean } = {},
+): void {
   const popup = window.open('', '_blank')
   if (!popup) {
     throw new Error('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해 주세요.')
   }
 
+  const printScript = options.printOnLoad
+    ? `<script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 300); });</script>`
+    : ''
+
   popup.document.open()
-  popup.document.write(`<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <title>웨딩 큐시트</title>
-  <style>
-    @page { size: A4 portrait; margin: 5mm 6mm; }
-    html, body { margin: 0; padding: 0; background: #fff; }
-  </style>
-</head>
-<body>${printHtml}
-<script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 300); });</script>
-</body>
-</html>`)
+  popup.document.write(buildDeliveryPreviewDocument(printHtml).replace('</body>', `${printScript}</body>`))
   popup.document.close()
+}
+
+/** @deprecated openDeliveryHtmlWindow 사용 */
+export function openDeliveryPrintWindow(printHtml: string): void {
+  openDeliveryHtmlWindow(printHtml, { printOnLoad: true })
+}
+
+export async function updateDeliveryPrintHtml(
+  id: string,
+  printHtml: string,
+): Promise<DeliveryDetail> {
+  const result = await adminFetch<{ delivery: DeliveryDetail }>(
+    `api/admin/delivery?id=${encodeURIComponent(id)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ printHtml }),
+    },
+  )
+  return result.delivery
 }
