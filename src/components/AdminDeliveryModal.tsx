@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Btn from './mobile/Btn'
 import type { DeliveryDetail } from '../lib/adminApi'
 import { buildDeliveryPreviewDocument, openDeliveryHtmlWindow } from '../lib/adminApi'
@@ -20,24 +20,50 @@ export default function AdminDeliveryModal({
   onClose,
   onSave,
 }: Props) {
-  const [draftHtml, setDraftHtml] = useState('')
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [editError, setEditError] = useState('')
 
   useEffect(() => {
-    if (delivery && mode === 'edit') {
-      setDraftHtml(delivery.printHtml)
-    }
+    setEditError('')
   }, [delivery, mode])
 
   const previewDoc = useMemo(() => {
     if (!delivery) return ''
-    if (mode === 'edit') return buildDeliveryPreviewDocument(draftHtml)
     return buildDeliveryPreviewDocument(delivery.printHtml)
-  }, [delivery, mode, draftHtml])
+  }, [delivery])
 
   if (!mode || !delivery) return null
 
   const title =
     mode === 'view' ? '큐시트 보기' : '큐시트 수정'
+
+  const enableDirectEditing = () => {
+    if (mode !== 'edit') return
+    const doc = iframeRef.current?.contentDocument
+    if (!doc?.body) return
+
+    doc.body.contentEditable = 'true'
+    doc.body.spellcheck = true
+    doc.body.style.cursor = 'text'
+    doc.body.style.outline = 'none'
+  }
+
+  const saveDirectEdit = async () => {
+    const body = iframeRef.current?.contentDocument?.body
+    if (!body) {
+      setEditError('편집 내용을 읽지 못했습니다. 창을 닫고 다시 시도해 주세요.')
+      return
+    }
+
+    const printHtml = body.innerHTML.trim()
+    if (!body.innerText.trim() || !printHtml) {
+      setEditError('큐시트 내용을 비워 둘 수 없습니다.')
+      return
+    }
+
+    setEditError('')
+    await onSave?.(printHtml)
+  }
 
   return (
     <div
@@ -65,24 +91,20 @@ export default function AdminDeliveryModal({
         </div>
 
         {mode === 'edit' && (
-          <div className="shrink-0 px-5 pt-3">
-            <label className="block text-[12px] font-medium text-charcoal mb-1">
-              인쇄 HTML (고급)
-            </label>
-            <textarea
-              value={draftHtml}
-              onChange={(event) => setDraftHtml(event.target.value)}
-              className="w-full h-28 rounded-xl border border-border bg-bg px-3 py-2 text-[11px] font-mono leading-relaxed resize-y"
-              spellCheck={false}
-            />
-          </div>
+          <p className="shrink-0 px-5 pt-3 text-[12px] leading-relaxed text-muted-text">
+            아래 큐시트에서 바꿀 글자를 직접 누르고 수정하세요.
+          </p>
         )}
 
         <div className="flex-1 min-h-0 px-5 py-3">
           <iframe
+            ref={iframeRef}
             title="큐시트 미리보기"
             srcDoc={previewDoc}
-            className="w-full h-[min(50dvh,360px)] rounded-xl border border-border bg-white"
+            onLoad={enableDirectEditing}
+            className={`w-full h-[min(58dvh,440px)] rounded-xl border bg-white ${
+              mode === 'edit' ? 'border-accent ring-2 ring-accent/10' : 'border-border'
+            }`}
             sandbox="allow-same-origin"
           />
         </div>
@@ -105,9 +127,10 @@ export default function AdminDeliveryModal({
           )}
           {mode === 'edit' && (
             <>
+              {editError && <p className="text-[12px] text-danger">{editError}</p>}
               <Btn
-                disabled={saving || !draftHtml.trim()}
-                onClick={() => void onSave?.(draftHtml.trim())}
+                disabled={saving}
+                onClick={() => void saveDirectEdit()}
               >
                 {saving ? '저장 중…' : '저장하기'}
               </Btn>
