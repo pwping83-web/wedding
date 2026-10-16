@@ -9,7 +9,9 @@ export default function LandingStory() {
       <Landing
         {...props}
         onStart={() => {}}
+        onRestore={() => {}}
         onAdmin={() => {}}
+        savedSession={null}
       />
     </StoryShell>
   )

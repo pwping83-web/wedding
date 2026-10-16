@@ -5,6 +5,13 @@ import { SEO_TITLE } from '../config/siteSeo'
 import LandingMarketingSections from '../components/LandingMarketingSections'
 import { LandingFloralCorner, LandingFloralTop, LandingMcLogo } from '../components/LandingDecor'
 import type { AppData, SetData } from '../data'
+import {
+  FLOW_INPUT_STEP_COUNT,
+  formatSessionSavedAt,
+  getFlowStepNumber,
+  getScreenLabel,
+  type StoredAppSession,
+} from '../lib/appSession'
 
 interface Props {
   data: AppData
@@ -12,7 +19,9 @@ interface Props {
   onNext: () => void
   onBack: () => void
   onStart: () => void
+  onRestore: () => void
   onAdmin: () => void
+  savedSession: StoredAppSession | null
 }
 
 const features = ['5단계 간편 입력', 'AI 멘트 자동 생성', '사회자 이메일 전달 · 인쇄']
@@ -21,7 +30,14 @@ function scrollToMarketingSections() {
   document.getElementById('landing-marketing')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-export default function Landing({ onStart, onAdmin }: Props) {
+export default function Landing({ onStart, onRestore, onAdmin, savedSession }: Props) {
+  const stepNum = savedSession ? getFlowStepNumber(savedSession.screen) : 0
+  const stepLabel = savedSession ? getScreenLabel(savedSession.screen) : ''
+  const savedAtLabel = savedSession ? formatSessionSavedAt(savedSession.savedAt) : ''
+  const coupleLabel =
+    savedSession &&
+    [savedSession.data.groomName, savedSession.data.brideName].filter(Boolean).join(' · ')
+
   useEffect(() => {
     const prev = document.title
     document.title = SEO_TITLE
@@ -84,8 +100,31 @@ export default function Landing({ onStart, onAdmin }: Props) {
         </div>
       </div>
 
-      <div className="landing-content w-full max-w-[300px] mx-auto">
-        <Btn onClick={onStart}>시작하기</Btn>
+      <div className="landing-content w-full max-w-[300px] mx-auto space-y-2">
+        {savedSession && (
+          <div className="landing-card text-left mb-1 space-y-2">
+            <p className="text-[13px] font-semibold text-charcoal">저장된 진행</p>
+            <p className="text-[12px] text-muted-text leading-relaxed">
+              {FLOW_INPUT_STEP_COUNT}단계 중 {stepNum}단계 · {stepLabel}
+              {coupleLabel ? (
+                <>
+                  <br />
+                  {coupleLabel}
+                </>
+              ) : null}
+              {savedAtLabel ? (
+                <>
+                  <br />
+                  저장 {savedAtLabel}
+                </>
+              ) : null}
+            </p>
+            <Btn variant="secondary" onClick={onRestore}>
+              내 화면 불러오기
+            </Btn>
+          </div>
+        )}
+        <Btn onClick={onStart}>{savedSession ? '처음부터 시작하기' : '시작하기'}</Btn>
         <button
           type="button"
           onClick={scrollToMarketingSections}

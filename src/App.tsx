@@ -1,5 +1,5 @@
 import MobileShell from './components/mobile/MobileShell'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { initialData } from './data'
 import type { AppData } from './data'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from './config/features'
@@ -16,8 +16,16 @@ import McPage from './screens/McPage'
 import VideoPage from './screens/VideoPage'
 import VideoEditorPage from './screens/VideoEditorPage'
 import { readMarketingRoute } from './lib/marketingRoutes'
+import {
+  clearAppSession,
+  loadAppSession,
+  saveAppSession,
+  type FlowScreen,
+  type StoredAppSession,
+} from './lib/appSession'
+import { saveCueSheetDraft } from './lib/cueSheetDraft'
 
-type Screen = 'landing' | 'basic' | 'entrance' | 'order' | 'persons' | 'atmosphere' | 'preview' | 'output' | 'admin'
+type Screen = 'landing' | FlowScreen | 'admin'
 
 const SCREENS: Screen[] = ENTRANCE_AUDIO_TIMING_ENABLED
   ? ['landing', 'basic', 'entrance', 'order', 'persons', 'atmosphere', 'preview', 'output']
@@ -27,6 +35,26 @@ export default function App() {
   const marketingRoute = readMarketingRoute()
   const [screen, setScreen] = useState<Screen>('landing')
   const [data, setData] = useState<AppData>(initialData)
+  const [savedSession, setSavedSession] = useState<StoredAppSession | null>(() => loadAppSession())
+
+  const persistProgress = useCallback((nextScreen: Screen, nextData: AppData) => {
+    if (nextScreen === 'admin') return
+    saveAppSession(nextScreen, nextData)
+    saveCueSheetDraft(nextData)
+    setSavedSession(loadAppSession())
+  }, [])
+
+  useEffect(() => {
+    if (marketingRoute) return
+    persistProgress(screen, data)
+  }, [screen, data, marketingRoute, persistProgress])
+
+  useEffect(() => {
+    if (marketingRoute) return
+    const onPageHide = () => persistProgress(screen, data)
+    window.addEventListener('pagehide', onPageHide)
+    return () => window.removeEventListener('pagehide', onPageHide)
+  }, [screen, data, marketingRoute, persistProgress])
 
   if (marketingRoute === 'mc') {
     return (
@@ -62,12 +90,35 @@ export default function App() {
     if (idx > 0) setScreen(SCREENS[idx - 1])
   }
 
+  const handleStartFresh = () => {
+    clearAppSession()
+    setSavedSession(null)
+    setData(initialData)
+    setScreen('basic')
+  }
+
+  const handleRestoreSession = () => {
+    const session = loadAppSession()
+    if (!session) {
+      setSavedSession(null)
+      return
+    }
+    setData(session.data)
+    setScreen(session.screen)
+  }
+
   const props = { data, setData, onNext: goNext, onBack: goBack }
 
   return (
     <MobileShell className={screen === 'landing' ? 'mobile-shell--landing' : ''}>
       {screen === 'landing' && (
-        <Landing {...props} onStart={() => setScreen('basic')} onAdmin={() => setScreen('admin')} />
+        <Landing
+          {...props}
+          savedSession={savedSession}
+          onStart={handleStartFresh}
+          onRestore={handleRestoreSession}
+          onAdmin={() => setScreen('admin')}
+        />
       )}
       {screen === 'basic' && <BasicInfo {...props} />}
       {ENTRANCE_AUDIO_TIMING_ENABLED && screen === 'entrance' && <EntranceSetup {...props} />}
