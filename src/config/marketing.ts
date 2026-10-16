@@ -5,7 +5,7 @@ import { sampleThumbUrl } from './marketingAssets'
  */
 
 /** MC 진행 영상 (유튜브 ID만, URL 전체 아님) */
-export const MC_VIDEO_ID = 'RFbaB4_rDmE'
+export const MC_VIDEO_ID = 'JFtFR6-bJwY'
 
 /** 식전영상 샘플 (일부공개 업로드 권장) */
 export const SAMPLE_VIDEO_ID = 'NuWvnTwHQ-s'
