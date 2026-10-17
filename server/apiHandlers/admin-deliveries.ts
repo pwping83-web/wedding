@@ -1,5 +1,6 @@
 import { getBearerToken, verifyAdminSessionToken } from '../apiLib/adminAuth'
 import { deliveryArchiveConfigured, listDeliveryRecords } from '../apiLib/deliveryStore'
+import { sortByWeddingSchedule } from '../apiLib/weddingDateTime'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,7 +23,7 @@ export async function handleAdminDeliveries(request: Request): Promise<Response>
   }
 
   try {
-    const deliveries = await listDeliveryRecords()
+    const deliveries = sortByWeddingSchedule(await listDeliveryRecords())
     return Response.json(
       {
         deliveries: deliveries.map(({ printHtml: _printHtml, ...summary }) => summary),

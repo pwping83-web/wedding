@@ -8,6 +8,7 @@ import {
   verifyAdminSessionToken,
 } from './apiLib/adminAuth'
 import type { SaveDeliveryInput } from './apiLib/deliveryStore'
+import { sortByWeddingSchedule } from './apiLib/weddingDateTime'
 import { getEmailConfig, sendCueSheetEmail, type SendCueSheetPayload } from './sendCueSheetEmail'
 import {
   deleteLocalDeliveryRecord,
@@ -159,7 +160,7 @@ export function adminDevApiPlugin(): Plugin {
           }
 
           try {
-            const deliveries = await listLocalDeliveryRecords()
+            const deliveries = sortByWeddingSchedule(await listLocalDeliveryRecords())
             jsonResponse(response, 200, {
               deliveries: deliveries.map(({ printHtml: _printHtml, ...summary }) => summary),
               archiveConfigured: true,

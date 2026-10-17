@@ -18,7 +18,7 @@ import {
 } from '../lib/adminApi'
 import AdminDeliveryModal from '../components/AdminDeliveryModal'
 import AdminVideoTextDetailModal from '../components/AdminVideoTextDetailModal'
-import { isWeddingPast } from '../lib/isWeddingPast'
+import { isWeddingPast, sortByWeddingSchedule } from '../lib/isWeddingPast'
 
 interface Props {
   onBack: () => void
@@ -79,7 +79,7 @@ export default function Admin({ onBack }: Props) {
     setListError('')
     try {
       const result = await fetchDeliveries()
-      setDeliveries(result.deliveries)
+      setDeliveries(sortByWeddingSchedule(result.deliveries))
       setArchiveConfigured(result.archiveConfigured)
     } catch (error) {
       if (error instanceof Error && error.message.includes('로그인')) {
