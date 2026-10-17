@@ -1,12 +1,3 @@
--- QCT(큐시트) — 전화번호로 저장·불러오기
-create table if not exists public.cue_sheet_qct_saves (
-  save_phone text primary key,
-  updated_at timestamptz not null default now(),
-  flow_screen text not null default 'basic',
-  app_data jsonb not null
-);
-
-create index if not exists cue_sheet_qct_saves_updated_at_idx
-  on public.cue_sheet_qct_saves (updated_at desc);
-
-alter table public.cue_sheet_qct_saves enable row level security;
+-- ⚠️ 별도 테이블은 사용하지 않습니다.
+-- QCT(전화번호) 저장은 public.cue_sheet_drafts 를 사용합니다.
+-- Supabase SQL Editor에서 cue_sheet_drafts.sql 의 alter 구문만 실행하면 됩니다.

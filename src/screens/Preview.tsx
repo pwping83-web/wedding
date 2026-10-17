@@ -44,7 +44,7 @@ interface Props {
   setData: SetData
   onNext: () => void
   onBack: () => void
-  onGoOutput: () => void
+  onGoOutput: () => void | Promise<void>
 }
 
 function updateItemScript(setData: SetData, item: OrderItem, text: string) {
@@ -263,6 +263,8 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
   const [speakingId, setSpeakingId] = useState<string | null>(null)
   const [generatingId, setGeneratingId] = useState<string | null>(null)
   const [generateError, setGenerateError] = useState('')
+  const [completing, setCompleting] = useState(false)
+  const [completeError, setCompleteError] = useState('')
 
   const items = data.orderItems
   const speechOk = isSpeechSupported()
@@ -346,7 +348,32 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
       footer={
         <div className="space-y-2">
           <p className="text-center text-[13px] font-semibold text-charcoal">최종 큐시트 완성</p>
-          <Btn onClick={onGoOutput}>최종 큐시트 완성</Btn>
+          <p className="text-center text-[11px] text-muted-text">
+            누르면 QCT가 전화번호로 저장된 뒤 최종 화면으로 이동합니다
+          </p>
+          {completeError && (
+            <p className="text-[12px] text-danger bg-danger-soft px-3 py-2 rounded-xl">
+              {completeError}
+            </p>
+          )}
+          <Btn
+            disabled={completing}
+            onClick={async () => {
+              setCompleting(true)
+              setCompleteError('')
+              try {
+                await onGoOutput()
+              } catch (error) {
+                setCompleteError(
+                  error instanceof Error ? error.message : 'QCT 저장에 실패했습니다.',
+                )
+              } finally {
+                setCompleting(false)
+              }
+            }}
+          >
+            {completing ? 'QCT 저장 중…' : '최종 큐시트 완성'}
+          </Btn>
         </div>
       }
     >

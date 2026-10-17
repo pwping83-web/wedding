@@ -307,44 +307,99 @@ export async function findLatestDeliveryAppData(
   }
 }
 
+function enrichAppDataForPhoneSave(
+  appData: unknown,
+  phone: string,
+  flowScreen: string,
+): Record<string, unknown> {
+  const base =
+    appData && typeof appData === 'object' ? { ...(appData as Record<string, unknown>) } : {}
+  base.cueSavePhone = phone
+  base.savedFlowScreen = flowScreen.trim() || 'basic'
+  return base
+}
+
+function flowScreenFromAppData(appData: unknown): string {
+  const raw = (appData as { savedFlowScreen?: string } | null)?.savedFlowScreen
+  return raw?.trim() || 'basic'
+}
+
+/** QCT — 기존 cue_sheet_drafts 테이블 + app_data.cueSavePhone */
 export async function upsertCueSheetByPhone(
   savePhone: string,
   appData: unknown,
   flowScreen: string,
 ): Promise<SavedCueSheetDraft | null> {
-  const config = getSupabaseConfig()
-  if (!config) return null
-
   const phone = normalizeSavePhone(savePhone)
   if (!isValidSavePhone(phone) || !hasRestorableAppData(appData)) return null
 
-  const record = {
-    save_phone: phone,
-    flow_screen: flowScreen.trim() || 'basic',
-    app_data: appData,
+  const data = appData as { groomName?: string; brideName?: string }
+  const groom = data.groomName?.trim() ?? ''
+  const bride = data.brideName?.trim() ?? ''
+  if (!groom || !bride) return null
+
+  const screen = flowScreen.trim() || 'basic'
+  const enriched = enrichAppDataForPhoneSave(appData, phone, screen)
+
+  const config = getSupabaseConfig()
+  if (!config) return null
+
+  const record: Record<string, unknown> = {
+    groom_name: groom,
+    bride_name: bride,
+    app_data: enriched,
     updated_at: new Date().toISOString(),
   }
 
-  const response = await fetch(`${config.url}/rest/v1/cue_sheet_qct_saves?on_conflict=save_phone`, {
-    method: 'POST',
-    headers: {
-      ...supabaseHeaders(config),
-      Prefer: 'resolution=merge-duplicates,return=representation',
+  // save_phone·flow_screen 컬럼이 있으면 함께 저장 (선택 마이그레이션)
+  record.save_phone = phone
+  record.flow_screen = screen
+
+  let response = await fetch(
+    `${config.url}/rest/v1/cue_sheet_drafts?on_conflict=groom_name,bride_name`,
+    {
+      method: 'POST',
+      headers: {
+        ...supabaseHeaders(config),
+        Prefer: 'resolution=merge-duplicates,return=representation',
+      },
+      body: JSON.stringify(record),
     },
-    body: JSON.stringify(record),
-  })
+  )
 
   if (!response.ok) {
     const detail = await response.text()
-    throw new Error(detail || 'QCT 저장에 실패했습니다.')
+    const unknownColumn =
+      detail.includes('save_phone') ||
+      detail.includes('flow_screen') ||
+      detail.includes('PGRST204')
+    if (unknownColumn) {
+      const { save_phone: _p, flow_screen: _f, ...fallbackRecord } = record
+      response = await fetch(
+        `${config.url}/rest/v1/cue_sheet_drafts?on_conflict=groom_name,bride_name`,
+        {
+          method: 'POST',
+          headers: {
+            ...supabaseHeaders(config),
+            Prefer: 'resolution=merge-duplicates,return=representation',
+          },
+          body: JSON.stringify(fallbackRecord),
+        },
+      )
+    }
+    if (!response.ok) {
+      const retryDetail = await response.text()
+      throw new Error(parseDraftStoreError(retryDetail) || 'QCT 저장에 실패했습니다.')
+    }
   }
 
   const rows = (await response.json()) as Record<string, unknown>[]
   const row = rows[0] ?? record
+  const savedAppData = row.app_data ?? enriched
   return {
     savedAt: String(row.updated_at ?? record.updated_at),
-    appData: row.app_data ?? appData,
-    flowScreen: String(row.flow_screen ?? record.flow_screen),
+    appData: savedAppData,
+    flowScreen: String(row.flow_screen ?? flowScreenFromAppData(savedAppData)),
   }
 }
 
@@ -355,19 +410,39 @@ export async function findCueSheetByPhone(savePhone: string): Promise<SavedCueSh
   const phone = normalizeSavePhone(savePhone)
   if (!isValidSavePhone(phone)) return null
 
-  const query = new URLSearchParams({
+  const byColumn = await fetchCueSheetDraftRow(config, {
     select: 'updated_at,app_data,flow_screen',
     save_phone: `eq.${phone}`,
-    limit: '1',
   })
+  if (byColumn) return byColumn
 
-  const response = await fetch(`${config.url}/rest/v1/cue_sheet_qct_saves?${query}`, {
+  const byJson = await fetchCueSheetDraftRow(config, {
+    select: 'updated_at,app_data',
+    'app_data->>cueSavePhone': `eq.${phone}`,
+    order: 'updated_at.desc',
+  })
+  return byJson
+}
+
+async function fetchCueSheetDraftRow(
+  config: SupabaseConfig,
+  params: Record<string, string>,
+): Promise<SavedCueSheetDraft | null> {
+  const query = new URLSearchParams({ ...params, limit: '1' })
+  const response = await fetch(`${config.url}/rest/v1/cue_sheet_drafts?${query}`, {
     headers: supabaseHeaders(config),
   })
 
   if (!response.ok) {
     const detail = await response.text()
-    throw new Error(detail || '저장된 QCT를 불러오지 못했습니다.')
+    if (
+      detail.includes('save_phone') ||
+      detail.includes('flow_screen') ||
+      detail.includes('PGRST204')
+    ) {
+      return null
+    }
+    throw new Error(parseDraftStoreError(detail) || '저장된 QCT를 불러오지 못했습니다.')
   }
 
   const rows = (await response.json()) as Record<string, unknown>[]
@@ -377,8 +452,21 @@ export async function findCueSheetByPhone(savePhone: string): Promise<SavedCueSh
   return {
     savedAt: String(row.updated_at ?? ''),
     appData: row.app_data,
-    flowScreen: String(row.flow_screen ?? 'basic'),
+    flowScreen: String(row.flow_screen ?? flowScreenFromAppData(row.app_data)),
   }
+}
+
+function parseDraftStoreError(raw: string): string {
+  try {
+    const parsed = JSON.parse(raw) as { message?: string; code?: string }
+    if (parsed.code === 'PGRST205') {
+      return '저장 테이블을 찾지 못했습니다. Supabase에 cue_sheet_drafts 설정을 확인해 주세요.'
+    }
+    if (parsed.message) return parsed.message
+  } catch {
+    /* plain text */
+  }
+  return raw.trim().slice(0, 200)
 }
 
 export async function resolveSavedCueSheetFromStore(

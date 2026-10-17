@@ -132,6 +132,21 @@ export default function App() {
     setScreen(session.screen)
   }
 
+  const handleCompleteCueSheet = async () => {
+    saveAppSession('output', data)
+    saveCueSheetDraft(data)
+    const phone = normalizeCueSavePhone(data.cueSavePhone)
+    if (!isValidCueSavePhone(phone)) {
+      throw new Error('QCT 저장용 전화번호가 필요합니다. 기본 정보에서 입력해 주세요.')
+    }
+    if (!hasRestorableCueSheetData(data)) {
+      throw new Error('예식 정보가 부족합니다. 기본 정보를 확인해 주세요.')
+    }
+    await persistCueSheetDraftToServer(data, 'output')
+    setScreen('output')
+    setSavedSession(loadAppSession())
+  }
+
   const handleLoadQct = async (phoneInput: string) => {
     const saved = await fetchSavedCueSheetByPhone(phoneInput)
     if (!saved) {
@@ -164,7 +179,7 @@ export default function App() {
       {screen === 'order' && <OrderEditor {...props} />}
       {screen === 'persons' && <PersonReg {...props} />}
       {screen === 'atmosphere' && <AtmosphereSelect {...props} />}
-      {screen === 'preview' && <Preview {...props} onGoOutput={() => setScreen('output')} />}
+      {screen === 'preview' && <Preview {...props} onGoOutput={handleCompleteCueSheet} />}
       {screen === 'output' && <FinalOutput {...props} />}
       {screen === 'admin' && <Admin onBack={() => setScreen('landing')} />}
     </MobileShell>

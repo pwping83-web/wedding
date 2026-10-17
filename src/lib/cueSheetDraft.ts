@@ -132,8 +132,9 @@ export async function persistCueSheetDraftToServer(
   })
 
   if (!response.ok && response.status !== 503) {
-    const result = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(result.error ?? 'QCT 자동 저장에 실패했습니다.')
+    const result = (await response.json().catch(() => ({}))) as { error?: string; message?: string }
+    const msg = result.error ?? result.message ?? 'QCT 자동 저장에 실패했습니다.'
+    throw new Error(msg)
   }
 }
 

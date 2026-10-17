@@ -13,6 +13,16 @@ create index if not exists cue_sheet_drafts_updated_at_idx
 
 alter table public.cue_sheet_drafts enable row level security;
 
+-- QCT 전화번호·마지막 화면 (선택 — 없어도 app_data.cueSavePhone 으로 동작)
+alter table public.cue_sheet_drafts
+  add column if not exists save_phone text;
+alter table public.cue_sheet_drafts
+  add column if not exists flow_screen text not null default 'basic';
+
+create unique index if not exists cue_sheet_drafts_save_phone_key
+  on public.cue_sheet_drafts (save_phone)
+  where save_phone is not null and save_phone <> '';
+
 -- 기존 전송 기록에도 식순 JSON 저장 (선택)
 alter table public.cue_sheet_deliveries
   add column if not exists app_data jsonb;
