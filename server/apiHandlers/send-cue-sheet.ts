@@ -2,9 +2,9 @@ import {
   getEmailConfig,
   sendCueSheetEmail,
   type SendCueSheetPayload,
-} from '../lib/sendCueSheetEmail'
-import { saveDeliveryRecord } from '../lib/deliveryStore'
-import { upsertCueSheetDraft } from '../lib/draftStore'
+} from '../../api/lib/sendCueSheetEmail'
+import { saveDeliveryRecord } from '../../api/lib/deliveryStore'
+import { upsertCueSheetDraft } from '../../api/lib/draftStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,21 +25,21 @@ export async function handleSendCueSheet(request: Request): Promise<Response> {
     const payload = (await request.json()) as SendCueSheetPayload
     if (!payload.mcEmail?.trim()) {
       return Response.json(
-        { error: '?�회???�메?�이 ?�정?��? ?�았?�니??' },
+        { error: '?�회???�메?�이 ?�정?��? ?�았?�니??' },
         { status: 400, headers: corsHeaders },
       )
     }
 
     if (!payload.cueSheet?.trim()) {
       return Response.json(
-        { error: '?�시???�용??비어 ?�습?�다.' },
+        { error: '?�시???�용??비어 ?�습?�다.' },
         { status: 400, headers: corsHeaders },
       )
     }
 
     if (!payload.printHtml?.trim()) {
       return Response.json(
-        { error: '?�쇄???�시?��? 비어 ?�습?�다.' },
+        { error: '?�쇄???�시?��? 비어 ?�습?�다.' },
         { status: 400, headers: corsHeaders },
       )
     }
@@ -75,7 +75,7 @@ export async function handleSendCueSheet(request: Request): Promise<Response> {
 
     return Response.json({ ok: true }, { headers: corsHeaders })
   } catch (error) {
-    const message = error instanceof Error ? error.message : '?�메???�송???�패?�습?�다.'
+    const message = error instanceof Error ? error.message : '?�메???�송???�패?�습?�다.'
     return Response.json({ error: message }, { status: 500, headers: corsHeaders })
   }
 }

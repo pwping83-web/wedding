@@ -3,7 +3,7 @@ import {
   normalizeSavePhone,
   upsertCueSheetByPhone,
   upsertCueSheetDraft,
-} from '../lib/draftStore'
+} from '../../api/lib/draftStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,14 +28,14 @@ export async function handleSaveCueSheetDraft(request: Request): Promise<Respons
     const flowScreen = body.flowScreen?.trim() || 'basic'
 
     if (!body.data) {
-      return Response.json({ error: '?€?¥í•  ?ìˆœ ?•ë³´ê°€ ?¬ë°”ë¥´ì? ?ŠìŠµ?ˆë‹¤.' }, { status: 400, headers: corsHeaders })
+      return Response.json({ error: '?ï¿½?ï¿½í•  ?ï¿½ìˆœ ?ï¿½ë³´ê°€ ?ï¿½ë°”ë¥´ï¿½? ?ï¿½ìŠµ?ï¿½ë‹¤.' }, { status: 400, headers: corsHeaders })
     }
 
     const phone = normalizeSavePhone(data?.cueSavePhone ?? '')
     if (isValidSavePhone(phone)) {
       const saved = await upsertCueSheetByPhone(phone, body.data, flowScreen)
       if (!saved) {
-        return Response.json({ error: '?€?¥ì†Œê°€ ?¤ì •?˜ì? ?Šì•˜?µë‹ˆ??' }, { status: 503, headers: corsHeaders })
+        return Response.json({ error: '?ï¿½?ï¿½ì†Œê°€ ?ï¿½ì •?ï¿½ï¿½? ?ï¿½ì•˜?ï¿½ë‹ˆ??' }, { status: 503, headers: corsHeaders })
       }
       return Response.json(
         { ok: true, savedAt: saved.savedAt, flowScreen: saved.flowScreen },
@@ -45,19 +45,19 @@ export async function handleSaveCueSheetDraft(request: Request): Promise<Respons
 
     if (!groomName || !brideName) {
       return Response.json(
-        { error: 'QCT ?€?¥ìš© ?„í™”ë²ˆí˜¸ ?ëŠ” ? ëž‘Â·? ë? ?´ë¦„???„ìš”?©ë‹ˆ??' },
+        { error: 'QCT ?ï¿½?ï¿½ìš© ?ï¿½í™”ë²ˆí˜¸ ?ï¿½ëŠ” ?ï¿½ëž‘Â·?ï¿½ï¿½? ?ï¿½ë¦„???ï¿½ìš”?ï¿½ë‹ˆ??' },
         { status: 400, headers: corsHeaders },
       )
     }
 
     const saved = await upsertCueSheetDraft(groomName, brideName, body.data)
     if (!saved) {
-      return Response.json({ error: '?€?¥ì†Œê°€ ?¤ì •?˜ì? ?Šì•˜?µë‹ˆ??' }, { status: 503, headers: corsHeaders })
+      return Response.json({ error: '?ï¿½?ï¿½ì†Œê°€ ?ï¿½ì •?ï¿½ï¿½? ?ï¿½ì•˜?ï¿½ë‹ˆ??' }, { status: 503, headers: corsHeaders })
     }
 
     return Response.json({ ok: true, savedAt: saved.savedAt }, { headers: corsHeaders })
   } catch (error) {
-    const message = error instanceof Error ? error.message : '?ìˆœ ?€?¥ì— ?¤íŒ¨?ˆìŠµ?ˆë‹¤.'
+    const message = error instanceof Error ? error.message : '?ï¿½ìˆœ ?ï¿½?ï¿½ì— ?ï¿½íŒ¨?ï¿½ìŠµ?ï¿½ë‹¤.'
     return Response.json({ error: message }, { status: 500, headers: corsHeaders })
   }
 }

@@ -4,7 +4,7 @@ import {
   cleanGeneratedScript,
   maxCompletionTokens,
   type GenerateScriptInput,
-} from '../../server/generateScriptPrompt'
+} from '../generateScriptPrompt'
 
 async function generateScriptText(input: GenerateScriptInput, apiKey: string): Promise<string> {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {

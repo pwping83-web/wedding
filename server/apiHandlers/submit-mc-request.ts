@@ -1,5 +1,5 @@
-import { insertMcRequest, type McRequestInsert } from '../lib/mcRequestStore'
-import { sendMcRequestNotification } from '../lib/sendMcRequestEmail'
+import { insertMcRequest, type McRequestInsert } from '../../api/lib/mcRequestStore'
+import { sendMcRequestNotification } from '../../api/lib/sendMcRequestEmail'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

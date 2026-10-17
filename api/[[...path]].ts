@@ -2,19 +2,19 @@ export const config = {
   runtime: 'edge',
 }
 
-import { handleAdminDeliveries } from './_handlers/admin-deliveries'
-import { handleAdminDelivery } from './_handlers/admin-delivery'
-import { handleAdminLogin } from './_handlers/admin-login'
-import { handleAdminVideoText } from './_handlers/admin-video-text'
-import { handleAdminVideoTexts } from './_handlers/admin-video-texts'
-import { handleGenerateScript } from './_handlers/generate-script'
-import { handleLoadCueSheet } from './_handlers/load-cue-sheet'
-import { handleNotifySiteVisit } from './_handlers/notify-site-visit'
-import { handlePrintCueSheet } from './_handlers/print-cue-sheet'
-import { handleSaveCueSheetDraft } from './_handlers/save-cue-sheet-draft'
-import { handleSendCueSheet } from './_handlers/send-cue-sheet'
-import { handleSubmitMcRequest } from './_handlers/submit-mc-request'
-import { handleSubmitVideoText } from './_handlers/submit-video-text'
+import { handleAdminDeliveries } from '../server/apiHandlers/admin-deliveries'
+import { handleAdminDelivery } from '../server/apiHandlers/admin-delivery'
+import { handleAdminLogin } from '../server/apiHandlers/admin-login'
+import { handleAdminVideoText } from '../server/apiHandlers/admin-video-text'
+import { handleAdminVideoTexts } from '../server/apiHandlers/admin-video-texts'
+import { handleGenerateScript } from '../server/apiHandlers/generate-script'
+import { handleLoadCueSheet } from '../server/apiHandlers/load-cue-sheet'
+import { handleNotifySiteVisit } from '../server/apiHandlers/notify-site-visit'
+import { handlePrintCueSheet } from '../server/apiHandlers/print-cue-sheet'
+import { handleSaveCueSheetDraft } from '../server/apiHandlers/save-cue-sheet-draft'
+import { handleSendCueSheet } from '../server/apiHandlers/send-cue-sheet'
+import { handleSubmitMcRequest } from '../server/apiHandlers/submit-mc-request'
+import { handleSubmitVideoText } from '../server/apiHandlers/submit-video-text'
 
 type RouteHandler = (request: Request) => Promise<Response>
 

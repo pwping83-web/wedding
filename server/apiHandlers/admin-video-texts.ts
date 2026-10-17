@@ -1,5 +1,5 @@
-import { getBearerToken, verifyAdminSessionToken } from '../lib/adminAuth'
-import { deliveryArchiveConfigured, listDeliveryRecords } from '../lib/deliveryStore'
+import { getBearerToken, verifyAdminSessionToken } from '../../api/lib/adminAuth'
+import { listVideoTextSubmissions, videoTextStoreConfigured } from '../../api/lib/videoTextStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
-export async function handleAdminDeliveries(request: Request): Promise<Response> {
+export async function handleAdminVideoTexts(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
@@ -18,20 +18,20 @@ export async function handleAdminDeliveries(request: Request): Promise<Response>
 
   const authorized = await verifyAdminSessionToken(getBearerToken(request))
   if (!authorized) {
-    return Response.json({ error: '로그?�이 ?�요?�니??' }, { status: 401, headers: corsHeaders })
+    return Response.json({ error: '로그?�이 ?�요?�니??' }, { status: 401, headers: corsHeaders })
   }
 
   try {
-    const deliveries = await listDeliveryRecords()
+    const items = await listVideoTextSubmissions()
     return Response.json(
       {
-        deliveries: deliveries.map(({ printHtml: _printHtml, ...summary }) => summary),
-        archiveConfigured: deliveryArchiveConfigured(),
+        items: items.map(({ textPayload: _payload, ...summary }) => summary),
+        archiveConfigured: videoTextStoreConfigured(),
       },
       { headers: corsHeaders },
     )
   } catch (error) {
-    const message = error instanceof Error ? error.message : '?�송 기록??불러?��? 못했?�니??'
+    const message = error instanceof Error ? error.message : '글귀 목록??불러?��? 못했?�니??'
     return Response.json({ error: message }, { status: 500, headers: corsHeaders })
   }
 }

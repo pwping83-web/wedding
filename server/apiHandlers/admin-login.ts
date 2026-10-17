@@ -2,7 +2,7 @@ import {
   adminPasswordConfigured,
   createAdminSessionToken,
   verifyAdminPassword,
-} from '../lib/adminAuth'
+} from '../../api/lib/adminAuth'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +21,7 @@ export async function handleAdminLogin(request: Request): Promise<Response> {
 
   if (!adminPasswordConfigured()) {
     return Response.json(
-      { error: '관리자 비�?번호가 ?�버???�정?��? ?�았?�니??' },
+      { error: '관리자 비�?번호가 ?�버???�정?��? ?�았?�니??' },
       { status: 503, headers: corsHeaders },
     )
   }
@@ -31,12 +31,12 @@ export async function handleAdminLogin(request: Request): Promise<Response> {
     const password = body.password?.trim() ?? ''
 
     if (!verifyAdminPassword(password)) {
-      return Response.json({ error: '비�?번호가 ?�바르�? ?�습?�다.' }, { status: 401, headers: corsHeaders })
+      return Response.json({ error: '비�?번호가 ?�바르�? ?�습?�다.' }, { status: 401, headers: corsHeaders })
     }
 
     const token = await createAdminSessionToken()
     return Response.json({ ok: true, token }, { headers: corsHeaders })
   } catch {
-    return Response.json({ error: '로그?�에 ?�패?�습?�다.' }, { status: 500, headers: corsHeaders })
+    return Response.json({ error: '로그?�에 ?�패?�습?�다.' }, { status: 500, headers: corsHeaders })
   }
 }
