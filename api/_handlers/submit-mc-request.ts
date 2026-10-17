@@ -32,18 +32,18 @@ function normalizePayload(raw: SubmitPayload): McRequestInsert {
   const wantsPreweddingVideo = Boolean(raw.wantsPreweddingVideo)
   const privacyAgreed = Boolean(raw.privacyAgreed)
 
-  if (!phone) throw new Error('?�락처�? ?�력??주세??')
-  if (!message) throw new Error('문의 ?�용???�력??주세??')
-  if (!privacyAgreed) throw new Error('개인?�보 ?�집·?�용???�의??주세??')
+  if (!phone) throw new Error('???? ??? ???.')
+  if (!message) throw new Error('?? ??? ??? ???.')
+  if (!privacyAgreed) throw new Error('???? ?????? ??? ???.')
 
   return {
-    groomName: groomName || '미입??,
-    brideName: brideName || '미입??,
+    groomName: groomName || '???',
+    brideName: brideName || '???',
     ceremonyDate,
     ceremonyTime,
-    venue: venue || '미입??,
+    venue: venue || '???',
     phone,
-    email: email || '미입??,
+    email: email || '???',
     message,
     wantsPreweddingVideo,
     privacyAgreed,
@@ -71,8 +71,8 @@ export async function handleSubmitMcRequest(request: Request): Promise<Response>
 
     return Response.json({ ok: true, id: record.id }, { headers: corsHeaders })
   } catch (error) {
-    const message = error instanceof Error ? error.message : '?�담 ?�청???�패?�습?�다.'
-    const status = message.includes('?�력') || message.includes('?�의') ? 400 : 500
+    const message = error instanceof Error ? error.message : '?? ??? ??????.'
+    const status = message.includes('??') || message.includes('??') ? 400 : 500
     return Response.json({ error: message }, { status, headers: corsHeaders })
   }
 }
