@@ -34,9 +34,22 @@ const ROUTES: Record<string, RouteHandler> = {
   'admin/video-text': handleAdminVideoText,
 }
 
-function routeKeyFromRequest(request: Request): string {
+/**
+ * Vercel(비-Next)에서는 `api/[[...path]].ts`가 한 단계 경로만 매칭합니다.
+ * `vercel.json`에서 `/api/:path*` → `/api` rewrite 후, 원본 URL로 라우팅합니다.
+ */
+export function routeKeyFromRequest(request: Request): string {
   const url = new URL(request.url)
-  return decodeURIComponent(url.pathname.replace(/^\/api\/?/, '').replace(/\/$/, ''))
+  let pathname = url.pathname.replace(/\/$/, '')
+  const apiIndex = pathname.indexOf('/api/')
+  if (apiIndex >= 0) {
+    pathname = pathname.slice(apiIndex + '/api/'.length)
+  } else if (pathname.endsWith('/api')) {
+    pathname = ''
+  } else if (pathname.startsWith('/api/')) {
+    pathname = pathname.slice('/api/'.length)
+  }
+  return decodeURIComponent(pathname)
 }
 
 export default async function handler(request: Request): Promise<Response> {

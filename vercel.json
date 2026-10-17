@@ -22,7 +22,10 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
+    {
+      "source": "/api/:path*",
+      "destination": "/api"
+    },
     {
       "source": "/((?!api/|assets/|robots\\.txt|sitemap\\.xml|.*\\.(?:png|jpe?g|gif|svg|ico|webp|xml)).*)",
       "destination": "/index.html"
