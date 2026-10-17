@@ -1,5 +1,5 @@
-import { getBearerToken, verifyAdminSessionToken } from '../../api/lib/adminAuth'
-import { deliveryArchiveConfigured, listDeliveryRecords } from '../../api/lib/deliveryStore'
+import { getBearerToken, verifyAdminSessionToken } from '../apiLib/adminAuth'
+import { deliveryArchiveConfigured, listDeliveryRecords } from '../apiLib/deliveryStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

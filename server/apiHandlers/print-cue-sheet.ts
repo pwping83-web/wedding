@@ -1,4 +1,4 @@
-import { decodePrintHtmlToken } from '../../api/lib/printToken'
+import { decodePrintHtmlToken } from '../apiLib/printToken'
 
 const PRINT_PAGE_STYLES = `
 <style>

@@ -1,5 +1,5 @@
-import { getBearerToken, verifyAdminSessionToken } from '../../api/lib/adminAuth'
-import { getVideoTextSubmission } from '../../api/lib/videoTextStore'
+import { getBearerToken, verifyAdminSessionToken } from '../apiLib/adminAuth'
+import { getVideoTextSubmission } from '../apiLib/videoTextStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

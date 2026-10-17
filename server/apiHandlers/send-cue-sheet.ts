@@ -2,9 +2,9 @@ import {
   getEmailConfig,
   sendCueSheetEmail,
   type SendCueSheetPayload,
-} from '../../api/lib/sendCueSheetEmail'
-import { saveDeliveryRecord } from '../../api/lib/deliveryStore'
-import { upsertCueSheetDraft } from '../../api/lib/draftStore'
+} from '../apiLib/sendCueSheetEmail'
+import { saveDeliveryRecord } from '../apiLib/deliveryStore'
+import { upsertCueSheetDraft } from '../apiLib/draftStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

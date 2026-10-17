@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { loadEnv } from 'vite'
-import { insertMcRequest, type McRequestInsert } from '../api/lib/mcRequestStore'
-import { sendMcRequestNotification } from '../api/lib/sendMcRequestEmail'
+import { insertMcRequest, type McRequestInsert } from './apiLib/mcRequestStore'
+import { sendMcRequestNotification } from './apiLib/sendMcRequestEmail'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {

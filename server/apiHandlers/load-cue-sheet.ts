@@ -3,7 +3,7 @@ import {
   isValidSavePhone,
   normalizeSavePhone,
   resolveSavedCueSheetFromStore,
-} from '../../api/lib/draftStore'
+} from '../apiLib/draftStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

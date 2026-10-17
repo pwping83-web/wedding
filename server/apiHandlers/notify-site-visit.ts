@@ -1,4 +1,4 @@
-import { isSiteVisitNotifyEnabled, sendSiteVisitNotification } from '../../api/lib/sendSiteVisitEmail'
+import { isSiteVisitNotifyEnabled, sendSiteVisitNotification } from '../apiLib/sendSiteVisitEmail'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

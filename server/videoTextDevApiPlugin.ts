@@ -1,15 +1,15 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { loadEnv } from 'vite'
-import { getBearerToken, verifyAdminSessionToken } from '../api/lib/adminAuth'
-import { isValidVideoAccessCode } from '../api/lib/videoAccessCodes'
-import { sendVideoTextSavedNotification } from '../api/lib/sendVideoTextEmail'
+import { getBearerToken, verifyAdminSessionToken } from './apiLib/adminAuth'
+import { isValidVideoAccessCode } from './apiLib/videoAccessCodes'
+import { sendVideoTextSavedNotification } from './apiLib/sendVideoTextEmail'
 import {
   getVideoTextSubmission,
   insertVideoTextSubmission,
   listVideoTextSubmissions,
   videoTextStoreConfigured,
-} from '../api/lib/videoTextStore'
+} from './apiLib/videoTextStore'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {

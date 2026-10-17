@@ -2,7 +2,7 @@ import {
   adminPasswordConfigured,
   createAdminSessionToken,
   verifyAdminPassword,
-} from '../../api/lib/adminAuth'
+} from '../apiLib/adminAuth'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { loadEnv } from 'vite'
-import { sendSiteVisitNotification } from '../api/lib/sendSiteVisitEmail'
+import { sendSiteVisitNotification } from './apiLib/sendSiteVisitEmail'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {

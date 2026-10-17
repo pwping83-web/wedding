@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { DeliveryRecord, SaveDeliveryInput } from '../api/lib/deliveryStore'
+import type { DeliveryRecord, SaveDeliveryInput } from './apiLib/deliveryStore'
 
 const DATA_DIR = path.join(process.cwd(), '.data')
 const DATA_FILE = path.join(DATA_DIR, 'cue-deliveries.json')

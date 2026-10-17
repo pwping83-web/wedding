@@ -1,6 +1,6 @@
-import { isValidVideoAccessCode } from '../../api/lib/videoAccessCodes'
-import { sendVideoTextSavedNotification } from '../../api/lib/sendVideoTextEmail'
-import { insertVideoTextSubmission } from '../../api/lib/videoTextStore'
+import { isValidVideoAccessCode } from '../apiLib/videoAccessCodes'
+import { sendVideoTextSavedNotification } from '../apiLib/sendVideoTextEmail'
+import { insertVideoTextSubmission } from '../apiLib/videoTextStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
