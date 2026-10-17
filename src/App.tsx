@@ -134,7 +134,7 @@ export default function App() {
   const handleLoadQct = async (phoneInput: string) => {
     const saved = await fetchSavedCueSheetByPhone(phoneInput)
     if (!saved) {
-      throw new Error('이 번호로 저장된 QCT가 없습니다.')
+      throw new Error('이 번호로 저장된 식순이 없습니다.')
     }
     setData(saved.data)
     const nextScreen = coerceFlowScreen(saved.flowScreen)

@@ -37,7 +37,7 @@ export default async function handler(request: Request): Promise<Response> {
       }
       const saved = await findCueSheetByPhone(phone)
       if (!saved) {
-        return Response.json({ error: '저장된 QCT를 찾지 못했습니다.' }, { status: 404, headers: corsHeaders })
+        return Response.json({ error: '저장된 식순을 찾지 못했습니다.' }, { status: 404, headers: corsHeaders })
       }
       return Response.json(
         {

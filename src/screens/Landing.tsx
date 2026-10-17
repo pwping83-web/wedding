@@ -95,7 +95,7 @@ export default function Landing({ onStart, onLoadQct, onAdmin }: Props) {
       <div className="landing-content w-full max-w-[300px] mx-auto space-y-2">
         {qctOpen ? (
           <div className="landing-card text-left space-y-3 mb-1">
-            <p className="text-[13px] font-semibold text-charcoal">QCT 불러오기</p>
+            <p className="text-[13px] font-semibold text-charcoal">식순 불러오기</p>
             <Field
               label="QCT 저장용 전화번호"
               type="tel"
@@ -133,7 +133,7 @@ export default function Landing({ onStart, onLoadQct, onAdmin }: Props) {
                     await onLoadQct(qctPhone)
                   } catch (error) {
                     setQctError(
-                      error instanceof Error ? error.message : 'QCT를 불러오지 못했습니다.',
+                      error instanceof Error ? error.message : '식순을 불러오지 못했습니다.',
                     )
                   } finally {
                     setQctLoading(false)
@@ -146,7 +146,7 @@ export default function Landing({ onStart, onLoadQct, onAdmin }: Props) {
           </div>
         ) : (
           <Btn variant="secondary" onClick={() => setQctOpen(true)}>
-            QCT 불러오기
+            식순 불러오기
           </Btn>
         )}
 

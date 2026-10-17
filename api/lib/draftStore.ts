@@ -442,7 +442,7 @@ async function fetchCueSheetDraftRow(
     ) {
       return null
     }
-    throw new Error(parseDraftStoreError(detail) || '저장된 QCT를 불러오지 못했습니다.')
+    throw new Error(parseDraftStoreError(detail) || '저장된 식순을 불러오지 못했습니다.')
   }
 
   const rows = (await response.json()) as Record<string, unknown>[]

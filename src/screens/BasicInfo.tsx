@@ -113,7 +113,7 @@ export default function BasicInfo({ data, setData, onNext, onBack }: Props) {
         />
         {isValidCueSavePhone(data.cueSavePhone) && (
           <p className="text-[12px] text-muted-text -mt-2">
-            저장 번호: {formatCueSavePhoneDisplay(data.cueSavePhone)} · 나중에 「QCT 불러오기」로
+            저장 번호: {formatCueSavePhoneDisplay(data.cueSavePhone)} · 나중에 「식순 불러오기」로
             이어서 수정할 수 있습니다
           </p>
         )}

@@ -164,7 +164,7 @@ export async function fetchSavedCueSheetByPhone(
   if (response.status === 404) return null
   if (!response.ok) {
     const result = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(result.error ?? '저장된 QCT를 불러오지 못했습니다.')
+    throw new Error(result.error ?? '저장된 식순을 불러오지 못했습니다.')
   }
 
   const result = (await response.json()) as {
