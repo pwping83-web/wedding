@@ -5,6 +5,11 @@ import Btn from '../components/mobile/Btn'
 import { Card } from '../components/mobile/PageHeader'
 import type { AppData, SetData, Style } from '../data'
 import { styleLabels } from '../data'
+import {
+  formatCueSavePhoneDisplay,
+  isValidCueSavePhone,
+  normalizeCueSavePhone,
+} from '../lib/cueSavePhone'
 
 interface Props {
   data: AppData
@@ -35,6 +40,10 @@ export default function BasicInfo({ data, setData, onNext, onBack }: Props) {
     if (!data.date) e.date = '날짜를 선택해주세요'
     if (!data.time) e.time = '시간을 선택해주세요'
     if (!data.venue.trim()) e.venue = '장소를 입력해주세요'
+    const phone = normalizeCueSavePhone(data.cueSavePhone)
+    if (!isValidCueSavePhone(phone)) {
+      e.cueSavePhone = 'QCT 저장용 전화번호를 입력해 주세요 (010으로 시작)'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -90,6 +99,24 @@ export default function BasicInfo({ data, setData, onNext, onBack }: Props) {
           onChange={(e) => update('venue', e.target.value)}
           error={errors.venue}
         />
+
+        <Field
+          label="QCT 저장용 전화번호"
+          required
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="010-1234-5678"
+          value={data.cueSavePhone}
+          onChange={(e) => update('cueSavePhone', normalizeCueSavePhone(e.target.value))}
+          error={errors.cueSavePhone}
+        />
+        {isValidCueSavePhone(data.cueSavePhone) && (
+          <p className="text-[12px] text-muted-text -mt-2">
+            저장 번호: {formatCueSavePhoneDisplay(data.cueSavePhone)} · 나중에 「QCT 불러오기」로
+            이어서 수정할 수 있습니다
+          </p>
+        )}
 
         <div>
           <p className="text-[13px] font-medium text-charcoal mb-2">예식 스타일</p>

@@ -15,6 +15,7 @@ export const sampleAppData: AppData = {
   mood: 'warm',
   email: 'mc@example.com',
   coupleEmail: 'couple@example.com',
+  cueSavePhone: '01012345678',
 }
 
 export function useStoryData(overrides?: Partial<AppData>) {

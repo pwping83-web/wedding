@@ -1,5 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Btn from '../components/mobile/Btn'
+import Field from '../components/mobile/Field'
+import { normalizeCueSavePhone } from '../lib/cueSavePhone'
 import { notifySiteVisitLanding } from '../lib/notifySiteVisit'
 import { SEO_TITLE } from '../config/siteSeo'
 import LandingMarketingSections from '../components/LandingMarketingSections'
@@ -20,6 +22,7 @@ interface Props {
   onBack: () => void
   onStart: () => void
   onRestore: () => void
+  onLoadQct: (phone: string) => Promise<void>
   onAdmin: () => void
   savedSession: StoredAppSession | null
 }
@@ -30,7 +33,12 @@ function scrollToMarketingSections() {
   document.getElementById('landing-marketing')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-export default function Landing({ onStart, onRestore, onAdmin, savedSession }: Props) {
+export default function Landing({ onStart, onRestore, onLoadQct, onAdmin, savedSession }: Props) {
+  const [qctOpen, setQctOpen] = useState(false)
+  const [qctPhone, setQctPhone] = useState('')
+  const [qctLoading, setQctLoading] = useState(false)
+  const [qctError, setQctError] = useState('')
+
   const stepNum = savedSession ? getFlowStepNumber(savedSession.screen) : 0
   const stepLabel = savedSession ? getScreenLabel(savedSession.screen) : ''
   const savedAtLabel = savedSession ? formatSessionSavedAt(savedSession.savedAt) : ''
@@ -103,7 +111,7 @@ export default function Landing({ onStart, onRestore, onAdmin, savedSession }: P
       <div className="landing-content w-full max-w-[300px] mx-auto space-y-2">
         {savedSession && (
           <div className="landing-card text-left mb-1 space-y-2">
-            <p className="text-[13px] font-semibold text-charcoal">저장된 진행</p>
+            <p className="text-[13px] font-semibold text-charcoal">이 기기에 저장된 진행</p>
             <p className="text-[12px] text-muted-text leading-relaxed">
               {FLOW_INPUT_STEP_COUNT}단계 중 {stepNum}단계 · {stepLabel}
               {coupleLabel ? (
@@ -124,6 +132,64 @@ export default function Landing({ onStart, onRestore, onAdmin, savedSession }: P
             </Btn>
           </div>
         )}
+
+        {qctOpen ? (
+          <div className="landing-card text-left space-y-3 mb-1">
+            <p className="text-[13px] font-semibold text-charcoal">QCT 불러오기</p>
+            <Field
+              label="QCT 저장용 전화번호"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="010-1234-5678"
+              value={qctPhone}
+              onChange={(e) => {
+                setQctPhone(normalizeCueSavePhone(e.target.value))
+                setQctError('')
+              }}
+            />
+            {qctError && <p className="text-[12px] text-danger">{qctError}</p>}
+            <div className="flex gap-2">
+              <Btn
+                variant="secondary"
+                full={false}
+                className="flex-1 min-w-0"
+                disabled={qctLoading}
+                onClick={() => {
+                  setQctOpen(false)
+                  setQctError('')
+                }}
+              >
+                취소
+              </Btn>
+              <Btn
+                full={false}
+                className="flex-1 min-w-0"
+                disabled={qctLoading || !qctPhone.trim()}
+                onClick={async () => {
+                  setQctLoading(true)
+                  setQctError('')
+                  try {
+                    await onLoadQct(qctPhone)
+                  } catch (error) {
+                    setQctError(
+                      error instanceof Error ? error.message : 'QCT를 불러오지 못했습니다.',
+                    )
+                  } finally {
+                    setQctLoading(false)
+                  }
+                }}
+              >
+                {qctLoading ? '불러오는 중…' : '불러오기'}
+              </Btn>
+            </div>
+          </div>
+        ) : (
+          <Btn variant="secondary" onClick={() => setQctOpen(true)}>
+            QCT 불러오기
+          </Btn>
+        )}
+
         <Btn onClick={onStart}>{savedSession ? '처음부터 시작하기' : '시작하기'}</Btn>
         <button
           type="button"

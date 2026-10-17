@@ -18,12 +18,19 @@ import VideoEditorPage from './screens/VideoEditorPage'
 import { readMarketingRoute } from './lib/marketingRoutes'
 import {
   clearAppSession,
+  coerceFlowScreen,
   loadAppSession,
   saveAppSession,
   type FlowScreen,
   type StoredAppSession,
 } from './lib/appSession'
-import { saveCueSheetDraft } from './lib/cueSheetDraft'
+import { isValidCueSavePhone, normalizeCueSavePhone } from './lib/cueSavePhone'
+import {
+  fetchSavedCueSheetByPhone,
+  hasRestorableCueSheetData,
+  persistCueSheetDraftToServer,
+  saveCueSheetDraft,
+} from './lib/cueSheetDraft'
 
 type Screen = 'landing' | FlowScreen | 'admin'
 
@@ -42,6 +49,12 @@ export default function App() {
     saveAppSession(nextScreen, nextData)
     saveCueSheetDraft(nextData)
     setSavedSession(loadAppSession())
+    if (nextScreen !== 'landing') {
+      const phone = normalizeCueSavePhone(nextData.cueSavePhone)
+      if (isValidCueSavePhone(phone) && hasRestorableCueSheetData(nextData)) {
+        persistCueSheetDraftToServer(nextData, nextScreen as FlowScreen).catch(() => {})
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -55,6 +68,18 @@ export default function App() {
     window.addEventListener('pagehide', onPageHide)
     return () => window.removeEventListener('pagehide', onPageHide)
   }, [screen, data, marketingRoute, persistProgress])
+
+  useEffect(() => {
+    if (marketingRoute) return
+    if (screen === 'landing' || screen === 'admin') return
+    const phone = normalizeCueSavePhone(data.cueSavePhone)
+    if (!isValidCueSavePhone(phone) || !hasRestorableCueSheetData(data)) return
+    const flowScreen = screen as FlowScreen
+    const timer = window.setTimeout(() => {
+      persistCueSheetDraftToServer(data, flowScreen).catch(() => {})
+    }, 1200)
+    return () => window.clearTimeout(timer)
+  }, [data, screen, marketingRoute])
 
   if (marketingRoute === 'mc') {
     return (
@@ -107,6 +132,19 @@ export default function App() {
     setScreen(session.screen)
   }
 
+  const handleLoadQct = async (phoneInput: string) => {
+    const saved = await fetchSavedCueSheetByPhone(phoneInput)
+    if (!saved) {
+      throw new Error('이 번호로 저장된 QCT가 없습니다.')
+    }
+    setData(saved.data)
+    const nextScreen = coerceFlowScreen(saved.flowScreen)
+    setScreen(nextScreen)
+    saveAppSession(nextScreen, saved.data)
+    saveCueSheetDraft(saved.data)
+    setSavedSession(loadAppSession())
+  }
+
   const props = { data, setData, onNext: goNext, onBack: goBack }
 
   return (
@@ -117,6 +155,7 @@ export default function App() {
           savedSession={savedSession}
           onStart={handleStartFresh}
           onRestore={handleRestoreSession}
+          onLoadQct={handleLoadQct}
           onAdmin={() => setScreen('admin')}
         />
       )}

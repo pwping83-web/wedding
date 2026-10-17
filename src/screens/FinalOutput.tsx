@@ -9,6 +9,8 @@ import type { AppData, SetData } from '../data'
 import GuidanceNote from '../components/mobile/GuidanceNote'
 import McConversionCard from '../components/McConversionCard'
 import { cueSheetShareNote } from '../lib/coupleGuidanceCopy'
+import { formatCueSavePhoneDisplay, isValidCueSavePhone } from '../lib/cueSavePhone'
+import { persistCueSheetDraftToServer } from '../lib/cueSheetDraft'
 
 interface Props {
   data: AppData
@@ -37,6 +39,9 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
     setDeliverError('')
     try {
       await deliverCueSheetToMc({ data })
+      if (isValidCueSavePhone(data.cueSavePhone)) {
+        await persistCueSheetDraftToServer(data, 'output').catch(() => {})
+      }
       setShowSuccessModal(true)
     } catch (error) {
       setDeliverError(error instanceof Error ? error.message : '전송에 실패했습니다.')
@@ -54,8 +59,13 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
         contentClassName="pb-48 print:px-0 print:pt-0 print:pb-0"
         footer={
           <div className="space-y-2">
-            <div className="px-1 pb-1">
+            <div className="px-1 pb-1 space-y-1">
               <GuidanceNote>{cueSheetShareNote}</GuidanceNote>
+              {isValidCueSavePhone(data.cueSavePhone) && (
+                <p className="text-[11px] text-muted-text text-center">
+                  QCT는 {formatCueSavePhoneDisplay(data.cueSavePhone)} 번호로 자동 저장됩니다
+                </p>
+              )}
             </div>
             <Btn onClick={handlePrint}>인쇄 · PDF 로 저장</Btn>
             <Btn variant="secondary" onClick={handleDeliver} disabled={delivering || showSuccessModal}>

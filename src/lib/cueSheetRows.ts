@@ -1,12 +1,13 @@
 import type { AppData, OrderItem } from '../data'
 import { roleLabels } from '../data'
+import { entranceKindForTitle, type EntranceKind } from './entranceAudioSignal'
 import {
   buildOrderItemsWithTime,
-  entranceTypeForTitle,
   formatEntranceTimingInline,
-  getEntranceCueMeta,
+  getEntranceKindCueMeta,
   getItemScriptForCueSheet,
   type CueSheetVariant,
+  type EntranceCueMeta,
 } from './cueSheetUtils'
 
 export type CueSheetDisplayRow = {
@@ -52,7 +53,7 @@ function buildRowNotes(
   item: OrderItem,
   variant: CueSheetVariant,
   person: ReturnType<typeof findPersonForItem>,
-  entranceMeta: ReturnType<typeof getEntranceCueMeta>,
+  entranceMeta: EntranceCueMeta | null,
 ): string {
   const lines: string[] = []
 
@@ -69,28 +70,31 @@ function buildRowNotes(
   return lines.join('\n')
 }
 
-function buildEntranceHeaderLine(
+function resolveEntranceKind(item: OrderItem): EntranceKind | null {
+  return entranceKindForTitle(item.title)
+}
+
+function buildEntrancePrefix(
   data: AppData,
-  type: 'groom' | 'bride',
-  entranceMeta: NonNullable<ReturnType<typeof getEntranceCueMeta>>,
-): string | null {
-  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
-  const parts: string[] = []
+  kind: EntranceKind,
+  entranceMeta: EntranceCueMeta,
+): string {
+  const marker = kind === 'groom' ? data.groomMarkers[0] : kind === 'bride' ? data.brideMarkers[0] : null
+  const parts: string[] = [entranceMeta.signalBlock]
   if (entranceMeta.audioTitle) parts.push(`곡: ${entranceMeta.audioTitle}`)
   if (marker?.time && marker.time > 0) parts.push(formatEntranceTimingInline(marker.time))
-  if (parts.length === 0) return null
-  return parts.join(' · ')
+  return parts.join('\n')
 }
 
 function buildCueSheetRowScript(item: OrderItem, data: AppData): string {
-  const entranceType = entranceTypeForTitle(item.title)
-  const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
+  const entranceKind = resolveEntranceKind(item)
+  const entranceMeta = entranceKind ? getEntranceKindCueMeta(data, entranceKind) : null
   const script = getItemScriptForCueSheet(item, data)
-  if (!entranceType || !entranceMeta) return script
+  if (!entranceKind || !entranceMeta) return script
 
-  const header = buildEntranceHeaderLine(data, entranceType, entranceMeta)
-  if (!header) return script
-  return `${header}\n\n${script}`
+  const prefix = buildEntrancePrefix(data, entranceKind, entranceMeta)
+  if (!script.trim()) return prefix
+  return `${prefix}\n\n${script}`
 }
 
 export function buildCueSheetDisplayRows(
@@ -100,8 +104,8 @@ export function buildCueSheetDisplayRows(
   const items = buildOrderItemsWithTime(data)
 
   return items.map((item) => {
-    const entranceType = entranceTypeForTitle(item.title)
-    const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
+    const entranceKind = resolveEntranceKind(item)
+    const entranceMeta = entranceKind ? getEntranceKindCueMeta(data, entranceKind) : null
     const person = findPersonForItem(item, data)
 
     return {

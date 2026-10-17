@@ -1,11 +1,14 @@
 import type { AppData } from '../data'
 import { initialData, withFixedMc } from '../data'
+import type { FlowScreen } from './appSession'
+import { isValidCueSavePhone, normalizeCueSavePhone } from './cueSavePhone'
 
 const STORAGE_PREFIX = 'wedding-cue-draft:'
 
 export type StoredCueSheetDraft = {
   savedAt: string
   data: AppData
+  flowScreen?: FlowScreen
 }
 
 export function draftStorageKey(groomName: string, brideName: string): string {
@@ -37,6 +40,12 @@ export function normalizeLoadedAppData(raw: Partial<AppData> | null | undefined)
     brideEntranceTimingEnabled: Boolean(raw.brideEntranceTimingEnabled),
     groomEntranceTrackTitle: raw.groomEntranceTrackTitle ?? '',
     brideEntranceTrackTitle: raw.brideEntranceTrackTitle ?? '',
+    marchEntranceTimingEnabled: Boolean(raw.marchEntranceTimingEnabled),
+    marchEntranceTrackTitle: raw.marchEntranceTrackTitle ?? '',
+    marchAudioSignalMode:
+      raw.marchAudioSignalMode === 'custom' ? 'custom' : 'preset',
+    marchAudioSignalCustom: raw.marchAudioSignalCustom ?? '',
+    cueSavePhone: normalizeCueSavePhone(raw.cueSavePhone ?? ''),
     email: raw.email ?? '',
     coupleEmail: raw.coupleEmail ?? '',
   }
@@ -105,21 +114,26 @@ export function loadCueSheetDraft(groomName: string, brideName: string): StoredC
   }
 }
 
-export async function persistCueSheetDraftToServer(data: AppData): Promise<void> {
+export async function persistCueSheetDraftToServer(
+  data: AppData,
+  flowScreen: FlowScreen,
+): Promise<void> {
+  const phone = normalizeCueSavePhone(data.cueSavePhone)
   const groomName = data.groomName.trim()
   const brideName = data.brideName.trim()
-  if (!groomName || !brideName) return
-  if (!hasRestorableCueSheetData(data)) return
+  const canSaveByPhone = isValidCueSavePhone(phone) && hasRestorableCueSheetData(data)
+  const canSaveByNames = groomName && brideName && hasRestorableCueSheetData(data)
+  if (!canSaveByPhone && !canSaveByNames) return
 
   const response = await fetch(saveDraftApiUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ data }),
+    body: JSON.stringify({ data: { ...data, cueSavePhone: phone }, flowScreen }),
   })
 
   if (!response.ok && response.status !== 503) {
     const result = (await response.json().catch(() => ({}))) as { error?: string }
-    throw new Error(result.error ?? '식순 자동 저장에 실패했습니다.')
+    throw new Error(result.error ?? 'QCT 자동 저장에 실패했습니다.')
   }
 }
 
@@ -134,6 +148,37 @@ function loadApiUrl() {
 
 function saveDraftApiUrl() {
   return `${draftApiBase()}/save-cue-sheet-draft`
+}
+
+export async function fetchSavedCueSheetByPhone(
+  phoneInput: string,
+): Promise<StoredCueSheetDraft | null> {
+  const phone = normalizeCueSavePhone(phoneInput)
+  if (!isValidCueSavePhone(phone)) {
+    throw new Error('올바른 QCT 저장용 전화번호를 입력해 주세요.')
+  }
+
+  const query = new URLSearchParams({ phone })
+  const response = await fetch(`${loadApiUrl()}?${query}`)
+  if (response.status === 404) return null
+  if (!response.ok) {
+    const result = (await response.json().catch(() => ({}))) as { error?: string }
+    throw new Error(result.error ?? '저장된 QCT를 불러오지 못했습니다.')
+  }
+
+  const result = (await response.json()) as {
+    savedAt?: string
+    data?: Partial<AppData>
+    flowScreen?: string
+  }
+  const data = normalizeLoadedAppData(result.data)
+  if (!data) return null
+
+  return {
+    savedAt: result.savedAt ?? new Date().toISOString(),
+    data: { ...data, cueSavePhone: phone },
+    flowScreen: result.flowScreen as FlowScreen | undefined,
+  }
 }
 
 export async function fetchSavedCueSheetDraft(

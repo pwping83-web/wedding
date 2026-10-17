@@ -2,7 +2,12 @@ export const config = {
   runtime: 'edge',
 }
 
-import { resolveSavedCueSheetFromStore } from './lib/draftStore'
+import {
+  findCueSheetByPhone,
+  isValidSavePhone,
+  normalizeSavePhone,
+  resolveSavedCueSheetFromStore,
+} from './lib/draftStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,14 +25,34 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const url = new URL(request.url)
+  const phoneRaw = url.searchParams.get('phone')?.trim() ?? ''
   const groomName = url.searchParams.get('groomName')?.trim() ?? ''
   const brideName = url.searchParams.get('brideName')?.trim() ?? ''
 
-  if (!groomName || !brideName) {
-    return Response.json({ error: '신랑·신부 이름이 필요합니다.' }, { status: 400, headers: corsHeaders })
-  }
-
   try {
+    const phone = normalizeSavePhone(phoneRaw)
+    if (phoneRaw) {
+      if (!isValidSavePhone(phone)) {
+        return Response.json({ error: '올바른 전화번호를 입력해 주세요.' }, { status: 400, headers: corsHeaders })
+      }
+      const saved = await findCueSheetByPhone(phone)
+      if (!saved) {
+        return Response.json({ error: '저장된 QCT를 찾지 못했습니다.' }, { status: 404, headers: corsHeaders })
+      }
+      return Response.json(
+        {
+          savedAt: saved.savedAt,
+          data: saved.appData,
+          flowScreen: saved.flowScreen,
+        },
+        { headers: corsHeaders },
+      )
+    }
+
+    if (!groomName || !brideName) {
+      return Response.json({ error: '전화번호 또는 신랑·신부 이름이 필요합니다.' }, { status: 400, headers: corsHeaders })
+    }
+
     const saved = await resolveSavedCueSheetFromStore(groomName, brideName)
     if (!saved) {
       return Response.json({ error: '저장된 식순을 찾지 못했습니다.' }, { status: 404, headers: corsHeaders })
@@ -37,6 +62,7 @@ export default async function handler(request: Request): Promise<Response> {
       {
         savedAt: saved.savedAt,
         data: saved.appData,
+        flowScreen: saved.flowScreen,
       },
       { headers: corsHeaders },
     )

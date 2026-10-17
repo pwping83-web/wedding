@@ -6,6 +6,15 @@ type SupabaseConfig = {
 export type SavedCueSheetDraft = {
   savedAt: string
   appData: unknown
+  flowScreen?: string
+}
+
+export function normalizeSavePhone(raw: string): string {
+  return raw.replace(/\D/g, '')
+}
+
+export function isValidSavePhone(normalized: string): boolean {
+  return /^01[016789]\d{7,8}$/.test(normalized)
 }
 
 type ParsedOrderItem = {
@@ -146,6 +155,11 @@ function parsePrintHtmlAppData(row: Record<string, unknown>): unknown | null {
     brideEntranceTimingEnabled: false,
     groomEntranceTrackTitle: '',
     brideEntranceTrackTitle: '',
+    marchEntranceTimingEnabled: false,
+    marchEntranceTrackTitle: '',
+    marchAudioSignalMode: 'preset',
+    marchAudioSignalCustom: '',
+    cueSavePhone: '',
     email: '',
     coupleEmail: '',
   }
@@ -290,6 +304,80 @@ export async function findLatestDeliveryAppData(
   return {
     savedAt: candidate.savedAt,
     appData,
+  }
+}
+
+export async function upsertCueSheetByPhone(
+  savePhone: string,
+  appData: unknown,
+  flowScreen: string,
+): Promise<SavedCueSheetDraft | null> {
+  const config = getSupabaseConfig()
+  if (!config) return null
+
+  const phone = normalizeSavePhone(savePhone)
+  if (!isValidSavePhone(phone) || !hasRestorableAppData(appData)) return null
+
+  const record = {
+    save_phone: phone,
+    flow_screen: flowScreen.trim() || 'basic',
+    app_data: appData,
+    updated_at: new Date().toISOString(),
+  }
+
+  const response = await fetch(`${config.url}/rest/v1/cue_sheet_qct_saves?on_conflict=save_phone`, {
+    method: 'POST',
+    headers: {
+      ...supabaseHeaders(config),
+      Prefer: 'resolution=merge-duplicates,return=representation',
+    },
+    body: JSON.stringify(record),
+  })
+
+  if (!response.ok) {
+    const detail = await response.text()
+    throw new Error(detail || 'QCT 저장에 실패했습니다.')
+  }
+
+  const rows = (await response.json()) as Record<string, unknown>[]
+  const row = rows[0] ?? record
+  return {
+    savedAt: String(row.updated_at ?? record.updated_at),
+    appData: row.app_data ?? appData,
+    flowScreen: String(row.flow_screen ?? record.flow_screen),
+  }
+}
+
+export async function findCueSheetByPhone(savePhone: string): Promise<SavedCueSheetDraft | null> {
+  const config = getSupabaseConfig()
+  if (!config) return null
+
+  const phone = normalizeSavePhone(savePhone)
+  if (!isValidSavePhone(phone)) return null
+
+  const query = new URLSearchParams({
+    select: 'updated_at,app_data,flow_screen',
+    save_phone: `eq.${phone}`,
+    limit: '1',
+  })
+
+  const response = await fetch(`${config.url}/rest/v1/cue_sheet_qct_saves?${query}`, {
+    headers: supabaseHeaders(config),
+  })
+
+  if (!response.ok) {
+    const detail = await response.text()
+    throw new Error(detail || '저장된 QCT를 불러오지 못했습니다.')
+  }
+
+  const rows = (await response.json()) as Record<string, unknown>[]
+  const row = rows[0]
+  if (!row?.app_data || !hasRestorableAppData(row.app_data)) return null
+
+  return {
+    savedAt: String(row.updated_at ?? ''),
+    appData: row.app_data,
+    flowScreen: String(row.flow_screen ?? 'basic'),
   }
 }
 

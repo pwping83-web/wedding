@@ -7,20 +7,28 @@ import type { AppData, OrderItem, SetData } from '../data'
 import { isMarriageDeclarationTitle, marriageDeclarationReaderLabels, normalizeMarriageDeclarationReader, roleLabels } from '../data'
 import { flowStep } from '../config/features'
 import {
-  getEntranceCueMeta,
+  entranceKindForTitle,
+  ENTRANCE_SIGNAL_PRESET,
+  type EntranceKind,
+} from '../lib/entranceAudioSignal'
+import {
   entranceTypeForTitle,
+  getEntranceKindCueMeta,
   getItemScriptForCueSheet,
 } from '../lib/cueSheetUtils'
 import {
   getEntranceMarker,
-  getEntranceTrackTitle,
+  getEntranceAudioSignalCustom,
+  getEntranceAudioSignalMode,
+  getEntranceAudioSignalPhrase,
   hasEntranceTiming,
-  hasEntranceTimingConfig,
-  isEntranceTimingEnabled,
+  hasKindEntranceTimingConfig,
+  isKindEntranceTimingEnabled,
   parseEntranceSeconds,
-  setEntranceTimingEnabled,
   setEntranceTimingSeconds,
-  setEntranceTrackTitle,
+  setKindEntranceAudioSignal,
+  setKindEntranceTimingEnabled,
+  setKindEntranceTrackTitle,
 } from '../lib/entranceTiming'
 import {
   buildEntranceGeneratePayload,
@@ -113,66 +121,127 @@ function ScriptEditor({
   )
 }
 
-function EntranceTimingFields({
-  type,
+function EntranceAudioSignalFields({
+  kind,
   data,
   setData,
 }: {
-  type: 'groom' | 'bride'
+  kind: EntranceKind
   data: AppData
   setData: SetData
 }) {
-  const marker = getEntranceMarker(data, type)
-  const trackTitle = getEntranceTrackTitle(data, type)
-  const roleLabel = type === 'groom' ? '신랑' : '신부'
+  const mode = getEntranceAudioSignalMode(data, kind)
+  const custom = getEntranceAudioSignalCustom(data, kind)
+  const presetLabel = ENTRANCE_SIGNAL_PRESET[kind]
+  const groupName = `entrance-signal-${kind}`
+
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-[13px] font-medium text-charcoal mb-1.5">
+        입장 타이밍 신호 (예식장 음악 시작)
+      </legend>
+      <label className="flex items-start gap-2.5 cursor-pointer">
+        <input
+          type="radio"
+          name={groupName}
+          checked={mode === 'preset'}
+          onChange={() => setKindEntranceAudioSignal(setData, kind, 'preset')}
+          className="accent-accent mt-0.5 shrink-0"
+        />
+        <span className="text-[13px] text-charcoal leading-snug">{presetLabel}</span>
+      </label>
+      <label className="flex items-start gap-2.5 cursor-pointer">
+        <input
+          type="radio"
+          name={groupName}
+          checked={mode === 'custom'}
+          onChange={() => setKindEntranceAudioSignal(setData, kind, 'custom', custom)}
+          className="accent-accent mt-0.5 shrink-0"
+        />
+        <span className="text-[13px] text-charcoal">기타 — 직접 쓰고 싶은 말</span>
+      </label>
+      {mode === 'custom' && (
+        <input
+          type="text"
+          value={custom}
+          placeholder="예: 이제 신랑님 모시겠습니다"
+          onChange={(e) => setKindEntranceAudioSignal(setData, kind, 'custom', e.target.value)}
+          className="w-full h-10 px-3 bg-surface border border-border rounded-xl text-[14px] text-charcoal outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+        />
+      )}
+      <p className="text-[11px] text-muted-text leading-relaxed">
+        큐시트 가로 칸에 「{getEntranceAudioSignalPhrase(data, kind)}」 뒤 (이 말이 끝나면
+        노래를 틀어주세요) 로 표시됩니다. 아래 사회자 멘트 본문과는 별개입니다.
+      </p>
+    </fieldset>
+  )
+}
+
+function EntranceTimingFields({
+  kind,
+  data,
+  setData,
+}: {
+  kind: EntranceKind
+  data: AppData
+  setData: SetData
+}) {
+  const marker = kind === 'march' ? null : getEntranceMarker(data, kind)
+  const trackTitle =
+    kind === 'march' ? data.marchEntranceTrackTitle : kind === 'groom'
+      ? data.groomEntranceTrackTitle
+      : data.brideEntranceTrackTitle
 
   return (
     <div className="mb-3 space-y-3 pt-1">
+      <EntranceAudioSignalFields kind={kind} data={data} setData={setData} />
       <Field
         label="음원 제목"
         placeholder="예: Canon in D"
         value={trackTitle}
-        onChange={(e) => setEntranceTrackTitle(setData, type, e.target.value)}
+        onChange={(e) => setKindEntranceTrackTitle(setData, kind, e.target.value)}
         className="h-10 text-[14px]"
       />
-      <div>
-        <label className="block text-[13px] font-medium text-charcoal mb-1.5">
-          {roleLabel} 입장 시간
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder=""
-            value={marker?.time ? String(marker.time) : ''}
-            onChange={(e) => {
-              const raw = e.target.value
-              if (!raw.trim()) {
-                setEntranceTimingSeconds(setData, type, null)
-                return
-              }
-              const seconds = parseEntranceSeconds(raw)
-              if (seconds != null) setEntranceTimingSeconds(setData, type, seconds)
-            }}
-            className="w-20 h-10 px-3 bg-surface border border-border rounded-xl text-[15px] text-charcoal text-center tabular-nums outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
-          />
-          <span className="text-[14px] text-charcoal">초 후 입장</span>
+      {kind !== 'march' && (
+        <div>
+          <label className="block text-[13px] font-medium text-charcoal mb-1.5">
+            {kind === 'groom' ? '신랑' : '신부'} 입장 시간 (사회자 멘트 길이 참고)
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder=""
+              value={marker?.time ? String(marker.time) : ''}
+              onChange={(e) => {
+                const raw = e.target.value
+                if (!raw.trim()) {
+                  setEntranceTimingSeconds(setData, kind, null)
+                  return
+                }
+                const seconds = parseEntranceSeconds(raw)
+                if (seconds != null) setEntranceTimingSeconds(setData, kind, seconds)
+              }}
+              className="w-20 h-10 px-3 bg-surface border border-border rounded-xl text-[15px] text-charcoal text-center tabular-nums outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+            />
+            <span className="text-[14px] text-charcoal">초 후 입장</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
 
 function EntranceTimingToggle({
-  type,
+  kind,
   data,
   setData,
 }: {
-  type: 'groom' | 'bride'
+  kind: EntranceKind
   data: AppData
   setData: SetData
 }) {
-  const enabled = isEntranceTimingEnabled(data, type)
+  const enabled = isKindEntranceTimingEnabled(data, kind)
 
   return (
     <div className="mb-3 pb-3 border-b border-border/80">
@@ -180,12 +249,12 @@ function EntranceTimingToggle({
         <input
           type="checkbox"
           checked={enabled}
-          onChange={(e) => setEntranceTimingEnabled(setData, type, e.target.checked)}
+          onChange={(e) => setKindEntranceTimingEnabled(setData, kind, e.target.checked)}
           className="accent-accent w-4 h-4 shrink-0"
         />
         <span className="text-[13px] font-medium text-charcoal">🎵 입장 음원·타이밍 사용</span>
       </label>
-      {enabled && <EntranceTimingFields type={type} data={data} setData={setData} />}
+      {enabled && <EntranceTimingFields kind={kind} data={data} setData={setData} />}
     </div>
   )
 }
@@ -293,10 +362,10 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
 
       <div className="space-y-3">
         {items.map((item, index) => {
-          const entranceType = entranceTypeForTitle(item.title)
+          const entranceKind = entranceKindForTitle(item.title)
           const entranceMeta =
-            entranceType && hasEntranceTimingConfig(data, entranceType)
-              ? getEntranceCueMeta(data, entranceType)
+            entranceKind && hasKindEntranceTimingConfig(data, entranceKind)
+              ? getEntranceKindCueMeta(data, entranceKind)
               : null
           const isSpeaking = speakingId === item.id
           const isGenerating = generatingId === item.id
@@ -316,8 +385,8 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
                 </div>
               </div>
 
-              {entranceType && (
-                <EntranceTimingToggle type={entranceType} data={data} setData={setData} />
+              {entranceKind && (
+                <EntranceTimingToggle kind={entranceKind} data={data} setData={setData} />
               )}
 
               {item.title === '행진' && (
@@ -328,6 +397,9 @@ export default function Preview({ data, setData, onBack, onGoOutput }: Props) {
 
               {entranceMeta && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
+                  <span className="text-[11px] bg-charcoal/10 text-charcoal px-2 py-0.5 rounded-full font-medium max-w-full">
+                    🎬 {entranceMeta.signalPhrase}
+                  </span>
                   {entranceMeta.audioTitle && (
                     <span className="text-[11px] bg-accent-soft text-accent px-2 py-0.5 rounded-full truncate max-w-full">
                       🎵 {entranceMeta.audioTitle}

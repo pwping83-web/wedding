@@ -8,7 +8,17 @@ import {
   roleLabels,
 } from '../data'
 import { ENTRANCE_AUDIO_TIMING_ENABLED } from '../config/features'
-import { getEntranceTrackTitle, isEntranceTimingEnabled } from './entranceTiming'
+import {
+  formatEntranceAudioSignalBlock,
+  type EntranceKind,
+} from './entranceAudioSignal'
+import {
+  getEntranceAudioSignalPhrase,
+  getKindEntranceTrackTitle,
+  isEntranceTimingEnabled,
+  isKindEntranceTimingEnabled,
+  isMarchEntranceTimingEnabled,
+} from './entranceTiming'
 import { getTimedEntranceScript } from './timedEntranceScript'
 
 export type CueSheetVariant = 'mc' | 'couple'
@@ -16,6 +26,8 @@ export type CueSheetVariant = 'mc' | 'couple'
 export type EntranceCueMeta = {
   audioTitle: string | null
   timingLabel: string
+  signalPhrase: string
+  signalBlock: string
   script: string
   audioUrl: string | null
 }
@@ -38,29 +50,47 @@ export function getEntranceAudioTitle(
   return title || '없음'
 }
 
-export function getEntranceCueMeta(
+function buildEntranceCueMetaForKind(
   data: AppData,
-  type: 'groom' | 'bride',
+  kind: EntranceKind,
 ): EntranceCueMeta | null {
-  if (!isEntranceTimingEnabled(data, type)) return null
+  if (!isKindEntranceTimingEnabled(data, kind)) return null
 
-  const marker = type === 'groom' ? data.groomMarkers[0] : data.brideMarkers[0]
+  const marker = kind === 'groom' ? data.groomMarkers[0] : kind === 'bride' ? data.brideMarkers[0] : null
   const seconds = marker?.time ?? 0
-  const manualTitle = getEntranceTrackTitle(data, type)
-  const audio = type === 'groom' ? data.groomAudio : data.brideAudio
+  const manualTitle = getKindEntranceTrackTitle(data, kind)
+  const audio = kind === 'groom' ? data.groomAudio : kind === 'bride' ? data.brideAudio : null
   const audioTitle =
     manualTitle ||
     (ENTRANCE_AUDIO_TIMING_ENABLED && audio ? getEntranceAudioTitle(audio) : '') ||
     null
 
-  if (seconds <= 0 && !audioTitle) return null
+  const signalPhrase = getEntranceAudioSignalPhrase(data, kind)
+  const signalBlock = formatEntranceAudioSignalBlock(signalPhrase)
 
   return {
     audioTitle,
-    timingLabel: seconds > 0 ? formatEntranceTiming(type, seconds) : '',
-    script: getEntranceDisplayScript(type, data),
+    timingLabel:
+      kind !== 'march' && seconds > 0 ? formatEntranceTiming(kind, seconds) : '',
+    signalPhrase,
+    signalBlock,
+    script: kind === 'march' ? '' : getEntranceDisplayScript(kind, data),
     audioUrl: ENTRANCE_AUDIO_TIMING_ENABLED ? (audio?.url ?? null) : null,
   }
+}
+
+export function getEntranceCueMeta(
+  data: AppData,
+  type: 'groom' | 'bride',
+): EntranceCueMeta | null {
+  return buildEntranceCueMetaForKind(data, type)
+}
+
+export function getEntranceKindCueMeta(
+  data: AppData,
+  kind: EntranceKind,
+): EntranceCueMeta | null {
+  return buildEntranceCueMetaForKind(data, kind)
 }
 
 export function entranceTypeForTitle(title: string): 'groom' | 'bride' | null {
@@ -68,6 +98,8 @@ export function entranceTypeForTitle(title: string): 'groom' | 'bride' | null {
   if (title === '신부 입장') return 'bride'
   return null
 }
+
+export { entranceKindForTitle } from './entranceAudioSignal'
 
 export function getEntranceDisplayScript(
   type: 'groom' | 'bride',
@@ -140,18 +172,19 @@ export function buildCueSheetPlainText(data: AppData, variant: CueSheetVariant):
     const brideMeta = isEntranceTimingEnabled(data, 'bride')
       ? getEntranceCueMeta(data, 'bride')
       : null
-    if (groomMeta || brideMeta) {
-      lines.push('[ 입장 타이밍 ]')
-      if (groomMeta) {
-        lines.push(
-          `- 신랑: ${groomMeta.audioTitle ? `${groomMeta.audioTitle} · ` : ''}${groomMeta.timingLabel}`,
-        )
+    const marchMeta = isMarchEntranceTimingEnabled(data)
+      ? getEntranceKindCueMeta(data, 'march')
+      : null
+    if (groomMeta || brideMeta || marchMeta) {
+      lines.push('[ 입장 타이밍 · 음악 시작 신호 ]')
+      const pushKind = (label: string, meta: EntranceCueMeta) => {
+        lines.push(`- ${label}: ${meta.signalBlock}`)
+        if (meta.audioTitle) lines.push(`  곡: ${meta.audioTitle}`)
+        if (meta.timingLabel) lines.push(`  ${meta.timingLabel}`)
       }
-      if (brideMeta) {
-        lines.push(
-          `- 신부: ${brideMeta.audioTitle ? `${brideMeta.audioTitle} · ` : ''}${brideMeta.timingLabel}`,
-        )
-      }
+      if (groomMeta) pushKind('신랑', groomMeta)
+      if (brideMeta) pushKind('신부', brideMeta)
+      if (marchMeta) pushKind('행진', marchMeta)
       lines.push('')
     }
   }
@@ -161,15 +194,18 @@ export function buildCueSheetPlainText(data: AppData, variant: CueSheetVariant):
   data.orderItems.forEach((item, index) => {
     const startMin = cumulative
     cumulative += item.duration
-    const entranceType = entranceTypeForTitle(item.title)
-    const entranceMeta = entranceType ? getEntranceCueMeta(data, entranceType) : null
+    const entranceKind =
+      entranceTypeForTitle(item.title) ??
+      (item.title === '행진' ? ('march' as const) : null)
+    const entranceMeta = entranceKind ? getEntranceKindCueMeta(data, entranceKind) : null
     const script = getItemScriptForCueSheet(item, data)
 
     lines.push(`${index + 1}. ${item.title} (${addMinutes(data.time, startMin)} / ${item.duration}분)`)
 
     if (entranceMeta) {
+      lines.push(`   🎬 ${entranceMeta.signalBlock}`)
       if (entranceMeta.audioTitle) lines.push(`   🎵 ${entranceMeta.audioTitle}`)
-      lines.push(`   ⏱ ${entranceMeta.timingLabel}`)
+      if (entranceMeta.timingLabel) lines.push(`   ⏱ ${entranceMeta.timingLabel}`)
     }
 
     const person = data.persons.find((p) => {

@@ -83,6 +83,11 @@ function normalizeSessionScreen(screen: string): FlowScreen | null {
   return screen as FlowScreen
 }
 
+/** QCT·서버 복원 시 마지막 화면 */
+export function coerceFlowScreen(raw: string | undefined | null): FlowScreen {
+  return normalizeSessionScreen(String(raw ?? 'basic').trim()) ?? 'basic'
+}
+
 export function hasSaveableProgress(data: AppData, screen: FlowScreen | 'landing'): boolean {
   if (screen !== 'landing') return true
   return Boolean(
@@ -92,7 +97,8 @@ export function hasSaveableProgress(data: AppData, screen: FlowScreen | 'landing
       data.time ||
       data.venue.trim() ||
       data.email.trim() ||
-      data.coupleEmail.trim(),
+      data.coupleEmail.trim() ||
+      data.cueSavePhone.trim(),
   )
 }
 

@@ -18,6 +18,9 @@ export interface Marker {
   time: number
   scriptVariant: number
   customScript?: string
+  /** 예식장 음악 시작 신호 — preset 또는 custom 멘트 */
+  audioSignalMode?: 'preset' | 'custom'
+  audioSignalCustom?: string
 }
 
 export interface OrderItem {
@@ -80,6 +83,13 @@ export interface AppData {
   brideEntranceTimingEnabled: boolean
   groomEntranceTrackTitle: string
   brideEntranceTrackTitle: string
+  /** 행진 음원 — 멘트 종료 시 재생 (초 단위 타이밍 없음) */
+  marchEntranceTimingEnabled: boolean
+  marchEntranceTrackTitle: string
+  marchAudioSignalMode: 'preset' | 'custom'
+  marchAudioSignalCustom: string
+  /** QCT 클라우드 저장·불러오기용 (숫자만 저장) */
+  cueSavePhone: string
   email: string
   coupleEmail: string
 }
@@ -337,6 +347,11 @@ export const initialData: AppData = {
   brideEntranceTimingEnabled: false,
   groomEntranceTrackTitle: '',
   brideEntranceTrackTitle: '',
+  marchEntranceTimingEnabled: false,
+  marchEntranceTrackTitle: '',
+  marchAudioSignalMode: 'preset',
+  marchAudioSignalCustom: '',
+  cueSavePhone: '',
   email: '',
   coupleEmail: '',
 }
