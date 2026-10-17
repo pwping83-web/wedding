@@ -19,10 +19,8 @@ import { readMarketingRoute } from './lib/marketingRoutes'
 import {
   clearAppSession,
   coerceFlowScreen,
-  loadAppSession,
   saveAppSession,
   type FlowScreen,
-  type StoredAppSession,
 } from './lib/appSession'
 import { isValidCueSavePhone, normalizeCueSavePhone } from './lib/cueSavePhone'
 import {
@@ -42,13 +40,11 @@ export default function App() {
   const marketingRoute = readMarketingRoute()
   const [screen, setScreen] = useState<Screen>('landing')
   const [data, setData] = useState<AppData>(initialData)
-  const [savedSession, setSavedSession] = useState<StoredAppSession | null>(() => loadAppSession())
 
   const persistProgress = useCallback((nextScreen: Screen, nextData: AppData) => {
     if (nextScreen === 'admin') return
     saveAppSession(nextScreen, nextData)
     saveCueSheetDraft(nextData)
-    setSavedSession(loadAppSession())
     if (nextScreen !== 'landing') {
       const phone = normalizeCueSavePhone(nextData.cueSavePhone)
       if (isValidCueSavePhone(phone) && hasRestorableCueSheetData(nextData)) {
@@ -117,19 +113,8 @@ export default function App() {
 
   const handleStartFresh = () => {
     clearAppSession()
-    setSavedSession(null)
     setData(initialData)
     setScreen('basic')
-  }
-
-  const handleRestoreSession = () => {
-    const session = loadAppSession()
-    if (!session) {
-      setSavedSession(null)
-      return
-    }
-    setData(session.data)
-    setScreen(session.screen)
   }
 
   const handleCompleteCueSheet = async () => {
@@ -144,7 +129,6 @@ export default function App() {
     }
     await persistCueSheetDraftToServer(data, 'output')
     setScreen('output')
-    setSavedSession(loadAppSession())
   }
 
   const handleLoadQct = async (phoneInput: string) => {
@@ -157,7 +141,6 @@ export default function App() {
     setScreen(nextScreen)
     saveAppSession(nextScreen, saved.data)
     saveCueSheetDraft(saved.data)
-    setSavedSession(loadAppSession())
   }
 
   const props = { data, setData, onNext: goNext, onBack: goBack }
@@ -167,9 +150,7 @@ export default function App() {
       {screen === 'landing' && (
         <Landing
           {...props}
-          savedSession={savedSession}
           onStart={handleStartFresh}
-          onRestore={handleRestoreSession}
           onLoadQct={handleLoadQct}
           onAdmin={() => setScreen('admin')}
         />
