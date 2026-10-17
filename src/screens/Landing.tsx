@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Btn from '../components/mobile/Btn'
 import Field from '../components/mobile/Field'
 import { normalizeCueSavePhone } from '../lib/cueSavePhone'
-import { notifySiteVisitLanding } from '../lib/notifySiteVisit'
+// import { notifySiteVisitLanding } from '../lib/notifySiteVisit'
 import { SEO_TITLE } from '../config/siteSeo'
 import LandingMarketingSections from '../components/LandingMarketingSections'
 import { LandingFloralCorner, LandingFloralTop, LandingMcLogo } from '../components/LandingDecor'
@@ -33,7 +33,7 @@ export default function Landing({ onStart, onLoadQct, onAdmin }: Props) {
   useEffect(() => {
     const prev = document.title
     document.title = SEO_TITLE
-    notifySiteVisitLanding()
+    // notifySiteVisitLanding()
     return () => {
       document.title = prev
     }

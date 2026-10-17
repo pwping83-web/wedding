@@ -30,6 +30,10 @@ function markNotified(): void {
 
 /** 랜딩(홈) 최초 진입 시 운영자에게 방문 알림 (실패해도 UI 영향 없음) */
 export function notifySiteVisitLanding(): void {
+  // 접속 이메일 알림 — 비활성화
+  return
+
+  /*
   if (import.meta.env.DEV) return
   if (shouldSkipNotify()) return
 
@@ -57,4 +61,5 @@ export function notifySiteVisitLanding(): void {
   } else {
     setTimeout(send, 400)
   }
+  */
 }
