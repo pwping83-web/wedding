@@ -4,8 +4,21 @@ import { sampleThumbUrl } from './marketingAssets'
  * MC · 식전영상 마케팅 설정 — 값만 바꿔서 배포하면 됩니다.
  */
 
-/** MC 진행 영상 (유튜브 ID만, URL 전체 아님) */
-export const MC_VIDEO_ID = 'JFtFR6-bJwY'
+export type McProgressVideo = {
+  /** 유튜브 ID만 (URL 전체 아님) */
+  id: string
+  title?: string
+  thumbUrl?: string
+}
+
+/** MC 본식 사회 진행 영상 (순서대로 표시) */
+export const MC_PROGRESS_VIDEOS: McProgressVideo[] = [
+  { id: 'JFtFR6-bJwY' },
+  { id: 'FYhZvKlUlfo' },
+]
+
+/** 첫 번째 MC 영상 (레거시 참조) */
+export const MC_VIDEO_ID = MC_PROGRESS_VIDEOS[0]?.id ?? ''
 
 /** 식전영상 샘플 (일부공개 업로드 권장) */
 export const SAMPLE_VIDEO_ID = 'NuWvnTwHQ-s'

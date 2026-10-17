@@ -1,6 +1,7 @@
 import Btn from './mobile/Btn'
+import McProgressVideos from './McProgressVideos'
 import YouTubeLiteEmbed from './YouTubeLiteEmbed'
-import { MC_THUMB_URL, MC_VIDEO_ID, SAMPLE_THUMB_URL, SAMPLE_VIDEO_ID } from '../config/marketing'
+import { SAMPLE_THUMB_URL, SAMPLE_VIDEO_ID } from '../config/marketing'
 import {
   landingMcBenefitLine,
   landingVideoBenefitLine,
@@ -23,11 +24,7 @@ export default function LandingMarketingSections() {
           <br />
           직접 진행합니다
         </h2>
-        <YouTubeLiteEmbed
-          videoId={MC_VIDEO_ID}
-          title="MC 진행 영상"
-          thumbUrl={MC_THUMB_URL}
-        />
+        <McProgressVideos />
         <p className="text-[13px] text-charcoal/90 text-center leading-relaxed [word-break:keep-all]">
           {landingMcBenefitLine}
         </p>

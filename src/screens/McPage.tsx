@@ -2,10 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { SEO_TITLE } from '../config/siteSeo'
 import ScreenLayout from '../components/mobile/ScreenLayout'
 import Btn from '../components/mobile/Btn'
-import YouTubeLiteEmbed from '../components/YouTubeLiteEmbed'
+import McProgressVideos from '../components/McProgressVideos'
 import McInquiryForm from '../components/McInquiryForm'
 import McInquirySuccessModal from '../components/McInquirySuccessModal'
-import { MC_THUMB_URL, MC_VIDEO_ID } from '../config/marketing'
 import { mcPagePackageLine, mcPageRegionLine } from '../config/marketingCopy'
 import { loadMcInquiryPrefill } from '../lib/mcInquiryPrefill'
 import { goToMarketing } from '../lib/marketingRoutes'
@@ -35,7 +34,7 @@ export default function McPage() {
       }
     >
       <div className="space-y-6">
-        <YouTubeLiteEmbed videoId={MC_VIDEO_ID} title="MC 진행 영상" thumbUrl={MC_THUMB_URL} />
+        <McProgressVideos />
 
         <div className="landing-card space-y-1 text-[14px] text-charcoal leading-relaxed text-center">
           <p className="font-semibold">{mcPageRegionLine}</p>

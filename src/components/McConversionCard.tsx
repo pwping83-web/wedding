@@ -1,6 +1,5 @@
 import Btn from './mobile/Btn'
-import YouTubeLiteEmbed from './YouTubeLiteEmbed'
-import { MC_THUMB_URL, MC_VIDEO_ID } from '../config/marketing'
+import McProgressVideos from './McProgressVideos'
 import {
   outputMcCardBodyLine1,
   outputMcCardBodyLine2,
@@ -33,7 +32,7 @@ export default function McConversionCard({ data }: Props) {
         </p>
       </div>
 
-      <YouTubeLiteEmbed videoId={MC_VIDEO_ID} title="MC 진행 영상" thumbUrl={MC_THUMB_URL} />
+      <McProgressVideos />
 
       <div className="space-y-2">
         <Btn onClick={handleMcInquiry}>MC 상담 신청</Btn>
