@@ -18,6 +18,7 @@ import {
 } from '../lib/adminApi'
 import AdminDeliveryModal from '../components/AdminDeliveryModal'
 import AdminVideoTextDetailModal from '../components/AdminVideoTextDetailModal'
+import { isWeddingPast } from '../lib/isWeddingPast'
 
 interface Props {
   onBack: () => void
@@ -291,12 +292,27 @@ export default function Admin({ onBack }: Props) {
           <p className="text-[14px] text-muted-text">아직 전송된 큐시트가 없습니다.</p>
         ) : (
           <ul className="space-y-3">
-            {deliveries.map((delivery) => (
+            {deliveries.map((delivery) => {
+              const past = isWeddingPast(delivery.weddingDate, delivery.weddingTime)
+              return (
               <li
                 key={delivery.id}
-                className="rounded-2xl border border-border bg-white p-4 shadow-sm"
+                className={`rounded-2xl border p-4 shadow-sm ${
+                  past
+                    ? 'border-charcoal/25 bg-[#e8e8ea] opacity-[0.92]'
+                    : 'border-border bg-white'
+                }`}
               >
-                <p className="text-[15px] font-semibold text-charcoal mb-1">
+                {past && (
+                  <p className="text-[11px] font-medium text-charcoal/55 mb-2 tracking-wide">
+                    지난 예식
+                  </p>
+                )}
+                <p
+                  className={`text-[15px] font-semibold mb-1 ${
+                    past ? 'text-charcoal/75' : 'text-charcoal'
+                  }`}
+                >
                   {delivery.groomName || '신랑'} · {delivery.brideName || '신부'}
                 </p>
                 <p className="text-[13px] text-muted-text mb-1">
@@ -346,7 +362,7 @@ export default function Admin({ onBack }: Props) {
                   {deletingId === delivery.id ? '삭제 중…' : '삭제'}
                 </Btn>
               </li>
-            ))}
+            )})}
           </ul>
         ))}
 

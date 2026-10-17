@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Btn from './mobile/Btn'
 import type { DeliveryDetail } from '../lib/adminApi'
 import { buildDeliveryPreviewDocument, openDeliveryHtmlWindow } from '../lib/adminApi'
+import { isWeddingPast } from '../lib/isWeddingPast'
 
 type Mode = 'view' | 'edit'
 
@@ -33,6 +34,8 @@ export default function AdminDeliveryModal({
   }, [delivery])
 
   if (!mode || !delivery) return null
+
+  const past = isWeddingPast(delivery.weddingDate, delivery.weddingTime)
 
   const title =
     mode === 'view' ? '큐시트 보기' : '큐시트 수정'
@@ -74,17 +77,31 @@ export default function AdminDeliveryModal({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-charcoal/40"
+        className={`absolute inset-0 ${past ? 'bg-charcoal/65' : 'bg-charcoal/40'}`}
         onClick={onClose}
         aria-label="닫기"
       />
 
-      <div className="relative w-full max-w-[420px] max-h-[min(92dvh,720px)] flex flex-col rounded-2xl border border-border bg-white shadow-lg overflow-hidden">
-        <div className="shrink-0 px-5 pt-5 pb-3 border-b border-border">
-          <h2 id="admin-delivery-modal-title" className="text-[18px] font-semibold text-charcoal">
+      <div
+        className={`relative w-full max-w-[420px] max-h-[min(92dvh,720px)] flex flex-col rounded-2xl border shadow-lg overflow-hidden ${
+          past ? 'border-charcoal/30 bg-[#e4e4e7]' : 'border-border bg-white'
+        }`}
+      >
+        <div
+          className={`shrink-0 px-5 pt-5 pb-3 border-b ${
+            past ? 'border-charcoal/20 bg-[#dcdce0]' : 'border-border'
+          }`}
+        >
+          <h2
+            id="admin-delivery-modal-title"
+            className={`text-[18px] font-semibold ${past ? 'text-charcoal/80' : 'text-charcoal'}`}
+          >
             {title}
           </h2>
-          <p className="text-[14px] text-charcoal mt-1">
+          {past && (
+            <p className="text-[11px] font-medium text-charcoal/55 mt-1">지난 예식 · 조회 전용 구분</p>
+          )}
+          <p className={`text-[14px] mt-1 ${past ? 'text-charcoal/70' : 'text-charcoal'}`}>
             {delivery.groomName || '신랑'} · {delivery.brideName || '신부'}
           </p>
           <p className="text-[12px] text-muted-text mt-1">{delivery.mcEmail}</p>
@@ -102,14 +119,20 @@ export default function AdminDeliveryModal({
             title="큐시트 미리보기"
             srcDoc={previewDoc}
             onLoad={enableDirectEditing}
-            className={`w-full h-[min(58dvh,440px)] rounded-xl border bg-white ${
+            className={`w-full h-[min(58dvh,440px)] rounded-xl border ${
+              past ? 'bg-[#f4f4f5] opacity-95' : 'bg-white'
+            } ${
               mode === 'edit' ? 'border-accent ring-2 ring-accent/10' : 'border-border'
             }`}
             sandbox="allow-same-origin"
           />
         </div>
 
-        <div className="shrink-0 px-5 py-4 border-t border-border bg-white space-y-2">
+        <div
+          className={`shrink-0 px-5 py-4 border-t space-y-2 ${
+            past ? 'border-charcoal/20 bg-[#dcdce0]' : 'border-border bg-white'
+          }`}
+        >
           {mode === 'view' && (
             <div className="grid grid-cols-2 gap-2">
               <Btn

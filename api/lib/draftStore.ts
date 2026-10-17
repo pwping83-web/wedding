@@ -1,3 +1,5 @@
+import { coupleForSavePhone } from './cueSavePhoneAliases'
+
 type SupabaseConfig = {
   url: string
   serviceRoleKey: string
@@ -421,7 +423,27 @@ export async function findCueSheetByPhone(savePhone: string): Promise<SavedCueSh
     'app_data->>cueSavePhone': `eq.${phone}`,
     order: 'updated_at.desc',
   })
-  return byJson
+  if (byJson) return byJson
+
+  const alias = coupleForSavePhone(phone)
+  if (!alias) return null
+
+  const saved = await resolveSavedCueSheetFromStore(alias.groomName, alias.brideName)
+  if (!saved) return null
+
+  const enriched = enrichAppDataForPhoneSave(
+    saved.appData,
+    phone,
+    flowScreenFromAppData(saved.appData),
+  )
+
+  upsertCueSheetByPhone(phone, enriched, flowScreenFromAppData(saved.appData)).catch(() => {})
+
+  return {
+    savedAt: saved.savedAt,
+    appData: enriched,
+    flowScreen: saved.flowScreen ?? flowScreenFromAppData(enriched),
+  }
 }
 
 async function fetchCueSheetDraftRow(
