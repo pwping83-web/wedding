@@ -20,10 +20,16 @@ function base64UrlDecode(token: string): Uint8Array {
   return bytes
 }
 
+/** TS 5.9+ BufferSource — ArrayBufferLike 제네릭 호환 */
+function toBufferSource(bytes: Uint8Array): BufferSource {
+  const copy = bytes.slice()
+  return copy.buffer as ArrayBuffer
+}
+
 async function gzipBytes(input: Uint8Array): Promise<Uint8Array> {
   const stream = new CompressionStream('gzip')
   const writer = stream.writable.getWriter()
-  await writer.write(input)
+  await writer.write(toBufferSource(input))
   await writer.close()
   return new Uint8Array(await new Response(stream.readable).arrayBuffer())
 }
@@ -31,7 +37,7 @@ async function gzipBytes(input: Uint8Array): Promise<Uint8Array> {
 async function gunzipBytes(input: Uint8Array): Promise<Uint8Array> {
   const stream = new DecompressionStream('gzip')
   const writer = stream.writable.getWriter()
-  await writer.write(input)
+  await writer.write(toBufferSource(input))
   await writer.close()
   return new Uint8Array(await new Response(stream.readable).arrayBuffer())
 }
