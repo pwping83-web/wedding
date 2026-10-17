@@ -7,14 +7,16 @@ import { sampleThumbUrl } from './marketingAssets'
 export type McProgressVideo = {
   /** 유튜브 ID만 (URL 전체 아님) */
   id: string
+  /** 영상 위 짧은 설명 */
+  label?: string
   title?: string
   thumbUrl?: string
 }
 
 /** MC 본식 사회 진행 영상 (순서대로 표시) */
 export const MC_PROGRESS_VIDEOS: McProgressVideo[] = [
-  { id: 'JFtFR6-bJwY' },
-  { id: 'FYhZvKlUlfo' },
+  { id: 'JFtFR6-bJwY', label: '캐주얼 진행' },
+  { id: 'FYhZvKlUlfo', label: '차분히 진행' },
 ]
 
 /** 첫 번째 MC 영상 (레거시 참조) */
