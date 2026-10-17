@@ -1,13 +1,9 @@
-export const config = {
-  runtime: 'edge',
-}
-
 import {
   findCueSheetByPhone,
   isValidSavePhone,
   normalizeSavePhone,
   resolveSavedCueSheetFromStore,
-} from './lib/draftStore'
+} from '../lib/draftStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,7 +11,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handleLoadCueSheet(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
@@ -33,11 +29,11 @@ export default async function handler(request: Request): Promise<Response> {
     const phone = normalizeSavePhone(phoneRaw)
     if (phoneRaw) {
       if (!isValidSavePhone(phone)) {
-        return Response.json({ error: '올바른 전화번호를 입력해 주세요.' }, { status: 400, headers: corsHeaders })
+        return Response.json({ error: '?�바�??�화번호�??�력??주세??' }, { status: 400, headers: corsHeaders })
       }
       const saved = await findCueSheetByPhone(phone)
       if (!saved) {
-        return Response.json({ error: '저장된 식순을 찾지 못했습니다.' }, { status: 404, headers: corsHeaders })
+        return Response.json({ error: '?�?�된 ?�순??찾�? 못했?�니??' }, { status: 404, headers: corsHeaders })
       }
       return Response.json(
         {
@@ -50,12 +46,12 @@ export default async function handler(request: Request): Promise<Response> {
     }
 
     if (!groomName || !brideName) {
-      return Response.json({ error: '전화번호 또는 신랑·신부 이름이 필요합니다.' }, { status: 400, headers: corsHeaders })
+      return Response.json({ error: '?�화번호 ?�는 ?�랑·?��? ?�름???�요?�니??' }, { status: 400, headers: corsHeaders })
     }
 
     const saved = await resolveSavedCueSheetFromStore(groomName, brideName)
     if (!saved) {
-      return Response.json({ error: '저장된 식순을 찾지 못했습니다.' }, { status: 404, headers: corsHeaders })
+      return Response.json({ error: '?�?�된 ?�순??찾�? 못했?�니??' }, { status: 404, headers: corsHeaders })
     }
 
     return Response.json(
@@ -67,7 +63,7 @@ export default async function handler(request: Request): Promise<Response> {
       { headers: corsHeaders },
     )
   } catch (error) {
-    const message = error instanceof Error ? error.message : '저장된 식순을 불러오지 못했습니다.'
+    const message = error instanceof Error ? error.message : '?�?�된 ?�순??불러?��? 못했?�니??'
     return Response.json({ error: message }, { status: 500, headers: corsHeaders })
   }
 }

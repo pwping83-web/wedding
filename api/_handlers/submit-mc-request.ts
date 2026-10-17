@@ -1,9 +1,5 @@
-export const config = {
-  runtime: 'edge',
-}
-
-import { insertMcRequest, type McRequestInsert } from './lib/mcRequestStore'
-import { sendMcRequestNotification } from './lib/sendMcRequestEmail'
+import { insertMcRequest, type McRequestInsert } from '../lib/mcRequestStore'
+import { sendMcRequestNotification } from '../lib/sendMcRequestEmail'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,25 +32,25 @@ function normalizePayload(raw: SubmitPayload): McRequestInsert {
   const wantsPreweddingVideo = Boolean(raw.wantsPreweddingVideo)
   const privacyAgreed = Boolean(raw.privacyAgreed)
 
-  if (!phone) throw new Error('연락처를 입력해 주세요.')
-  if (!message) throw new Error('문의 내용을 입력해 주세요.')
-  if (!privacyAgreed) throw new Error('개인정보 수집·이용에 동의해 주세요.')
+  if (!phone) throw new Error('?�락처�? ?�력??주세??')
+  if (!message) throw new Error('문의 ?�용???�력??주세??')
+  if (!privacyAgreed) throw new Error('개인?�보 ?�집·?�용???�의??주세??')
 
   return {
-    groomName: groomName || '미입력',
-    brideName: brideName || '미입력',
+    groomName: groomName || '미입??,
+    brideName: brideName || '미입??,
     ceremonyDate,
     ceremonyTime,
-    venue: venue || '미입력',
+    venue: venue || '미입??,
     phone,
-    email: email || '미입력',
+    email: email || '미입??,
     message,
     wantsPreweddingVideo,
     privacyAgreed,
   }
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handleSubmitMcRequest(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
@@ -75,8 +71,8 @@ export default async function handler(request: Request): Promise<Response> {
 
     return Response.json({ ok: true, id: record.id }, { headers: corsHeaders })
   } catch (error) {
-    const message = error instanceof Error ? error.message : '상담 신청에 실패했습니다.'
-    const status = message.includes('입력') || message.includes('동의') ? 400 : 500
+    const message = error instanceof Error ? error.message : '?�담 ?�청???�패?�습?�다.'
+    const status = message.includes('?�력') || message.includes('?�의') ? 400 : 500
     return Response.json({ error: message }, { status, headers: corsHeaders })
   }
 }

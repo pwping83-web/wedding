@@ -1,7 +1,3 @@
-export const config = {
-  runtime: 'edge',
-}
-
 import {
   adminPasswordConfigured,
   createAdminSessionToken,
@@ -14,7 +10,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handleAdminLogin(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
@@ -25,7 +21,7 @@ export default async function handler(request: Request): Promise<Response> {
 
   if (!adminPasswordConfigured()) {
     return Response.json(
-      { error: '관리자 비밀번호가 서버에 설정되지 않았습니다.' },
+      { error: '관리자 비�?번호가 ?�버???�정?��? ?�았?�니??' },
       { status: 503, headers: corsHeaders },
     )
   }
@@ -35,12 +31,12 @@ export default async function handler(request: Request): Promise<Response> {
     const password = body.password?.trim() ?? ''
 
     if (!verifyAdminPassword(password)) {
-      return Response.json({ error: '비밀번호가 올바르지 않습니다.' }, { status: 401, headers: corsHeaders })
+      return Response.json({ error: '비�?번호가 ?�바르�? ?�습?�다.' }, { status: 401, headers: corsHeaders })
     }
 
     const token = await createAdminSessionToken()
     return Response.json({ ok: true, token }, { headers: corsHeaders })
   } catch {
-    return Response.json({ error: '로그인에 실패했습니다.' }, { status: 500, headers: corsHeaders })
+    return Response.json({ error: '로그?�에 ?�패?�습?�다.' }, { status: 500, headers: corsHeaders })
   }
 }

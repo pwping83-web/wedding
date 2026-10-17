@@ -1,8 +1,4 @@
-export const config = {
-  runtime: 'edge',
-}
-
-import { isSiteVisitNotifyEnabled, sendSiteVisitNotification } from './lib/sendSiteVisitEmail'
+import { isSiteVisitNotifyEnabled, sendSiteVisitNotification } from '../lib/sendSiteVisitEmail'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,7 +20,7 @@ function clientIpHint(request: Request): string {
   )
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handleNotifySiteVisit(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }

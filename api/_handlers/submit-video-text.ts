@@ -1,10 +1,6 @@
-export const config = {
-  runtime: 'edge',
-}
-
-import { isValidVideoAccessCode } from './lib/videoAccessCodes'
-import { sendVideoTextSavedNotification } from './lib/sendVideoTextEmail'
-import { insertVideoTextSubmission } from './lib/videoTextStore'
+import { isValidVideoAccessCode } from '../lib/videoAccessCodes'
+import { sendVideoTextSavedNotification } from '../lib/sendVideoTextEmail'
+import { insertVideoTextSubmission } from '../lib/videoTextStore'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,7 +16,7 @@ type SubmitPayload = {
   textPayload?: Record<string, string>
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handleSubmitVideoText(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
@@ -35,18 +31,18 @@ export default async function handler(request: Request): Promise<Response> {
     const raw = (await request.json()) as SubmitPayload
     const accessCode = raw.accessCode?.trim() ?? ''
     const contactEmail = raw.contactEmail?.trim() ?? ''
-    const groomName = raw.groomName?.trim() || '신랑'
-    const brideName = raw.brideName?.trim() || '신부'
+    const groomName = raw.groomName?.trim() || '?�랑'
+    const brideName = raw.brideName?.trim() || '?��?'
     const textPayload = raw.textPayload ?? {}
 
     if (!isValidVideoAccessCode(accessCode, env)) {
-      return Response.json({ error: '무료제작 코드를 확인해 주세요.' }, { status: 403, headers: corsHeaders })
+      return Response.json({ error: '무료?�작 코드�??�인??주세??' }, { status: 403, headers: corsHeaders })
     }
     if (!contactEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
-      return Response.json({ error: '이메일을 입력해 주세요.' }, { status: 400, headers: corsHeaders })
+      return Response.json({ error: '?�메?�을 ?�력??주세??' }, { status: 400, headers: corsHeaders })
     }
     if (Object.keys(textPayload).length === 0) {
-      return Response.json({ error: '저장할 글귀가 없습니다.' }, { status: 400, headers: corsHeaders })
+      return Response.json({ error: '?�?�할 글귀가 ?�습?�다.' }, { status: 400, headers: corsHeaders })
     }
 
     const record = await insertVideoTextSubmission({
@@ -64,7 +60,7 @@ export default async function handler(request: Request): Promise<Response> {
 
     return Response.json({ ok: true, id: record.id }, { headers: corsHeaders })
   } catch (error) {
-    const message = error instanceof Error ? error.message : '글귀 저장에 실패했습니다.'
+    const message = error instanceof Error ? error.message : '글귀 ?�?�에 ?�패?�습?�다.'
     return Response.json({ error: message }, { status: 500, headers: corsHeaders })
   }
 }

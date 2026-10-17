@@ -1,14 +1,10 @@
-export const config = {
-  runtime: 'edge',
-}
-
 import {
   buildGeneratePrompt,
   buildGenerateSystemPrompt,
   cleanGeneratedScript,
   maxCompletionTokens,
   type GenerateScriptInput,
-} from '../server/generateScriptPrompt'
+} from '../../server/generateScriptPrompt'
 
 async function generateScriptText(input: GenerateScriptInput, apiKey: string): Promise<string> {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -51,7 +47,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handleGenerateScript(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders })
   }

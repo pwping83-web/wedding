@@ -1,8 +1,4 @@
-export const config = {
-  runtime: 'edge',
-}
-
-import { decodePrintHtmlToken } from './lib/printToken'
+import { decodePrintHtmlToken } from '../lib/printToken'
 
 const PRINT_PAGE_STYLES = `
 <style>
@@ -55,13 +51,13 @@ function renderPrintPage(documentHtml: string): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>웨딩 큐시트 인쇄</title>
+  <title>?�딩 ?�시???�쇄</title>
   ${PRINT_PAGE_STYLES}
 </head>
 <body>
   <div class="wcm-print-toolbar no-print">
-    <button type="button" class="primary" onclick="window.print()">인쇄 · PDF 로 저장</button>
-    <p style="margin:0;font-size:12px;color:#666;text-align:center;">인쇄 화면에서 「PDF로 저장」 또는 「파일에 저장」을 선택하세요.</p>
+    <button type="button" class="primary" onclick="window.print()">?�쇄 · PDF �??�??/button>
+    <p style="margin:0;font-size:12px;color:#666;text-align:center;">?�쇄 ?�면?�서 ?�PDF�??�?��??�는 ?�파?�에 ?�?�」을 ?�택?�세??</p>
   </div>
   ${documentHtml}
   <script>
@@ -73,7 +69,7 @@ function renderPrintPage(documentHtml: string): string {
 </html>`
 }
 
-export default async function handler(request: Request): Promise<Response> {
+export async function handlePrintCueSheet(request: Request): Promise<Response> {
   if (request.method !== 'GET') {
     return new Response('Method not allowed', { status: 405 })
   }
@@ -81,7 +77,7 @@ export default async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url)
   const token = url.searchParams.get('t')
   if (!token) {
-    return new Response('인쇄 링크가 올바르지 않습니다.', { status: 400 })
+    return new Response('?�쇄 링크가 ?�바르�? ?�습?�다.', { status: 400 })
   }
 
   try {
@@ -93,6 +89,6 @@ export default async function handler(request: Request): Promise<Response> {
       },
     })
   } catch {
-    return new Response('인쇄 링크가 만료되었거나 올바르지 않습니다.', { status: 400 })
+    return new Response('?�쇄 링크가 만료?�었거나 ?�바르�? ?�습?�다.', { status: 400 })
   }
 }
