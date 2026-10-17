@@ -1,6 +1,11 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { youtubeThumbnailUrl } from '../config/marketing'
 import { publicAssetUrl } from '../lib/publicAssetUrl'
+import {
+  createYouTubePlayer,
+  loadYouTubeIframeApi,
+  type YoutubePlayerInstance,
+} from '../lib/youtubeIframeApi'
 
 interface Props {
   videoId: string
@@ -29,9 +34,29 @@ function youtubeThumbCandidates(videoId: string): string[] {
   ]
 }
 
+function boostPlayerVolume(player: YoutubePlayerInstance): void {
+  try {
+    player.unMute()
+    player.setVolume(100)
+  } catch {
+    /* ignore cross-origin / timing */
+  }
+}
+
+function embedIframeSrc(videoId: string): string {
+  const origin =
+    typeof window !== 'undefined' && window.location.origin
+      ? `&origin=${encodeURIComponent(window.location.origin)}`
+      : ''
+  return `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&mute=0&playsinline=1&enablejsapi=1${origin}`
+}
+
 export default function YouTubeLiteEmbed({ videoId, title, thumbUrl = '' }: Props) {
   const [active, setActive] = useState(false)
   const [thumbIndex, setThumbIndex] = useState(0)
+  const [useIframeFallback, setUseIframeFallback] = useState(false)
+  const hostId = useId().replace(/:/g, '')
+  const playerRef = useRef<YoutubePlayerInstance | null>(null)
 
   const thumbCandidates = useMemo(() => {
     const custom = resolveThumbInput(thumbUrl)
@@ -46,6 +71,36 @@ export default function YouTubeLiteEmbed({ videoId, title, thumbUrl = '' }: Prop
   const onThumbError = useCallback(() => {
     setThumbIndex((i) => i + 1)
   }, [])
+
+  useEffect(() => {
+    if (!active || useIframeFallback || !videoId.trim()) return
+
+    let cancelled = false
+
+    void loadYouTubeIframeApi()
+      .then(() => {
+        if (cancelled) return
+        playerRef.current?.destroy()
+        const player = createYouTubePlayer(hostId, videoId.trim(), (readyPlayer) => {
+          boostPlayerVolume(readyPlayer)
+          window.setTimeout(() => boostPlayerVolume(readyPlayer), 400)
+        })
+        if (!player) {
+          setUseIframeFallback(true)
+          return
+        }
+        playerRef.current = player
+      })
+      .catch(() => {
+        if (!cancelled) setUseIframeFallback(true)
+      })
+
+    return () => {
+      cancelled = true
+      playerRef.current?.destroy()
+      playerRef.current = null
+    }
+  }, [active, hostId, useIframeFallback, videoId])
 
   if (!videoId.trim()) {
     return (
@@ -91,15 +146,23 @@ export default function YouTubeLiteEmbed({ videoId, title, thumbUrl = '' }: Prop
     )
   }
 
+  if (useIframeFallback) {
+    return (
+      <div className="w-full aspect-video rounded-xl overflow-hidden border border-border/80 bg-black">
+        <iframe
+          title={title}
+          src={embedIframeSrc(videoId.trim())}
+          className="w-full h-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="w-full aspect-video rounded-xl overflow-hidden border border-border/80 bg-black">
-      <iframe
-        title={title}
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-        className="w-full h-full border-0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-      />
+      <div id={hostId} className="w-full h-full" title={title} />
     </div>
   )
 }
