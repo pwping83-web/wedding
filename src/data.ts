@@ -117,6 +117,14 @@ export const moodLabels: Record<Mood, string> = {
   warm: '따뜻하고 감성적으로',
 }
 
+/** 큐시트 상단 스탬프 등 짧은 표기 */
+export const moodShortLabels: Record<Mood, string> = {
+  bright: '밝·경쾌',
+  solemn: '차분·경건',
+  formal: '격식',
+  warm: '따뜻·감성',
+}
+
 export const moodDescriptions: Record<Mood, string> = {
   bright: '활기차고 즐거운 분위기, 하객이 함께 즐기는 예식',
   solemn: '차분하고 경건한 분위기의 진중한 예식',
