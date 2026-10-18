@@ -56,7 +56,7 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
         title="최종 큐시트"
         subtitle="인쇄하면 A4 2장 · 사회자용 2열 대본 형태로 출력됩니다"
         onBack={onBack}
-        contentClassName="pb-48 print:px-0 print:pt-0 print:pb-0"
+        contentClassName="pb-36 print:px-0 print:pt-0 print:pb-0"
         footer={
           <div className="space-y-2">
             <div className="px-1 pb-1 space-y-1">
@@ -73,13 +73,13 @@ export default function FinalOutput({ data, setData: _setData, onBack }: Props) 
             </Btn>
             {printError && <p className="text-[12px] text-danger text-center">{printError}</p>}
             {deliverError && <p className="text-[12px] text-danger text-center">{deliverError}</p>}
-            <McConversionCard data={data} />
           </div>
         }
       >
         <div className="print-document">
           <CueSheetDocument data={data} variant="mc" />
         </div>
+        <McConversionCard data={data} />
       </ScreenLayout>
 
       <DeliverySuccessModal
