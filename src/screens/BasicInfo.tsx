@@ -101,7 +101,7 @@ export default function BasicInfo({ data, setData, onNext, onBack }: Props) {
         />
 
         <Field
-          label="QCT 저장용 전화번호"
+          label="저장용 전화번호"
           required
           type="tel"
           inputMode="tel"

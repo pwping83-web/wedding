@@ -97,7 +97,7 @@ export default function Landing({ onStart, onLoadQct, onAdmin }: Props) {
           <div className="landing-card text-left space-y-3 mb-1">
             <p className="text-[13px] font-semibold text-charcoal">식순 불러오기</p>
             <Field
-              label="QCT 저장용 전화번호"
+              label="저장용 전화번호"
               type="tel"
               inputMode="tel"
               autoComplete="tel"
