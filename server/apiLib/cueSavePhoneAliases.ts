@@ -3,6 +3,8 @@ export const CUE_SAVE_PHONE_ALIASES: Record<string, { groomName: string; brideNa
   '01096228025': { groomName: '김성환', brideName: '심미영' },
   '01076723370': { groomName: '조기철', brideName: '김민선' },
   '01098768716': { groomName: '조기철', brideName: '김민선' },
+  '01080196543': { groomName: '최인호', brideName: '김동미' },
+  '01048696543': { groomName: '최인호', brideName: '김동미' },
 }
 
 export function coupleForSavePhone(normalizedPhone: string) {
