@@ -16,7 +16,7 @@ export type McProgressVideo = {
 /** MC 본식 사회 진행 영상 (순서대로 표시) */
 export const MC_PROGRESS_VIDEOS: McProgressVideo[] = [
   { id: 'JFtFR6-bJwY', label: '캐주얼 진행' },
-  { id: 'FYhZvKlUlfo', label: '차분히 진행' },
+  { id: 'FYhZvKlUlfo', label: '클래식 진행' },
 ]
 
 /** 첫 번째 MC 영상 (레거시 참조) */
