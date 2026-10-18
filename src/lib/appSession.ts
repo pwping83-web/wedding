@@ -88,6 +88,12 @@ export function coerceFlowScreen(raw: string | undefined | null): FlowScreen {
   return normalizeSessionScreen(String(raw ?? 'basic').trim()) ?? 'basic'
 }
 
+/** 랜딩 「식순 불러오기」 — 전송·완성(output) 화면 대신 미리보기에서 수정 */
+export function resolveFlowScreenAfterPhoneLoad(raw: string | undefined | null): FlowScreen {
+  const screen = coerceFlowScreen(raw)
+  return screen === 'output' ? 'preview' : screen
+}
+
 export function hasSaveableProgress(data: AppData, screen: FlowScreen | 'landing'): boolean {
   if (screen !== 'landing') return true
   return Boolean(

@@ -18,7 +18,7 @@ import VideoEditorPage from './screens/VideoEditorPage'
 import { readMarketingRoute } from './lib/marketingRoutes'
 import {
   clearAppSession,
-  coerceFlowScreen,
+  resolveFlowScreenAfterPhoneLoad,
   saveAppSession,
   type FlowScreen,
 } from './lib/appSession'
@@ -137,7 +137,8 @@ export default function App() {
       throw new Error('이 번호로 저장된 식순이 없습니다.')
     }
     setData(saved.data)
-    const nextScreen = coerceFlowScreen(saved.flowScreen)
+    const nextScreen = resolveFlowScreenAfterPhoneLoad(saved.flowScreen)
+    setData(saved.data)
     setScreen(nextScreen)
     saveAppSession(nextScreen, saved.data)
     saveCueSheetDraft(saved.data)

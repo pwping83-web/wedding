@@ -412,6 +412,23 @@ export async function findCueSheetByPhone(savePhone: string): Promise<SavedCueSh
   const phone = normalizeSavePhone(savePhone)
   if (!isValidSavePhone(phone)) return null
 
+  const alias = coupleForSavePhone(phone)
+
+  /** 연결 번호는 전화 키보다 신랑·신부 최신 식순 우선 (잘못된 save_phone 행 방지) */
+  if (alias) {
+    const fromAlias = await resolveSavedCueSheetFromStore(alias.groomName, alias.brideName)
+    if (fromAlias) {
+      const flow = fromAlias.flowScreen ?? flowScreenFromAppData(fromAlias.appData)
+      const enriched = enrichAppDataForPhoneSave(fromAlias.appData, phone, flow)
+      upsertCueSheetByPhone(phone, enriched, flow).catch(() => {})
+      return {
+        savedAt: fromAlias.savedAt,
+        appData: enriched,
+        flowScreen: flow,
+      }
+    }
+  }
+
   const byColumn = await fetchCueSheetDraftRow(config, {
     select: 'updated_at,app_data,flow_screen',
     save_phone: `eq.${phone}`,
@@ -425,25 +442,7 @@ export async function findCueSheetByPhone(savePhone: string): Promise<SavedCueSh
   })
   if (byJson) return byJson
 
-  const alias = coupleForSavePhone(phone)
-  if (!alias) return null
-
-  const saved = await resolveSavedCueSheetFromStore(alias.groomName, alias.brideName)
-  if (!saved) return null
-
-  const enriched = enrichAppDataForPhoneSave(
-    saved.appData,
-    phone,
-    flowScreenFromAppData(saved.appData),
-  )
-
-  upsertCueSheetByPhone(phone, enriched, flowScreenFromAppData(saved.appData)).catch(() => {})
-
-  return {
-    savedAt: saved.savedAt,
-    appData: enriched,
-    flowScreen: saved.flowScreen ?? flowScreenFromAppData(enriched),
-  }
+  return null
 }
 
 async function fetchCueSheetDraftRow(
